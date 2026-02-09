@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 4000;
 // Middleware to parse JSON
 app.use(express.json());
 
-// Test route
+// Test route 
 app.get('/', (req, res) => {
   res.send('Hello, Node.js startup project!');
 });
