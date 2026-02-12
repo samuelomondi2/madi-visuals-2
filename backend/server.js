@@ -4,7 +4,6 @@ const db = require('./src/config/db');
 // DB connection
 async function startServer() {
   try {
-    // Test database connection
     await db.query('SELECT 1');
     console.log(`✅ MySQL connected to database: ${process.env.DB_DATABASE}`);
 
@@ -13,7 +12,7 @@ async function startServer() {
 
   } catch (error) {
     console.error('❌ Failed to connect to database:', error.message);
-    process.exit(1); // Stop app if DB fails
+    process.exit(1);
   }
 }
 
