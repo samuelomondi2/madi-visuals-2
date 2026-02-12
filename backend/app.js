@@ -1,18 +1,18 @@
 require('dotenv').config();
 const express = require('express');
+// const cors = require('cors')
+const corsMiddleware = require('./src/config/cors');
+
+const db = require('./src/config/db');
 
 const app = express();
-const PORT = process.env.PORT || 4000;
 
-// Middleware to parse JSON
+app.use(corsMiddleware);
+// app.use(cors())
 app.use(express.json());
 
-// Test route 
 app.get('/', (req, res) => {
   res.send('Hello, Node.js startup project!');
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
-});
+module.exports = app;
