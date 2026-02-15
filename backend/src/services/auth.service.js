@@ -1,12 +1,12 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 
-exports.register = async ({ email, password }) => {
+exports.register = async ({ name, email, password, role }) => {
   const hash = await bcrypt.hash(password, 10);
 
   await db.query(
     'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-    [email, hash]
+    [name, email, hash, role]
   );
 };
 
