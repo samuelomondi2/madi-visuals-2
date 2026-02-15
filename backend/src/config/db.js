@@ -9,9 +9,10 @@ module.exports = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+   ssl: 'Amazon RDS'
 
-  ssl: {
-    minVersion: 'TLSv1.2',
-    rejectUnauthorized: true
-  }
+  // ssl: {
+  //   minVersion: 'TLSv1.2',
+  //   rejectUnauthorized: true
+  // }
 });
