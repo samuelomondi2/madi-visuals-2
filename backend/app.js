@@ -1,33 +1,30 @@
 require('dotenv').config();
 const express = require('express');
 const corsMiddleware = require('./src/config/cors');
+const bodyParser = require('body-parser');
 
-const db = require('./src/config/db');
+const authRoutes = require('./src/routes/auth.route');
+const protectedRoutes = require('./src/routes/protected.route');
 
 const app = express();
 
 app.use(corsMiddleware);
+app.use(bodyParser.json());
 app.use(express.json());
 
+// Routes
+app.use('/auth', authRoutes);
+app.use('/api', protectedRoutes);
+
+// Health check
 app.get('/', (req, res) => {
-  res.send('Hello, Node.js startup project!');
+  res.send('Hello, Node.js JWT Auth!');
 });
 
-// app.js (or wherever your routes are)
-app.get('/users', async (req, res) => {
-    try {
-      const [rows] = await db.query('SELECT * FROM users');
-      res.status(200).json({
-        success: true,
-        data: rows
-      });
-    } catch (err) {
-      console.error('❌ Failed to fetch users:', err.message);
-      res.status(500).json({
-        success: false,
-        message: 'Server error'
-      });
-    }
-  });  
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ message: err.message || 'Server error' });
+});
 
 module.exports = app;
