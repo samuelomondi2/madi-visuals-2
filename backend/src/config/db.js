@@ -11,6 +11,6 @@ module.exports = mysql.createPool({
   queueLimit: 0,
 
   ssl: {
-    rejectUnauthorized: true
+    rejectUnauthorized: false
   }
 });

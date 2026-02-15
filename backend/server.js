@@ -1,6 +1,13 @@
 const app = require('./app');
 const db = require('./src/config/db');
 
+console.log("ENV CHECK:", {
+  host: process.env.DB_HOST,
+  user: process.env.DB_USERNAME,
+  database: process.env.DB_DATABASE,
+  port: process.env.DB_PORT
+});
+
 // DB connection
 async function startServer() {
   try {
