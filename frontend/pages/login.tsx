@@ -14,7 +14,7 @@ export default function LoginPage() {
 
     try {
       const res = await fetch(
-        "https://madi-visuals-2.onrender.com/auth/login",
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

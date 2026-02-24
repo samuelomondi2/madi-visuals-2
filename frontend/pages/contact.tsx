@@ -11,6 +11,8 @@ export default function ContactPage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // Email validation regex
@@ -19,10 +21,12 @@ export default function ContactPage() {
 
   // Phone validation (simple US format)
   const isValidPhone = (phone: string) =>
-    /^[0-9]{3}-?[0-9]{3}-?[0-9]{4}$/.test(phone);
+    /^\+?1?\s*\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/.test(phone);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
 
     // Validation
     if (!isValidEmail(email)) {
@@ -39,7 +43,7 @@ export default function ContactPage() {
       setIsLoading(true);
 
       const res = await fetch(
-        "https://madi-visuals-2.onrender.com/api/contact",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/contact`,
         {
           method: "POST",
           headers: {
@@ -50,10 +54,11 @@ export default function ContactPage() {
       );
 
       if (!res.ok) {
-        throw new Error("Failed to send");
+        const data = await res.json();
+        throw new Error(data.message || "Failed to send message");
       }
 
-      toast.success("Message sent successfully!");
+      setSuccess("Message sent successfully!");
 
       // Reset form
       setName("");
@@ -61,7 +66,7 @@ export default function ContactPage() {
       setEmail("");
       setMessage("");
     } catch (error) {
-      toast.error("Something went wrong. Please try again.");
+      setError("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
