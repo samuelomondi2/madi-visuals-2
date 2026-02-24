@@ -118,104 +118,114 @@ export default function Dashboard() {
   if (error) return <p className="text-red-500 p-4">{error}</p>;
 
   return (
-    <div className="p-8 bg-black min-h-screen text-white">
-      <h2 className="text-3xl font-bold mb-6 text-[#D4AF37]">Contact Messages Dashboard</h2>
+    <div className="p-4 md:p-8 bg-black min-h-screen text-white">
+      <h2 className="text-2xl md:text-3xl font-bold mb-6 text-[#D4AF37]">
+        Contact Messages Dashboard
+      </h2>
 
       {messages.length === 0 ? (
         <p>No messages yet.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-neutral-800">
-          <table className="min-w-full table-fixed border-collapse">
-            <thead className="bg-[#2c2c2c] text-white">
-              <tr>
-                <th className="py-3 px-4 text-left rounded-tl-lg">Name</th>
-                <th className="py-3 px-4 text-left">Email</th>
-                <th className="py-3 px-4 text-left">Phone</th>
-                <th className="py-3 px-4 text-left">Message</th>
-                <th className="py-3 px-4 text-left">Status</th>
-                <th className="py-3 px-4 text-left">Date</th>
-                <th className="py-3 px-4 text-center rounded-tr-lg">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {messages.map((msg, idx) => (
-                <tr
-                  key={msg.id}
-                  className={idx % 2 === 0 ? "bg-black" : "bg-[#1a1a1a]"}
-                >
-                  <td className="py-2 px-4 truncate max-w-xs">{msg.name}</td>
-                  <td className="py-2 px-4 truncate max-w-xs">{msg.email}</td>
-                  <td className="py-2 px-4 truncate max-w-xs">{msg.phone || "-"}</td>
-                  <td className="py-2 px-4 truncate max-w-xs">{msg.message}</td>
-                  <td className="py-2 px-4 capitalize">{msg.status}</td>
-                  <td className="py-2 px-4 whitespace-nowrap">
-                    {new Date(msg.createdAt).toLocaleString()}
-                  </td>
-                  <td className="py-2 px-4 text-center space-x-2">
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto rounded-lg border border-neutral-800">
+            <table className="min-w-full table-fixed border-collapse">
+              <thead className="bg-[#2c2c2c] text-white">
+                <tr>
+                  <th className="py-3 px-4 text-left rounded-tl-lg">Name</th>
+                  <th className="py-3 px-4 text-left">Email</th>
+                  <th className="py-3 px-4 text-left">Phone</th>
+                  <th className="py-3 px-4 text-left">Message</th>
+                  <th className="py-3 px-4 text-left">Status</th>
+                  <th className="py-3 px-4 text-left">Date</th>
+                  <th className="py-3 px-4 text-center rounded-tr-lg">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {messages.map((msg, idx) => (
+                  <tr
+                    key={msg.id}
+                    className={idx % 2 === 0 ? "bg-black" : "bg-[#1a1a1a]"}
+                  >
+                    <td className="py-2 px-4 truncate max-w-xs">{msg.name}</td>
+                    <td className="py-2 px-4 truncate max-w-xs">{msg.email}</td>
+                    <td className="py-2 px-4 truncate max-w-xs">{msg.phone || "-"}</td>
+                    <td className="py-2 px-4 truncate max-w-xs">{msg.message}</td>
+                    <td className="py-2 px-4 capitalize">{msg.status}</td>
+                    <td className="py-2 px-4 whitespace-nowrap">
+                      {new Date(msg.createdAt).toLocaleString()}
+                    </td>
+                    <td className="py-2 px-4 text-center space-x-2">
+                      <button
+                        onClick={() => toggleStatus(msg.id, msg.status)}
+                        className="bg-[#D4AF37] text-black px-3 py-1 rounded hover:opacity-90 transition"
+                      >
+                        {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
+                      </button>
+                      <button
+                        onClick={() => handleDelete(msg.id)}
+                        className="bg-red-600 px-3 py-1 rounded hover:opacity-90 transition"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => handleViewToggle(msg.id)}
+                        className="bg-gray-700 px-3 py-1 rounded hover:opacity-90 transition"
+                      >
+                        {viewId === msg.id ? "Hide" : "View"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-4">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className="bg-[#1a1a1a] rounded-lg border border-neutral-700 p-4"
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-semibold text-[#D4AF37] truncate max-w-[60%]">{msg.name}</h3>
+                  <div className="space-x-1">
                     <button
                       onClick={() => toggleStatus(msg.id, msg.status)}
-                      className="bg-[#D4AF37] text-black px-3 py-1 rounded hover:opacity-90 transition"
+                      className="bg-[#D4AF37] text-black px-2 py-1 rounded text-xs hover:opacity-90 transition"
                     >
                       {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
                     </button>
                     <button
                       onClick={() => handleDelete(msg.id)}
-                      className="bg-red-600 px-3 py-1 rounded hover:opacity-90 transition"
+                      className="bg-red-600 px-2 py-1 rounded text-xs hover:opacity-90 transition"
                     >
                       Delete
                     </button>
                     <button
                       onClick={() => handleViewToggle(msg.id)}
-                      className="bg-gray-700 px-3 py-1 rounded hover:opacity-90 transition"
+                      className="bg-gray-700 px-2 py-1 rounded text-xs hover:opacity-90 transition"
                     >
                       {viewId === msg.id ? "Hide" : "View"}
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+                  </div>
+                </div>
 
-      {/* View card */}
-      {viewId !== null && (
-        <div className="mt-6 max-w-xl mx-auto rounded-lg border border-[#D4AF37] bg-black p-6 shadow-lg text-white">
-          {(() => {
-            const msg = messages.find((m) => m.id === viewId);
-            if (!msg) return null;
-
-            return (
-              <>
-                <h3 className="text-2xl font-semibold mb-4 text-[#D4AF37]">Message Details</h3>
-                <p>
-                  <strong>Name:</strong> {msg.name}
-                </p>
-                <p>
-                  <strong>Email:</strong> {msg.email}
-                </p>
-                <p>
-                  <strong>Phone:</strong> {msg.phone || "-"}
-                </p>
-                <p>
-                  <strong>Message:</strong> {msg.message}
-                </p>
-                <p>
-                  <strong>Status:</strong>{" "}
-                  <span className={msg.status === "pending" ? "text-yellow-400" : "text-green-400"}>
-                    {msg.status}
-                  </span>
-                </p>
-                <p>
-                  <strong>Created At:</strong> {new Date(msg.createdAt).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Updated At:</strong> {new Date(msg.updatedAt).toLocaleString()}
-                </p>
-              </>
-            );
-          })()}
-        </div>
+                {viewId === msg.id && (
+                  <div className="mt-2 space-y-1 text-sm text-white">
+                    <p><strong>Email:</strong> {msg.email}</p>
+                    <p><strong>Phone:</strong> {msg.phone || "-"}</p>
+                    <p><strong>Message:</strong> {msg.message}</p>
+                    <p><strong>Status:</strong> <span className={msg.status === "pending" ? "text-yellow-400" : "text-green-400"}>{msg.status}</span></p>
+                    <p><strong>Created At:</strong> {new Date(msg.createdAt).toLocaleString()}</p>
+                    <p><strong>Updated At:</strong> {new Date(msg.updatedAt).toLocaleString()}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       <div className="mt-8">
