@@ -1,19 +1,29 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Logout from "./logout";
 
 export default function Dashboard() {
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  // Helper to get token from either storage
+  const getToken = () =>
+    localStorage.getItem("token") || sessionStorage.getItem("token");
+
+  // Logout function
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    router.push("/login");
+  };
+
   useEffect(() => {
-    const token =
-      localStorage.getItem("token") || sessionStorage.getItem("token");
+    const token = getToken();
     if (!token) {
       router.push("/login");
       return;
     }
-  
+
     fetch("https://madi-visuals-2.onrender.com/api/dashboard", {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -22,10 +32,13 @@ export default function Dashboard() {
       .then((res) => res.json())
       .then((data) => {
         if (data.message) setMessage(data.message);
-        else router.push("/login");
+        else router.push("/login"); // invalid response → redirect
       })
-      .catch(() => router.push("/login"));
+      .catch(() => router.push("/login"))
+      .finally(() => setLoading(false));
   }, [router]);
+
+  if (loading) return <p>Loading dashboard...</p>;
 
   return (
     <div style={{ padding: "2rem" }}>
@@ -33,7 +46,9 @@ export default function Dashboard() {
       <p>{message}</p>
 
       <div style={{ marginTop: "2rem" }}>
-        <Logout />
+        <button onClick={handleLogout} style={{ padding: "8px 16px" }}>
+          Logout
+        </button>
       </div>
     </div>
   );
