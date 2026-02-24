@@ -5,22 +5,18 @@ const bodyParser = require('body-parser');
 
 const authRoutes = require('./src/routes/auth.route');
 const protectedRoutes = require('./src/routes/protected.route');
+const conctactRoute = require('./src/routes/contact.route')
 
 const app = express();
 
 app.use(corsMiddleware);
-// app.options('*', corsMiddleware);
 app.use(bodyParser.json());
 app.use(express.json());
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/auth', conctactRoute)
 app.use('/api', protectedRoutes);
-
-// Health check
-app.get('/', (req, res) => {
-  res.send('Hello, Node.js JWT Auth!');
-});
 
 // Global error handler
 app.use((err, req, res, next) => {
