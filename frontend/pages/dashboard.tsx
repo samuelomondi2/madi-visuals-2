@@ -4,12 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 interface ContactMessage {
-  id: string;           // unique ID from backend
+  id: number;
   name: string;
   email: string;
+  phone?: string;
   message: string;
-  createdAt: string;
   status: "pending" | "resolved";
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function Dashboard() {
@@ -27,7 +29,7 @@ export default function Dashboard() {
     router.push("/login");
   };
 
-  // Fetch all contact messages
+  // Fetch messages
   const fetchMessages = async () => {
     setLoading(true);
     const token = getToken();
@@ -42,7 +44,20 @@ export default function Dashboard() {
       });
       if (!res.ok) throw new Error("Failed to fetch messages");
       const data = await res.json();
-      setMessages(data.messages || []);
+
+      // Map backend fields to dashboard interface
+      const mapped = data.contacts.map((msg: any) => ({
+        id: msg.id,
+        name: msg.name,
+        email: msg.email,
+        phone: msg.phone,
+        message: msg.message,
+        status: msg.status,
+        createdAt: msg.created_at,
+        updatedAt: msg.updated_at,
+      }));
+
+      setMessages(mapped);
     } catch (err) {
       console.error(err);
       setError("Failed to load contact messages");
@@ -56,7 +71,7 @@ export default function Dashboard() {
   }, []);
 
   // Delete a message
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     const token = getToken();
     try {
       const res = await fetch(`https://madi-visuals-2.onrender.com/api/contact/${id}`, {
@@ -71,8 +86,8 @@ export default function Dashboard() {
     }
   };
 
-  // Toggle message status
-  const toggleStatus = async (id: string, currentStatus: "pending" | "resolved") => {
+  // Toggle status
+  const toggleStatus = async (id: number, currentStatus: "pending" | "resolved") => {
     const token = getToken();
     const newStatus = currentStatus === "pending" ? "resolved" : "pending";
 
@@ -87,7 +102,9 @@ export default function Dashboard() {
       });
       if (!res.ok) throw new Error("Failed to update status");
       setMessages(
-        messages.map((msg) => (msg.id === id ? { ...msg, status: newStatus } : msg))
+        messages.map((msg) =>
+          msg.id === id ? { ...msg, status: newStatus } : msg
+        )
       );
     } catch (err) {
       console.error(err);
@@ -109,6 +126,7 @@ export default function Dashboard() {
             <tr>
               <th style={{ borderBottom: "1px solid #ccc", padding: "0.5rem" }}>Name</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "0.5rem" }}>Email</th>
+              <th style={{ borderBottom: "1px solid #ccc", padding: "0.5rem" }}>Phone</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "0.5rem" }}>Message</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "0.5rem" }}>Status</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "0.5rem" }}>Date</th>
@@ -120,6 +138,7 @@ export default function Dashboard() {
               <tr key={msg.id} style={{ borderBottom: "1px solid #444" }}>
                 <td style={{ padding: "0.5rem" }}>{msg.name}</td>
                 <td style={{ padding: "0.5rem" }}>{msg.email}</td>
+                <td style={{ padding: "0.5rem" }}>{msg.phone}</td>
                 <td style={{ padding: "0.5rem" }}>{msg.message}</td>
                 <td style={{ padding: "0.5rem" }}>{msg.status}</td>
                 <td style={{ padding: "0.5rem" }}>{new Date(msg.createdAt).toLocaleString()}</td>
