@@ -12,8 +12,7 @@ export default function ContactPage() {
           Contact
         </h1>
         <p className="max-w-2xl mx-auto text-white/80 text-lg">
-          Duis tristique sed lorem a vestibulum. Cras commodo consequat orci,
-          in convallis risus egestas non.
+        We'd love to hear from you! Whether you have questions, want a quote, or just want to say hello, reach out and we'll get back to you as soon as possible..
         </p>
       </section>
 
@@ -78,15 +77,13 @@ export default function ContactPage() {
       </main>
 
       {/* Other Ways Section */}
-      <section className="bg-[#f5f3ef] text-gray-800 py-20 px-6 md:px-12">
+      <section className="pt-32 pb-20 px-6 text-center bg-gradient-to-r from-[#1a1a1a] via-[#2b2b2b] to-[#3a2d1a]">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-4xl font-semibold mb-6 text-[#2f4f4f]">
             Other ways of getting in touch
           </h2>
           <p className="max-w-2xl mx-auto mb-16 text-gray-600">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-            Suspendisse varius enim in eros elementum tristique.
-            Duis cursus, mi quis viverra ornare.
+          Other Ways to Reach Us.
           </p>
 
           <div className="grid md:grid-cols-3 gap-12 text-center">
@@ -102,7 +99,7 @@ export default function ContactPage() {
               </Link>
             </div>
 
-            <div>
+            {/* <div>
               <h3 className="uppercase tracking-widest text-sm mb-3">
                 Address
               </h3>
@@ -111,7 +108,7 @@ export default function ContactPage() {
                 <br />
                 Pearblossom, California, 93553
               </p>
-            </div>
+            </div> */}
 
             <div>
               <h3 className="uppercase tracking-widest text-sm mb-3">
