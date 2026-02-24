@@ -2,7 +2,7 @@ const cors = require('cors');
 
 const allowedOrigins = [
   'http://localhost:3000',
-  process.env.FRONTEND_URL,
+  'https://staging-madi-visuals-2.vercel.app',
 ].filter(Boolean); // removes undefined/null values
 
 module.exports = cors({
