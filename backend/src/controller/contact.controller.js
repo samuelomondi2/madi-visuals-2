@@ -9,3 +9,12 @@ exports.contact = async (req, res, next) => {
         next(error)
     }
 }
+
+exports.getContacts = async (req, res, next) => {
+  try {
+    const contacts = await contactService.getContacts();
+    res.status(200).json({ contacts });
+  } catch (error) {
+    next(error);
+  }
+};
