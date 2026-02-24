@@ -1,18 +1,66 @@
+"use client";
+
 import Link from "next/link";
 import Footer from "./components/footer";
 import Navbar from "./components/navbar";
+import { useState, FormEvent } from "react";
 
 export default function ContactPage() {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await fetch(
+        "https://madi-visuals-2.onrender.com/api/contact",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name,
+            phone,
+            email,
+            message,
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Something went wrong");
+      }
+
+      setSuccess("Message sent successfully!");
+      setName("");
+      setPhone("");
+      setEmail("");
+      setMessage("");
+    } catch (err) {
+      setError("Failed to send message. Please try again.");
+    }
+  };
+
   return (
     <>
       <Navbar />
+
       {/* Contact Hero Section */}
       <section className="pt-32 pb-20 px-6 text-center bg-gradient-to-r from-[#1a1a1a] via-[#2b2b2b] to-[#3a2d1a]">
         <h1 className="text-5xl md:text-6xl font-bold text-[#D4AF37] mb-6">
           Contact
         </h1>
         <p className="max-w-2xl mx-auto text-white/80 text-lg">
-        We'd love to hear from you! Whether you have questions, want a quote, or just want to say hello, reach out and we'll get back to you as soon as possible..
+          We'd love to hear from you! Whether you have questions, want a quote,
+          or just want to say hello.
         </p>
       </section>
 
@@ -23,7 +71,7 @@ export default function ContactPage() {
             Send Us a Message
           </h2>
 
-          <form className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="name" className="block mb-2 text-sm font-medium">
                 Name
@@ -31,9 +79,23 @@ export default function ContactPage() {
               <input
                 type="text"
                 id="name"
-                name="name"
-                placeholder="Your Name"
-                className="w-full rounded-md border border-neutral-700 bg-black/50 px-4 py-2 text-white placeholder-white/50 focus:border-[#D4AF37] focus:outline-none"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-md border border-neutral-700 bg-black/50 px-4 py-2"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block mb-2 text-sm font-medium">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full rounded-md border border-neutral-700 bg-black/50 px-4 py-2"
                 required
               />
             </div>
@@ -45,9 +107,9 @@ export default function ContactPage() {
               <input
                 type="email"
                 id="email"
-                name="email"
-                placeholder="you@example.com"
-                className="w-full rounded-md border border-neutral-700 bg-black/50 px-4 py-2 text-white placeholder-white/50 focus:border-[#D4AF37] focus:outline-none"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-md border border-neutral-700 bg-black/50 px-4 py-2"
                 required
               />
             </div>
@@ -58,13 +120,21 @@ export default function ContactPage() {
               </label>
               <textarea
                 id="message"
-                name="message"
                 rows={5}
-                placeholder="Your message..."
-                className="w-full rounded-md border border-neutral-700 bg-black/50 px-4 py-2 text-white placeholder-white/50 focus:border-[#D4AF37] focus:outline-none"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="w-full rounded-md border border-neutral-700 bg-black/50 px-4 py-2"
                 required
-              ></textarea>
+              />
             </div>
+
+            {error && (
+              <p className="text-red-500 text-sm">{error}</p>
+            )}
+
+            {success && (
+              <p className="text-green-500 text-sm">{success}</p>
+            )}
 
             <button
               type="submit"
@@ -76,44 +146,6 @@ export default function ContactPage() {
         </section>
       </main>
 
-            {/* Other Ways Section */}
-      <section className="pt-32 pb-20 px-6 text-center bg-gradient-to-r from-[#1a1a1a] via-[#2b2b2b] to-[#3a2d1a]">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="mb-6 text-3xl md:text-4xl font-semibold text-[#D4AF37]">
-            Other Ways to Get in Touch
-          </h2>
-
-          <div className="mt-16 grid md:grid-cols-2 gap-16 text-center">
-            
-            {/* Email */}
-            <div className="space-y-3">
-              <h3 className="uppercase tracking-widest text-sm text-white/60">
-                Email
-              </h3>
-              <Link
-                href="mailto:Madivisuals1@gmail.com"
-                className="text-lg text-white hover:text-[#D4AF37] transition"
-              >
-                Madivisuals1@gmail.com
-              </Link>
-            </div>
-
-            {/* Phone */}
-            <div className="space-y-3">
-              <h3 className="uppercase tracking-widest text-sm text-white/60">
-                Phone
-              </h3>
-              <Link
-                href="tel:+1234567890"
-                className="text-lg text-white hover:text-[#D4AF37] transition"
-              >
-                +1 (908) 392-1026
-              </Link>
-            </div>
-
-          </div>
-        </div>
-      </section>
       <Footer />
     </>
   );
