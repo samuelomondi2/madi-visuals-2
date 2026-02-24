@@ -9,7 +9,7 @@ const protectedRoutes = require('./src/routes/protected.route');
 const app = express();
 
 app.use(corsMiddleware);
-app.options('*', corsMiddleware);
+// app.options('*', corsMiddleware);
 app.use(bodyParser.json());
 app.use(express.json());
 
