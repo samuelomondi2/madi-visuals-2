@@ -7,12 +7,13 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
     if (!token) {
       router.push("/login");
       return;
     }
-
+  
     fetch("https://madi-visuals-2.onrender.com/api/dashboard", {
       headers: {
         Authorization: `Bearer ${token}`,
