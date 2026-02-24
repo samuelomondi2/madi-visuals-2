@@ -76,55 +76,44 @@ export default function ContactPage() {
         </section>
       </main>
 
-      {/* Other Ways Section */}
-      <section className="pt-32 pb-20 px-6 text-center bg-gradient-to-r from-[#1a1a1a] via-[#2b2b2b] to-[#3a2d1a]">
+            {/* Other Ways Section */}
+      <section className="py-24 px-6 bg-black text-white border-t border-neutral-800">
         <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-4xl font-semibold mb-6 text-[#2f4f4f]">
-            Other ways of getting in touch
+          <h2 className="mb-6 text-3xl md:text-4xl font-semibold text-[#D4AF37]">
+            Other Ways to Get in Touch
           </h2>
-          <p className="max-w-2xl mx-auto mb-16 text-gray-600">
-          Other Ways to Reach Us.
-          </p>
 
-          <div className="grid md:grid-cols-3 gap-12 text-center">
-            <div>
-              <h3 className="uppercase tracking-widest text-sm mb-3">
+          <div className="mt-16 grid md:grid-cols-2 gap-16 text-center">
+            
+            {/* Email */}
+            <div className="space-y-3">
+              <h3 className="uppercase tracking-widest text-sm text-white/60">
                 Email
               </h3>
               <Link
-                href="mailto:info@madivisuals.com"
-                className="text-lg text-[#2f4f4f] hover:underline"
+                href="mailto:Madivisuals1@gmail.com"
+                className="text-lg text-white hover:text-[#D4AF37] transition"
               >
-                info@madivisuals.com
+                Madivisuals1@gmail.com
               </Link>
             </div>
 
-            {/* <div>
-              <h3 className="uppercase tracking-widest text-sm mb-3">
-                Address
-              </h3>
-              <p>
-                12410 Aperture St.
-                <br />
-                Pearblossom, California, 93553
-              </p>
-            </div> */}
-
-            <div>
-              <h3 className="uppercase tracking-widest text-sm mb-3">
+            {/* Phone */}
+            <div className="space-y-3">
+              <h3 className="uppercase tracking-widest text-sm text-white/60">
                 Phone
               </h3>
               <Link
                 href="tel:+1234567890"
-                className="text-lg text-[#2f4f4f] hover:underline"
+                className="text-lg text-white hover:text-[#D4AF37] transition"
               >
-                +1 (234) 567-890
+                +1 (908) 392-1026
               </Link>
             </div>
+
           </div>
         </div>
       </section>
-
       <Footer />
     </>
   );
