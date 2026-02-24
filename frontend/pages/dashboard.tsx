@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import React from "react";
 
 interface ContactMessage {
   id: number;
@@ -143,39 +144,54 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {messages.map((msg, idx) => (
-                  <tr
-                    key={msg.id}
-                    className={idx % 2 === 0 ? "bg-black" : "bg-[#1a1a1a]"}
-                  >
-                    <td className="py-2 px-4 truncate max-w-xs">{msg.name}</td>
-                    <td className="py-2 px-4 truncate max-w-xs">{msg.email}</td>
-                    <td className="py-2 px-4 truncate max-w-xs">{msg.phone || "-"}</td>
-                    <td className="py-2 px-4 truncate max-w-xs">{msg.message}</td>
-                    <td className="py-2 px-4 capitalize">{msg.status}</td>
-                    <td className="py-2 px-4 whitespace-nowrap">
-                      {new Date(msg.createdAt).toLocaleString()}
-                    </td>
-                    <td className="py-2 px-4 text-center space-x-2">
-                      <button
-                        onClick={() => toggleStatus(msg.id, msg.status)}
-                        className="bg-[#D4AF37] text-black px-3 py-1 rounded hover:opacity-90 transition"
-                      >
-                        {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
-                      </button>
-                      <button
-                        onClick={() => handleDelete(msg.id)}
-                        className="bg-red-600 px-3 py-1 rounded hover:opacity-90 transition"
-                      >
-                        Delete
-                      </button>
-                      <button
-                        onClick={() => handleViewToggle(msg.id)}
-                        className="bg-gray-700 px-3 py-1 rounded hover:opacity-90 transition"
-                      >
-                        {viewId === msg.id ? "Hide" : "View"}
-                      </button>
-                    </td>
-                  </tr>
+                  <React.Fragment key={msg.id}>
+                    <tr className={idx % 2 === 0 ? "bg-black" : "bg-[#1a1a1a]"}>
+                      <td className="py-2 px-4 truncate max-w-xs">{msg.name}</td>
+                      <td className="py-2 px-4 truncate max-w-xs">{msg.email}</td>
+                      <td className="py-2 px-4 truncate max-w-xs">{msg.phone || "-"}</td>
+                      <td className="py-2 px-4 truncate max-w-xs">{msg.message}</td>
+                      <td className="py-2 px-4 capitalize">{msg.status}</td>
+                      <td className="py-2 px-4 whitespace-nowrap">{new Date(msg.createdAt).toLocaleString()}</td>
+                      <td className="py-2 px-4 text-center space-x-2">
+                        <button
+                          onClick={() => toggleStatus(msg.id, msg.status)}
+                          className="bg-[#D4AF37] text-black px-3 py-1 rounded hover:opacity-90 transition"
+                        >
+                          {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(msg.id)}
+                          className="bg-red-600 px-3 py-1 rounded hover:opacity-90 transition"
+                        >
+                          Delete
+                        </button>
+                        <button
+                          onClick={() => handleViewToggle(msg.id)}
+                          className="bg-gray-700 px-3 py-1 rounded hover:opacity-90 transition"
+                        >
+                          {viewId === msg.id ? "Hide" : "View"}
+                        </button>
+                      </td>
+                    </tr>
+
+                    {viewId === msg.id && (
+                      <tr className={idx % 2 === 0 ? "bg-[#111]" : "bg-[#222]"}> {/* slightly different bg */}
+                        <td colSpan={7} className="p-4 text-sm">
+                          <p><strong>Email:</strong> {msg.email}</p>
+                          <p><strong>Phone:</strong> {msg.phone || "-"}</p>
+                          <p><strong>Message:</strong> {msg.message}</p>
+                          <p>
+                            <strong>Status:</strong>{" "}
+                            <span className={msg.status === "pending" ? "text-yellow-400" : "text-green-400"}>
+                              {msg.status}
+                            </span>
+                          </p>
+                          <p><strong>Created At:</strong> {new Date(msg.createdAt).toLocaleString()}</p>
+                          <p><strong>Updated At:</strong> {new Date(msg.updatedAt).toLocaleString()}</p>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
