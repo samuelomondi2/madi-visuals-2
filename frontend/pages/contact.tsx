@@ -77,7 +77,7 @@ export default function ContactPage() {
       </main>
 
             {/* Other Ways Section */}
-      <section className="py-24 px-6 bg-black text-white border-t border-neutral-800">
+      <section className="pt-32 pb-20 px-6 text-center bg-gradient-to-r from-[#1a1a1a] via-[#2b2b2b] to-[#3a2d1a]">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="mb-6 text-3xl md:text-4xl font-semibold text-[#D4AF37]">
             Other Ways to Get in Touch

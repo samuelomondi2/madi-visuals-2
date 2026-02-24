@@ -15,7 +15,7 @@ app.use(express.json());
 
 // Routes
 app.use('/auth', authRoutes);
-app.use('/auth', conctactRoute)
+app.use('/api', conctactRoute)
 app.use('/api', protectedRoutes);
 
 // Global error handler
