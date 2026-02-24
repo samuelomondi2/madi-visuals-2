@@ -29,6 +29,8 @@ export default function LoginPage() {
         return;
       }
 
+      console.log("Login response:", data);
+      
       if (remember) {
         localStorage.setItem("token", data.token);
       } else {
