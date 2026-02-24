@@ -32,7 +32,7 @@ export default function Dashboard() {
       .then((res) => res.json())
       .then((data) => {
         if (data.message) setMessage(data.message);
-        else router.push("/login"); // invalid response → redirect
+        else router.push("/login"); 
       })
       .catch(() => router.push("/login"))
       .finally(() => setLoading(false));

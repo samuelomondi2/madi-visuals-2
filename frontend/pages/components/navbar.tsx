@@ -48,7 +48,7 @@ export default function Navbar() {
             </li>
 
             <li>
-              <Link href="/contact" className="text-sm font-medium text-white transition hover:text-[#D4AF37]">Contact Us</Link>
+              <Link href="/contact" className="text-sm font-medium text-white transition hover:text-[#D4AF37]">Contact</Link>
             </li>
           </ul>
 
@@ -96,7 +96,7 @@ export default function Navbar() {
             </Link>
 
             <Link href="/contact" className="block rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-neutral-900 hover:text-[#D4AF37]" onClick={() => setOpen(false)}>
-              Contact Us
+              Contact
             </Link>
 
             <Link
