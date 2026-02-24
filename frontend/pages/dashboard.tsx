@@ -4,6 +4,7 @@ import Logout from "./components/logout";
 
 export default function Dashboard() {
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -26,6 +27,8 @@ export default function Dashboard() {
       })
       .catch(() => router.push("/login"));
   }, [router]);
+
+  if (loading) return <p>Loading...</p>;
 
   return (
     <div style={{ padding: "2rem" }}>
