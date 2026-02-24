@@ -30,14 +30,16 @@ export default function LoginPage() {
       }
 
       console.log("Login response:", data);
-      
+
       if (remember) {
         localStorage.setItem("token", data.token);
       } else {
         sessionStorage.setItem("token", data.token);
       }
 
+      console.log("Redirecting to dashboard...");
       router.push("/dashboard");
+
     } catch (err) {
       console.error(err);
       setError("Something went wrong. Try again.");
