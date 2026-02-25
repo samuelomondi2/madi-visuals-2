@@ -46,7 +46,7 @@ export default function Dashboard() {
     }
 
     try {
-      const res = await fetch("https://madi-visuals-2.onrender.com/api/contact", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Failed to fetch messages");
@@ -79,7 +79,7 @@ export default function Dashboard() {
   const handleDelete = async (id: number) => {
     const token = getToken();
     try {
-      const res = await fetch(`https://madi-visuals-2.onrender.com/api/contact/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -97,7 +97,7 @@ export default function Dashboard() {
     const newStatus = currentStatus === "pending" ? "resolved" : "pending";
 
     try {
-      const res = await fetch(`https://madi-visuals-2.onrender.com/api/contact/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/${id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -129,15 +129,23 @@ export default function Dashboard() {
   };
 
   // Filter & sort messages
-  const filteredMessages = messages
-    .filter((msg) => {
-      const statusMatch = statusFilter === "all" || msg.status === statusFilter;
-      const msgDate = new Date(msg.createdAt).getTime();
-      const start = startDate ? new Date(startDate).getTime() : null;
-      const end = endDate ? new Date(endDate).getTime() + 86399999 : null; // include end day
-      return statusMatch && (!start || msgDate >= start) && (!end || msgDate <= end);
-    })
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const filteredMessages = messages.filter((msg) => {
+    const statusMatch = statusFilter === "all" || msg.status === statusFilter;
+  
+    // Convert createdAt to Date for comparison
+    const msgDate = new Date(msg.createdAt);
+  
+    let dateMatch = true;
+    if (startDate) {
+      dateMatch = msgDate >= new Date(startDate);
+    }
+    if (endDate) {
+      dateMatch = dateMatch && msgDate <= new Date(endDate);
+    }
+  
+    return statusMatch && dateMatch;
+  });
+    // .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const totalPages = Math.ceil(filteredMessages.length / PAGE_SIZE);
   const paginatedMessages = filteredMessages.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -162,7 +170,7 @@ export default function Dashboard() {
       ) : (
         <>
           {/* Filters */}
-          <div className="flex flex-col md:flex-row gap-4 mb-4 items-center">
+          <div className="flex flex-col md:flex-row gap-4 mb-4">
             <div>
               <label className="mr-2">Status:</label>
               <select
@@ -195,13 +203,6 @@ export default function Dashboard() {
                 className="bg-black border border-neutral-700 px-2 py-1 rounded text-white"
               />
             </div>
-
-            <button
-              onClick={handleClearFilters}
-              className="bg-gray-600 px-3 py-1 rounded hover:opacity-90 transition text-white mt-2 md:mt-0"
-            >
-              Clear Filters
-            </button>
           </div>
 
           {/* Table & Cards */}
