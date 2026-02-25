@@ -47,7 +47,7 @@ exports.updateHeroImage = async (req, res) => {
         if (error) return res.status(500).json({ error: error.message });
 
         await db.execute(
-          "UPDATE hero_section SET media_url=? WHERE id=1",
+          "UPDATE hero_section SET media_url=? WHERE id=?",
           [result.secure_url]
         );
 
