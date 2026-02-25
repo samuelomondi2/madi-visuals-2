@@ -3,7 +3,9 @@ const cloudinary = require("../config/cloudinary");
 
 exports.getHero = async (req, res) => {
   try {
-    const [rows] = await db.execute("SELECT * FROM hero_section LIMIT 1");
+    const [rows] = await db.execute(
+      "SELECT * FROM hero_section ORDER BY updated_at DESC LIMIT 1"
+    );
 
     if (!rows.length) {
       return res.status(404).json({ message: "Hero not found" });
