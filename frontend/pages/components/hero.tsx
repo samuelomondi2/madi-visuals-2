@@ -21,10 +21,10 @@ async function getHeroContent(): Promise<HeroContent | null> {
   }
 }
 
-function optimizeCloudinary(url: string) {
+function optimizeCloudinary(url: string, width = 1200) {
   return url.replace(
     "/upload/",
-    "/upload/f_auto,q_auto,w_1200/"
+    `/upload/f_auto,q_auto,w_${width}/`
   );
 }
 
@@ -70,7 +70,7 @@ export default async function Hero() {
         <div className="relative h-[420px] md:h-[600px] md:-mr-24">
           {content.media_url && content.media_url.startsWith("http") && (
             <Image
-              src={optimizeCloudinary(content.media_url)}
+              src={optimizeCloudinary(content.media_url, 1400)}
               alt="Hero Image"
               fill
               priority

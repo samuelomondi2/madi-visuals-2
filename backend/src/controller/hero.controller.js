@@ -20,8 +20,8 @@ exports.updateHeroText = async (req, res) => {
     const { title, description } = req.body;
 
     await db.execute(
-      "UPDATE hero_section SET title=?, description=? WHERE id=1",
-      [title, description]
+      "UPDATE hero_section SET title=?, name=?, description=? WHERE id=1",
+      [title, name, description]
     );
 
     res.json({ message: "Hero text updated" });
