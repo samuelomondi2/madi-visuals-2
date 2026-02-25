@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const heroController = require("../controllers/hero.controller");
+const heroController = require("../controller/hero.controller");
 const upload = require("../middleware/upload.middleware");
 const { authenticateToken, isAdmin } = require("../middleware/auth.middleware");
 
