@@ -2,24 +2,39 @@ const db = require("../config/db");
 const cloudinary = require("../config/cloudinary");
 
 exports.getHero = async (req, res) => {
-  const [rows] = await db.execute("SELECT * FROM hero_section LIMIT 1");
-  res.json(rows[0]);
+  try {
+    const [rows] = await db.execute("SELECT * FROM hero_section LIMIT 1");
+
+    if (!rows.length) {
+      return res.status(404).json({ message: "Hero not found" });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.updateHeroText = async (req, res) => {
-  const { title, description } = req.body;
+  try {
+    const { title, description } = req.body;
 
-  await db.execute(
-    "UPDATE hero_section SET title=?, description=? WHERE id=1",
-    [title, description]
-  );
+    await db.execute(
+      "UPDATE hero_section SET title=?, description=? WHERE id=1",
+      [title, description]
+    );
 
-  res.json({ message: "Hero text updated" });
+    res.json({ message: "Hero text updated" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 exports.updateHeroImage = async (req, res) => {
   try {
-    const file = req.file;
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
 
     const stream = cloudinary.uploader.upload_stream(
       {
@@ -27,7 +42,7 @@ exports.updateHeroImage = async (req, res) => {
         resource_type: "auto",
       },
       async (error, result) => {
-        if (error) return res.status(500).json({ error });
+        if (error) return res.status(500).json({ error: error.message });
 
         await db.execute(
           "UPDATE hero_section SET media_url=? WHERE id=1",
@@ -38,7 +53,7 @@ exports.updateHeroImage = async (req, res) => {
       }
     );
 
-    stream.end(file.buffer);
+    stream.end(req.file.buffer);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
