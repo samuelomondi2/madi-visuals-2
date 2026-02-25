@@ -15,11 +15,17 @@ interface ContactMessage {
   updatedAt: string;
 }
 
+const PAGE_SIZE = 10;
+
 export default function Dashboard() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [viewId, setViewId] = useState<number | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "resolved">("all");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const router = useRouter();
 
   const getToken = () =>
@@ -115,6 +121,33 @@ export default function Dashboard() {
     setViewId(viewId === id ? null : id);
   };
 
+  const handleClearFilters = () => {
+    setStatusFilter("all");
+    setStartDate("");
+    setEndDate("");
+    setCurrentPage(1);
+  };
+
+  // Filter & sort messages
+  const filteredMessages = messages
+    .filter((msg) => {
+      const statusMatch = statusFilter === "all" || msg.status === statusFilter;
+      const msgDate = new Date(msg.createdAt).getTime();
+      const start = startDate ? new Date(startDate).getTime() : null;
+      const end = endDate ? new Date(endDate).getTime() + 86399999 : null; // include end day
+      return statusMatch && (!start || msgDate >= start) && (!end || msgDate <= end);
+    })
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  const totalPages = Math.ceil(filteredMessages.length / PAGE_SIZE);
+  const paginatedMessages = filteredMessages.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   if (loading) return <p className="text-white p-4">Loading contact messages...</p>;
   if (error) return <p className="text-red-500 p-4">{error}</p>;
 
@@ -128,7 +161,50 @@ export default function Dashboard() {
         <p>No messages yet.</p>
       ) : (
         <>
-          {/* Desktop Table */}
+          {/* Filters */}
+          <div className="flex flex-col md:flex-row gap-4 mb-4 items-center">
+            <div>
+              <label className="mr-2">Status:</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="bg-black border border-neutral-700 px-2 py-1 rounded text-white"
+              >
+                <option value="all">All</option>
+                <option value="pending">Pending</option>
+                <option value="resolved">Resolved</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mr-2">Start Date:</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="bg-black border border-neutral-700 px-2 py-1 rounded text-white"
+              />
+            </div>
+
+            <div>
+              <label className="mr-2">End Date:</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="bg-black border border-neutral-700 px-2 py-1 rounded text-white"
+              />
+            </div>
+
+            <button
+              onClick={handleClearFilters}
+              className="bg-gray-600 px-3 py-1 rounded hover:opacity-90 transition text-white mt-2 md:mt-0"
+            >
+              Clear Filters
+            </button>
+          </div>
+
+          {/* Table & Cards */}
           <div className="hidden md:block overflow-x-auto rounded-lg border border-neutral-800">
             <table className="min-w-full table-fixed border-collapse">
               <thead className="bg-[#2c2c2c] text-white">
@@ -143,7 +219,14 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {messages.map((msg, idx) => (
+                {paginatedMessages.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="text-center text-gray-400 py-4">
+                      No messages match the filters.
+                    </td>
+                  </tr>
+                )}
+                {paginatedMessages.map((msg, idx) => (
                   <React.Fragment key={msg.id}>
                     <tr className={idx % 2 === 0 ? "bg-black" : "bg-[#1a1a1a]"}>
                       <td className="py-2 px-4 truncate max-w-xs">{msg.name}</td>
@@ -175,7 +258,7 @@ export default function Dashboard() {
                     </tr>
 
                     {viewId === msg.id && (
-                      <tr className={idx % 2 === 0 ? "bg-[#111]" : "bg-[#222]"}> {/* slightly different bg */}
+                      <tr className={idx % 2 === 0 ? "bg-[#111]" : "bg-[#222]"}>
                         <td colSpan={7} className="p-4 text-sm">
                           <p><strong>Email:</strong> {msg.email}</p>
                           <p><strong>Phone:</strong> {msg.phone || "-"}</p>
@@ -199,11 +282,11 @@ export default function Dashboard() {
 
           {/* Mobile Cards */}
           <div className="md:hidden space-y-4">
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                className="bg-[#1a1a1a] rounded-lg border border-neutral-700 p-4"
-              >
+            {paginatedMessages.length === 0 && (
+              <p className="text-gray-400 text-center">No messages match the filters.</p>
+            )}
+            {paginatedMessages.map((msg) => (
+              <div key={msg.id} className="bg-[#1a1a1a] rounded-lg border border-neutral-700 p-4">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-semibold text-[#D4AF37] truncate max-w-[60%]">{msg.name}</h3>
                   <div className="space-x-1">
@@ -241,6 +324,35 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center mt-4 space-x-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-3 py-1 bg-gray-600 rounded disabled:opacity-50"
+              >
+                Prev
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 rounded ${page === currentPage ? "bg-[#D4AF37] text-black" : "bg-gray-700"}`}
+                >
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1 bg-gray-600 rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </>
       )}
 
