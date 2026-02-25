@@ -68,7 +68,7 @@ export default async function Hero() {
         </div>
 
         <div className="relative h-[420px] md:h-[600px] md:-mr-24">
-          {content.media_url && (
+          {content.media_url && content.media_url.startsWith("http") && (
             <Image
               src={optimizeCloudinary(content.media_url)}
               alt="Hero Image"

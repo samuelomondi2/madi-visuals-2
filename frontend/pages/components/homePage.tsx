@@ -2,7 +2,7 @@ import Footer from "./footer";
 import Hero from "./hero";
 import Navbar from "./navbar";
 
-export default function HomePage() {
+export default async function HomePage() {
     return (
         <>
             <Navbar/>
