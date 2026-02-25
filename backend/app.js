@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const authRoutes = require('./src/routes/auth.route');
 const protectedRoutes = require('./src/routes/protected.route');
 const conctactRoute = require('./src/routes/contact.route')
+const heroRoutes = require("./src/routes/hero.route");
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/api', conctactRoute)
 app.use('/api', protectedRoutes);
+app.use("/api/hero", heroRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const authenticateToken = (req, res, next) => {
+exports.authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1]; // Bearer token
 
@@ -13,4 +13,9 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-module.exports = authenticateToken;
+exports.isAdmin = (req, res, next) => {
+  if (req.user.role !== "admin")
+    return res.status(403).json({ message: "Admin only" });
+  next();
+};
+
