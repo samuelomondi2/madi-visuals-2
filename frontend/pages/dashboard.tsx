@@ -203,6 +203,12 @@ export default function Dashboard() {
                 className="bg-black border border-neutral-700 px-2 py-1 rounded text-white"
               />
             </div>
+            <button
+              onClick={handleClearFilters}
+              className="bg-gray-600 px-3 py-1 rounded hover:opacity-90 transition text-white mt-2 md:mt-0"
+            >
+              Clear Filters
+            </button>
           </div>
 
           {/* Table & Cards */}
