@@ -70,9 +70,10 @@ export default async function Hero() {
         <div className="relative h-[420px] md:h-[600px] md:-mr-24">
           {content.media_url && content.media_url.startsWith("http") && (
             <Image
-              src={optimizeCloudinary(content.media_url, 1400)}
+              src={optimizeCloudinary(content.media_url)}
               alt="Hero Image"
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               priority
               className="rounded-xl object-cover"
             />
