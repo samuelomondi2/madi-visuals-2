@@ -38,7 +38,7 @@ export default function Navbar() {
             </li>
 
             <li>
-              <Link href="/portfolio" className="text-sm font-medium text-white transition hover:text-[#D4AF37]">
+              <Link href="https://madivisuals27.pixieset.com/sampleshots/" className="text-sm font-medium text-white transition hover:text-[#D4AF37]">
                 Portfolio
               </Link>
             </li>
