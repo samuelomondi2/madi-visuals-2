@@ -87,7 +87,7 @@ export default function Navbar() {
               Services & Pricing
             </Link>
 
-            <Link href="/portfolio" className="block rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-neutral-900 hover:text-[#D4AF37]" onClick={() => setOpen(false)}>
+            <Link href="https://madivisuals27.pixieset.com/sampleshots/" className="block rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-neutral-900 hover:text-[#D4AF37]" onClick={() => setOpen(false)}>
               Portfolio
             </Link>
 
