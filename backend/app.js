@@ -18,7 +18,7 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/api', conctactRoute)
 app.use('/api', protectedRoutes);
-app.use("/api/hero", heroRoutes);
+// app.use("/api/hero", heroRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {
