@@ -5,7 +5,7 @@ import Navbar from "./navbar";
 export default async function HomePage() {
     return (
         <>
-            <Navbar/>
+            {/* <Navbar/> */}
             <div style={{ textAlign: 'center', marginTop: '50px' }}>
                 <Hero/>
                 <Footer/>
