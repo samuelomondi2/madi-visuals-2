@@ -39,8 +39,8 @@ export default function Dashboard() {
       return;
     }
 
-    try {
-      const res = await fetch("https://madi-visuals-2.onrender.com/api/contact", {
+    try {  
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Failed to fetch messages");
@@ -73,7 +73,7 @@ export default function Dashboard() {
   const handleDelete = async (id: number) => {
     const token = getToken();
     try {
-      const res = await fetch(`https://madi-visuals-2.onrender.com/api/contact/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -91,7 +91,7 @@ export default function Dashboard() {
     const newStatus = currentStatus === "pending" ? "resolved" : "pending";
 
     try {
-      const res = await fetch(`https://madi-visuals-2.onrender.com/api/contact/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/${id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
