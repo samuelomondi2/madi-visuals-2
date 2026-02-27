@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import AdminHero from "../pages/components/admin-hero";
+import AdminHero from "./components/admin-hero";
 import React from "react";
 
 interface ContactMessage {
