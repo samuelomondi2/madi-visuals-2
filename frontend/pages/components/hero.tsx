@@ -9,12 +9,15 @@ type HeroContent = {
 async function getHeroContent(): Promise<HeroContent | null> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/hero`,
+      `${process.env.NEXT_PUBLIC_API_URL}/hero`,
       { cache: "no-store" }
     );
 
     if (!res.ok) return null;
-    return res.json();
+
+    const data = await res.json();
+
+    return data.hero_section;
   } catch {
     return null;
   }
