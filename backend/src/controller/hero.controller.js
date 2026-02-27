@@ -17,3 +17,12 @@ try {
   next(error);
 }
 };
+
+exports.updateHero = async (req, res, next) => {
+  try {
+    await heroService.updateHero(req.body);
+    res.status(200).json({ message: "Hero info updated successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
