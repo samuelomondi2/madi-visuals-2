@@ -100,7 +100,7 @@ export default function AdminHero() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-black text-white px-6 py-3 rounded"
+          className="bg-gray-700 px-3 py-1 rounded hover:opacity-90 transition"
         >
           {saving ? "Saving..." : "Save Changes"}
         </button>
