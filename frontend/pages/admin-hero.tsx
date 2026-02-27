@@ -11,6 +11,10 @@ type HeroContent = {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+if (!API_URL) {
+  console.error("NEXT_PUBLIC_API_URL is not defined");
+}
+
 export default function AdminHero() {
   const [hero, setHero] = useState<HeroContent | null>(null);
   const [loading, setLoading] = useState(true);
