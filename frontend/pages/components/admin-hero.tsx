@@ -19,7 +19,7 @@ export default function AdminHero() {
   useEffect(() => {
     async function fetchHero() {
       try {
-        const res = await fetch(`${API_URL}/hero`);
+        const res = await fetch(`${API_URL}/api/hero`);
         const data = await res.json();
         setHero(data.hero_section);
       } catch (err) {
@@ -49,7 +49,7 @@ export default function AdminHero() {
     try {
       setSaving(true);
 
-      await fetch(`${API_URL}/hero/${hero.id}`, {
+      await fetch(`${API_URL}/api/hero/${hero.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
