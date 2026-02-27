@@ -9,7 +9,7 @@ type HeroContent = {
 async function getHeroContent(): Promise<HeroContent | null> {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/hero`,
+      `${process.env.NEXT_PUBLIC_API_URL}/api/hero`,
       { cache: "no-store" }
     );
 
