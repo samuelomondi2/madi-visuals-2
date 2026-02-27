@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import AdminHero from "../pages/components/admin-hero";
 import React from "react";
 
 interface ContactMessage {
@@ -120,6 +121,7 @@ export default function Dashboard() {
 
   return (
     <div className="p-4 md:p-8 bg-black min-h-screen text-white">
+      <AdminHero/>
       <h2 className="text-2xl md:text-3xl font-bold mb-6 text-[#D4AF37]">
         Contact Messages Dashboard
       </h2>
