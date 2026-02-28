@@ -19,3 +19,9 @@ exports.insertFile = async (fileData) => {
   const [result] = await db.execute(query, values);
   return result.insertId;
 };
+
+
+exports.getAllFiles = async () => {
+    const [rows] = await db.execute("SELECT * FROM files ORDER BY created_at DESC");
+    return rows;
+  };

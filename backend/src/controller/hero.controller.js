@@ -18,12 +18,12 @@ try {
 }
 };
 
-exports.updateHero = async (req, res, next) => {
+exports.updateHero = async (req, res) => {
+  const { heroUrl } = req.body;
   try {
-    const { id } = req.params;
-    await heroService.updateHero({ id, ...req.body });
-    res.status(200).json({ message: "Updated successfully" });
-  } catch (error) {
-    next(error);
+    await db.execute("UPDATE hero SET url=? WHERE id=1", [heroUrl]);
+    res.status(200).json({ message: "Hero updated" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
