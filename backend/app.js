@@ -7,6 +7,8 @@ const authRoutes = require('./src/routes/auth.route');
 const protectedRoutes = require('./src/routes/protected.route');
 const conctactRoute = require('./src/routes/contact.route')
 const heroRoute = require("./src/routes/hero.route");
+const uploadRoutes = require("./src/controller/upload.controller");
+const errorHandler = require("./src/middleware/errorHandler");
 
 const app = express();
 
@@ -19,6 +21,8 @@ app.use('/auth', authRoutes);
 app.use('/api', conctactRoute)
 app.use('/api', protectedRoutes);
 app.use('/api', heroRoute);
+app.use('/api', uploadRoutes);
+app.use(errorHandler);
 
 // Global error handler
 app.use((err, req, res, next) => {
