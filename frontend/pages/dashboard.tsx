@@ -162,7 +162,6 @@ export default function Dashboard() {
   /* -------------------- UI -------------------- */
   return (
     <div className="p-4 md:p-8 bg-black min-h-screen text-white">
-      <AdminHero />
 
       <h1 className="text-3xl md:text-4xl font-bold mb-4 text-[#D4AF37]">Admin Dashboard</h1>
 
@@ -181,7 +180,7 @@ export default function Dashboard() {
           Media
         </button>
       </div>
-
+      <AdminHero />
       {/* Tab Content */}
       <div>
         {activeTab === "messages" && (
