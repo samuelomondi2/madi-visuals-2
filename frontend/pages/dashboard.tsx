@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AdminHero from "./admin-hero";
 import React from "react";
 
+
 interface ContactMessage {
   id: number;
   name: string;
@@ -16,7 +17,7 @@ interface ContactMessage {
   updatedAt: string;
 }
 
-export default function Dashboard() {
+export default async function Dashboard() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -104,38 +105,32 @@ export default function Dashboard() {
   }, []);
 
   /* -------------------- Actions -------------------- */
-  const handleUpload = async () => {
-  if (!uploadFile) return;
-  const formData = new FormData();
-  formData.append("file", uploadFile);
 
-  const token = getToken();
-  if (!token) {
-    setUploadMessage("Not authorized");
-    return;
-  }
-
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        // ✅ Do NOT set Content-Type for FormData
-      },
-      body: formData,
-    });
-
-    if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(errorData.message || "Upload failed");
+  const handleUpload = async (file: File) => {
+    const token = getToken();
+    if (!token) {
+      setUploadMessage("Not authorized");
+      return;
     }
-
-    const data = await res.json();
-    setUploadMessage(data.message || "Upload successful");
-    fetchMedia();
-    } catch (err: any) {
+  
+    try {
+      setUploadMessage("Uploading file...");
+  
+      const formData = new FormData();
+      formData.append("file", file);
+  
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+  
+      const data = await res.json();
+      setUploadMessage(data.message || "Upload successful");
+      fetchMedia();
+    } catch (err) {
       console.error(err);
-      setUploadMessage(err.message || "Failed to upload file");
+      setUploadMessage("Failed to upload file");
     }
   };
 
@@ -352,7 +347,14 @@ export default function Dashboard() {
                 className="p-2 bg-black border border-neutral-700 rounded"
               />
               <button
-                onClick={handleUpload}
+                onClick={() => {
+                  if (uploadFile) {
+                    // uploadFile is guaranteed to be a File here
+                    handleUpload(uploadFile);
+                  } else {
+                    setUploadMessage("No file selected");
+                  }
+                }}
                 className="bg-[#D4AF37] px-4 py-2 text-black rounded hover:opacity-90 transition"
               >
                 Upload
