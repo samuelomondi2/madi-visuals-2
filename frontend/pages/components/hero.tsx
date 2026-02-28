@@ -71,6 +71,7 @@ export default function Hero() {
               fill
               priority
               className="rounded-xl object-cover"
+              unoptimized // bypass Next.js image optimization
             />
           ) : (
             <Image
