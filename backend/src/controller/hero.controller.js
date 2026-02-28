@@ -1,4 +1,4 @@
-const heroService = require("../services/hero.service");
+const heroService = require("../services/hero.services");
 
 // Create
 exports.createHero = async (req, res, next) => {
