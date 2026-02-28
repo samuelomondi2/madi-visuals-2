@@ -13,6 +13,8 @@ exports.createHero = async (req, res, next) => {
 // Get
 exports.getHero = async (req, res) => {
   try {
+    res.set("Cache-Control", "no-store");
+
     const hero_section = await heroService.getHero();
 
     if (!hero_section) {
