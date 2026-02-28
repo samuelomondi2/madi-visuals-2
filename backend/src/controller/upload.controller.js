@@ -1,4 +1,5 @@
 const uploadService = require("../services/upload.service");
+const filesService = require("../services/file.service")
 
 exports.uploadFile = async (req, res) => {
   try {
@@ -35,6 +36,6 @@ exports.uploadFile = async (req, res) => {
 
 
 exports.getFiles = async (req, res) => {
-    const files = await fileModel.getAllFiles();
+    const files = await filesService.getAllFiles();
     res.json(files);
   };
