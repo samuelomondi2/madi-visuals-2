@@ -108,7 +108,7 @@ export default function Dashboard() {
     }
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
