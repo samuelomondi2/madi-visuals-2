@@ -97,7 +97,7 @@ export default function Dashboard() {
       .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
     return latestVideo?.url || null;
   };
-  
+
   useEffect(() => {
     fetchMessages();
     fetchMedia();
@@ -105,29 +105,37 @@ export default function Dashboard() {
 
   /* -------------------- Actions -------------------- */
   const handleUpload = async () => {
-    if (!uploadFile) return;
-    const formData = new FormData();
-    formData.append("file", uploadFile);
+  if (!uploadFile) return;
+  const formData = new FormData();
+  formData.append("file", uploadFile);
 
-    const token = getToken();
+  const token = getToken();
+  if (!token) {
+    setUploadMessage("Not authorized");
+    return;
+  }
 
-    if (!token) {
-      setUploadMessage("Not authorized");
-      return;
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        // ✅ Do NOT set Content-Type for FormData
+      },
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Upload failed");
     }
 
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-      const data = await res.json();
-      setUploadMessage(data.message || "Upload successful");
-      fetchMedia();
-    } catch (err) {
+    const data = await res.json();
+    setUploadMessage(data.message || "Upload successful");
+    fetchMedia();
+    } catch (err: any) {
       console.error(err);
-      setUploadMessage("Failed to upload file");
+      setUploadMessage(err.message || "Failed to upload file");
     }
   };
 
