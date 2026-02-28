@@ -202,126 +202,126 @@ export default function Dashboard() {
       <div>
         {activeTab === "hero" && <AdminHero />}
         {activeTab === "messages" && (
-  <>
-    {loading ? (
-      <p>Loading messages...</p>
-    ) : error ? (
-      <p className="text-red-500">{error}</p>
-    ) : messages.length === 0 ? (
-      <p>No messages yet.</p>
-    ) : (
-      <>
-        {/* Desktop Table */}
-        <div className="hidden sm:block overflow-x-auto rounded-lg border border-neutral-800 mb-6">
-          <table className="min-w-full table-fixed border-collapse">
-            <thead className="bg-[#2c2c2c] text-white">
-              <tr>
-                <th className="py-3 px-4 text-left rounded-tl-lg">Name</th>
-                <th className="py-3 px-4 text-left">Email</th>
-                <th className="py-3 px-4 text-left">Phone</th>
-                <th className="py-3 px-4 text-left">Message</th>
-                <th className="py-3 px-4 text-left">Status</th>
-                <th className="py-3 px-4 text-left">Date</th>
-                <th className="py-3 px-4 text-center rounded-tr-lg">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {messages.map((msg, idx) => (
-                <React.Fragment key={msg.id}>
-                  <tr className={idx % 2 === 0 ? "bg-black" : "bg-[#1a1a1a]"}>
-                    <td className="py-2 px-4 truncate max-w-xs">{msg.name}</td>
-                    <td className="py-2 px-4 truncate max-w-xs">{msg.email}</td>
-                    <td className="py-2 px-4 truncate max-w-xs">{msg.phone || "-"}</td>
-                    <td className="py-2 px-4 truncate max-w-xs">{msg.message}</td>
-                    <td className="py-2 px-4 capitalize">{msg.status}</td>
-                    <td className="py-2 px-4 whitespace-nowrap">{new Date(msg.createdAt).toLocaleString()}</td>
-                    <td className="py-2 px-4 text-center space-x-2">
-                      <button
-                        onClick={() => toggleStatus(msg.id, msg.status)}
-                        className="bg-[#D4AF37] text-black px-3 py-1 rounded hover:opacity-90 transition"
-                        aria-label={`Toggle status for message from ${msg.name}`}
-                      >
-                        {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
-                      </button>
-                      <button
-                        onClick={() => handleDeleteMessage(msg.id)}
-                        className="bg-red-600 px-3 py-1 rounded hover:opacity-90 transition"
-                        aria-label={`Delete message from ${msg.name}`}
-                      >
-                        Delete
-                      </button>
-                      <button
-                        onClick={() => handleViewToggle(msg.id)}
-                        className="bg-gray-700 px-3 py-1 rounded hover:opacity-90 transition"
-                        aria-label={`${viewId === msg.id ? "Hide" : "View"} details for message from ${msg.name}`}
-                      >
-                        {viewId === msg.id ? "Hide" : "View"}
-                      </button>
-                    </td>
-                  </tr>
-                  {viewId === msg.id && (
-                    <tr className={idx % 2 === 0 ? "bg-[#111]" : "bg-[#222]"}>
-                      <td colSpan={7} className="p-4 text-sm">
-                        <p><strong>Email:</strong> {msg.email}</p>
-                        <p><strong>Phone:</strong> {msg.phone || "-"}</p>
-                        <p><strong>Message:</strong> {msg.message}</p>
-                        <p><strong>Status:</strong> {msg.status}</p>
-                        <p><strong>Created At:</strong> {new Date(msg.createdAt).toLocaleString()}</p>
-                        <p><strong>Updated At:</strong> {new Date(msg.updatedAt).toLocaleString()}</p>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile Cards */}
-        <div className="sm:hidden flex flex-col space-y-4">
-          {messages.map((msg) => (
-            <div key={msg.id} className="bg-[#1a1a1a] rounded p-4 shadow-md">
-              <p><strong>Name:</strong> {msg.name}</p>
-              <p><strong>Email:</strong> {msg.email}</p>
-              <p><strong>Phone:</strong> {msg.phone || "-"}</p>
-              <p><strong>Message:</strong> {msg.message}</p>
-              <p><strong>Status:</strong> {msg.status}</p>
-              <p><strong>Date:</strong> {new Date(msg.createdAt).toLocaleString()}</p>
-
-              <div className="mt-3 flex space-x-2">
-                <button
-                  onClick={() => toggleStatus(msg.id, msg.status)}
-                  className="bg-[#D4AF37] text-black px-3 py-1 rounded hover:opacity-90 transition flex-1"
-                  aria-label={`Toggle status for message from ${msg.name}`}
-                >
-                  {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
-                </button>
-                <button
-                  onClick={() => handleDeleteMessage(msg.id)}
-                  className="bg-red-600 px-3 py-1 rounded hover:opacity-90 transition flex-1"
-                  aria-label={`Delete message from ${msg.name}`}
-                >
-                  Delete
-                </button>
-                <button
-                  onClick={() => handleViewToggle(msg.id)}
-                  className="bg-gray-700 px-3 py-1 rounded hover:opacity-90 transition flex-1"
-                  aria-label={`${viewId === msg.id ? "Hide" : "View"} details for message from ${msg.name}`}
-                >
-                  {viewId === msg.id ? "Hide" : "View"}
-                </button>
-              </div>
-
-              {viewId === msg.id && (
-                <div className="mt-3 bg-[#111] p-3 rounded text-sm space-y-1">
-                  <p><strong>Updated At:</strong> {new Date(msg.updatedAt).toLocaleString()}</p>
+          <>
+            {loading ? (
+              <p>Loading messages...</p>
+            ) : error ? (
+              <p className="text-red-500">{error}</p>
+            ) : messages.length === 0 ? (
+              <p>No messages yet.</p>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden sm:block overflow-x-auto rounded-lg border border-neutral-800 mb-6">
+                  <table className="min-w-full table-fixed border-collapse">
+                    <thead className="bg-[#2c2c2c] text-white">
+                      <tr>
+                        <th className="py-3 px-4 text-left rounded-tl-lg">Name</th>
+                        <th className="py-3 px-4 text-left">Email</th>
+                        <th className="py-3 px-4 text-left">Phone</th>
+                        <th className="py-3 px-4 text-left">Message</th>
+                        <th className="py-3 px-4 text-left">Status</th>
+                        <th className="py-3 px-4 text-left">Date</th>
+                        <th className="py-3 px-4 text-center rounded-tr-lg">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {messages.map((msg, idx) => (
+                        <React.Fragment key={msg.id}>
+                          <tr className={idx % 2 === 0 ? "bg-black" : "bg-[#1a1a1a]"}>
+                            <td className="py-2 px-4 truncate max-w-xs">{msg.name}</td>
+                            <td className="py-2 px-4 truncate max-w-xs">{msg.email}</td>
+                            <td className="py-2 px-4 truncate max-w-xs">{msg.phone || "-"}</td>
+                            <td className="py-2 px-4 truncate max-w-xs">{msg.message}</td>
+                            <td className="py-2 px-4 capitalize">{msg.status}</td>
+                            <td className="py-2 px-4 whitespace-nowrap">{new Date(msg.createdAt).toLocaleString()}</td>
+                            <td className="py-2 px-4 text-center space-x-2">
+                              <button
+                                onClick={() => toggleStatus(msg.id, msg.status)}
+                                className="bg-[#D4AF37] text-black px-3 py-1 rounded hover:opacity-90 transition"
+                                aria-label={`Toggle status for message from ${msg.name}`}
+                              >
+                                {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteMessage(msg.id)}
+                                className="bg-red-600 px-3 py-1 rounded hover:opacity-90 transition"
+                                aria-label={`Delete message from ${msg.name}`}
+                              >
+                                Delete
+                              </button>
+                              <button
+                                onClick={() => handleViewToggle(msg.id)}
+                                className="bg-gray-700 px-3 py-1 rounded hover:opacity-90 transition"
+                                aria-label={`${viewId === msg.id ? "Hide" : "View"} details for message from ${msg.name}`}
+                              >
+                                {viewId === msg.id ? "Hide" : "View"}
+                              </button>
+                            </td>
+                          </tr>
+                          {viewId === msg.id && (
+                            <tr className={idx % 2 === 0 ? "bg-[#111]" : "bg-[#222]"}>
+                              <td colSpan={7} className="p-4 text-sm">
+                                <p><strong>Email:</strong> {msg.email}</p>
+                                <p><strong>Phone:</strong> {msg.phone || "-"}</p>
+                                <p><strong>Message:</strong> {msg.message}</p>
+                                <p><strong>Status:</strong> {msg.status}</p>
+                                <p><strong>Created At:</strong> {new Date(msg.createdAt).toLocaleString()}</p>
+                                <p><strong>Updated At:</strong> {new Date(msg.updatedAt).toLocaleString()}</p>
+                              </td>
+                            </tr>
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </>
-    )}
+
+                {/* Mobile Cards */}
+                <div className="sm:hidden flex flex-col space-y-4">
+                  {messages.map((msg) => (
+                    <div key={msg.id} className="bg-[#1a1a1a] rounded p-4 shadow-md">
+                      <p><strong>Name:</strong> {msg.name}</p>
+                      <p><strong>Email:</strong> {msg.email}</p>
+                      <p><strong>Phone:</strong> {msg.phone || "-"}</p>
+                      <p><strong>Message:</strong> {msg.message}</p>
+                      <p><strong>Status:</strong> {msg.status}</p>
+                      <p><strong>Date:</strong> {new Date(msg.createdAt).toLocaleString()}</p>
+
+                      <div className="mt-3 flex space-x-2">
+                        <button
+                          onClick={() => toggleStatus(msg.id, msg.status)}
+                          className="bg-[#D4AF37] text-black px-3 py-1 rounded hover:opacity-90 transition flex-1"
+                          aria-label={`Toggle status for message from ${msg.name}`}
+                        >
+                          {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMessage(msg.id)}
+                          className="bg-red-600 px-3 py-1 rounded hover:opacity-90 transition flex-1"
+                          aria-label={`Delete message from ${msg.name}`}
+                        >
+                          Delete
+                        </button>
+                        <button
+                          onClick={() => handleViewToggle(msg.id)}
+                          className="bg-gray-700 px-3 py-1 rounded hover:opacity-90 transition flex-1"
+                          aria-label={`${viewId === msg.id ? "Hide" : "View"} details for message from ${msg.name}`}
+                        >
+                          {viewId === msg.id ? "Hide" : "View"}
+                        </button>
+                      </div>
+
+                      {viewId === msg.id && (
+                        <div className="mt-3 bg-[#111] p-3 rounded text-sm space-y-1">
+                          <p><strong>Updated At:</strong> {new Date(msg.updatedAt).toLocaleString()}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
   </>
 )}
 
