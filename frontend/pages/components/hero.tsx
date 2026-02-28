@@ -14,6 +14,8 @@ type HeroContent = {
 export default function Hero() {
   const [content, setContent] = useState<HeroContent | null>(null);
 
+  console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
+
   useEffect(() => {
     async function fetchHeroContent() {
       try {
