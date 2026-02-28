@@ -20,17 +20,14 @@ export default function Hero() {
     async function fetchHeroContent() {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hero`);
-        if (!res.ok) {
-          setContent(null);
-          return;
-        }
         const data = await res.json();
-        setContent(data.hero);
-      } catch {
-        setContent(null);
+        console.log("Hero API Response:", data);
+        setContent(data.hero_section);
+      } catch (err) {
+        console.error("Hero fetch failed:", err);
       }
     }
-
+  
     fetchHeroContent();
   }, []);
 
