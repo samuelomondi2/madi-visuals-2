@@ -47,3 +47,38 @@ exports.updateHeroImage = async (id, fileId) => {
     [fileId, id]
   );
 };
+
+exports.updateHeroWithLatestImage = async () => {
+
+  const [heroRows] = await db.execute(`
+    SELECT id 
+    FROM hero_section 
+    ORDER BY updated_at DESC 
+    LIMIT 1
+  `);
+
+  if (!heroRows.length) {
+    throw new Error("No hero found");
+  }
+
+  const heroId = heroRows[0].id;
+
+  const [fileRows] = await db.execute(`
+    SELECT id 
+    FROM files 
+    WHERE file_type = 'image'
+    ORDER BY created_at DESC 
+    LIMIT 1
+  `);
+
+  if (!fileRows.length) {
+    throw new Error("No image file found");
+  }
+
+  const fileId = fileRows[0].id;
+
+  await db.execute(
+    `UPDATE hero_section SET hero_file_id = ? WHERE id = ?`,
+    [fileId, heroId]
+  );
+};
