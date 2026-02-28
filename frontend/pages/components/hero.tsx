@@ -41,6 +41,8 @@ export default function Hero() {
   // Normalize the image URL for Next.js
   const heroImageUrl = content.hero_image_url || "/hero.webp";
 
+  console.log("Hero Image URL:", heroImageUrl);
+
   return (
     <section className="bg-black">
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 py-24 md:grid-cols-2">
@@ -71,7 +73,7 @@ export default function Hero() {
               fill
               priority
               className="rounded-xl object-cover"
-              unoptimized // bypass Next.js image optimization
+              // unoptimized // bypass Next.js image optimization
             />
           ) : (
             <Image

@@ -25,7 +25,7 @@ app.use('/api', heroRoute);
 
 // Serve static files
 // Host Media on Your Own Server (Node.js Static Folder)
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use("/api/files", uploadRoutes);
 
 app.use(errorHandler);

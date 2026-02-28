@@ -89,6 +89,15 @@ export default function Dashboard() {
     }
   };
 
+  const fetchLatestVideo = async () => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files`);
+    const data = await res.json();
+    const latestVideo = data
+      .filter((file: any) => file.file_type === "video")
+      .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+    return latestVideo?.url || null;
+  };
+  
   useEffect(() => {
     fetchMessages();
     fetchMedia();
