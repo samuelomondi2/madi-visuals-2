@@ -1,29 +1,61 @@
-const heroService = require("../services/hero.services");
+const heroService = require("../services/hero.service");
 
-exports.hero = async (req, res, next) => {
+// Create
+exports.createHero = async (req, res, next) => {
   try {
-      await heroService.hero(req.body);
-      res.status(201).json({ message: 'Hero info created successfully' })
+    await heroService.createHero(req.body);
+    res.status(201).json({ message: "Hero created successfully" });
   } catch (error) {
-      next(error)
+    next(error);
   }
-}
-
-exports.getHero = async (req, res, next) => {
-try {
-  const hero_section = await heroService.getHero();
-  res.status(200).json({ hero_section });
-} catch (error) {
-  next(error);
-}
 };
 
-exports.updateHero = async (req, res) => {
-  const { heroUrl } = req.body;
+// Get
+exports.getHero = async (req, res, next) => {
   try {
-    await db.execute("UPDATE hero SET url=? WHERE id=1", [heroUrl]);
-    res.status(200).json({ message: "Hero updated" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const hero = await heroService.getHero();
+    res.status(200).json({ hero });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update text content
+exports.updateHeroContent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await heroService.updateHeroContent({
+      id,
+      ...req.body,
+    });
+
+    res.json({ message: "Hero content updated successfully" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to update hero content",
+      error: error.message,
+    });
+  }
+};
+
+// Update image
+exports.updateHeroImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { fileId } = req.body;
+
+    if (!fileId) {
+      return res.status(400).json({ message: "fileId is required" });
+    }
+
+    await heroService.updateHeroImage(id, fileId);
+
+    res.json({ message: "Hero image updated successfully" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to update hero image",
+      error: error.message,
+    });
   }
 };
