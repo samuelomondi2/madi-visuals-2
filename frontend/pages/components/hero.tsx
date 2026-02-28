@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
 type HeroContent = {
@@ -34,10 +33,8 @@ export default function Hero() {
   if (!content) return null;
 
   const spaceIndex = content.name.indexOf(" ");
-
   const firstName =
     spaceIndex === -1 ? content.name : content.name.slice(0, spaceIndex);
-
   const lastName =
     spaceIndex === -1 ? "" : content.name.slice(spaceIndex + 1);
 
@@ -65,23 +62,11 @@ export default function Hero() {
 
         {/* Right Image */}
         <div className="relative h-[420px] md:h-[600px] md:-mr-24">
-          {content.hero_image_url ? (
-            <Image
-              src={content.hero_image_url}
-              alt={`${content.name} hero image`}
-              fill
-              priority
-              className="rounded-xl object-cover"
-            />
-          ) : (
-            <Image
-              src="/hero.webp" // fallback
-              alt="Default hero image"
-              fill
-              priority
-              className="rounded-xl object-cover"
-            />
-          )}
+          <img
+            src={content.hero_image_url || "/hero.webp"}
+            alt={`${content.name} hero image`}
+            className="rounded-xl object-cover w-full h-full"
+          />
         </div>
 
       </div>
