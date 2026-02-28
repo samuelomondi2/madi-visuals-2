@@ -1,44 +1,45 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 type HeroContent = {
   title: string;
-  name: string; 
+  name: string;
   description: string;
 };
 
-async function getHeroContent(): Promise<HeroContent | null> {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/hero`,
-      { cache: "no-store" }
-    );
+export default function Hero() {
+  const [content, setContent] = useState<HeroContent | null>(null);
 
-    if (!res.ok) return null;
+  useEffect(() => {
+    async function fetchHeroContent() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hero`);
+        if (!res.ok) {
+          setContent(null);
+          return;
+        }
+        const data = await res.json();
+        setContent(data.hero_section);
+      } catch {
+        setContent(null);
+      }
+    }
 
-    const data = await res.json();
+    fetchHeroContent();
+  }, []);
 
-    return data.hero_section;
-  } catch {
-    return null;
-  }
-}
-
-export default async function Hero() {
-  const content = await getHeroContent();
   if (!content) return null;
 
   const spaceIndex = content.name.indexOf(" ");
 
   const firstName =
-    spaceIndex === -1
-      ? content.name
-      : content.name.slice(0, spaceIndex);
+    spaceIndex === -1 ? content.name : content.name.slice(0, spaceIndex);
 
   const lastName =
-    spaceIndex === -1
-      ? ""
-      : content.name.slice(spaceIndex + 1);
-  
+    spaceIndex === -1 ? "" : content.name.slice(spaceIndex + 1);
+
   return (
     <section className="bg-black">
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-14 px-6 py-24 md:grid-cols-2">
@@ -46,7 +47,8 @@ export default async function Hero() {
         {/* Left Content */}
         <div>
           <h1 className="max-w-xl text-4xl font-semibold leading-tight text-white md:text-5xl">
-            {content.title}{" "}<span className="text-[#D4AF37]">{firstName}</span>
+            {content.title}{" "}
+            <span className="text-[#D4AF37]">{firstName}</span>
             {lastName && (
               <>
                 <br />

@@ -12,7 +12,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const res = await fetch("https://madi-visuals-2.onrender.com/auth/login", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -27,7 +27,7 @@ export default function LoginPage() {
         return;
       }
 
-      // Save JWT to localStorage (or cookies)
+      // Save JWT to localStorage (or cookies) 
       localStorage.setItem("token", data.token);
 
       // Redirect to protected page
