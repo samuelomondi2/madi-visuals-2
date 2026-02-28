@@ -10,6 +10,6 @@ router.get("/hero", controller.getHero);
 router.put("/hero/:id", controller.updateHeroContent);
 
 // Update image only
-router.patch("/hero/:id/image", controller.updateHeroImage);
+router.patch("/hero/image/latest", controller.updateHeroImage);
 
 module.exports = router;

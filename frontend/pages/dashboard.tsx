@@ -387,22 +387,20 @@ export default function Dashboard() {
                         onClick={async () => {
                           const token = getToken();
                           if (!token) return;
-
+                        
                           try {
                             const res = await fetch(
-                              `${process.env.NEXT_PUBLIC_API_URL}/api/hero/1/image`,
+                              `${process.env.NEXT_PUBLIC_API_URL}/api/hero/image/latest`,
                               {
                                 method: "PATCH",
                                 headers: {
                                   Authorization: `Bearer ${token}`,
-                                  "Content-Type": "application/json",
                                 },
-                                body: JSON.stringify({ fileId: file.id }),
                               }
                             );
-
+                        
                             if (!res.ok) throw new Error("Failed to set hero");
-
+                        
                             alert("Hero updated successfully");
                           } catch (err) {
                             console.error(err);

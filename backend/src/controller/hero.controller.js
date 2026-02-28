@@ -27,42 +27,48 @@ exports.getHero = async (req, res) => {
 // Update text content
 exports.updateHeroImage = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { fileId } = req.body;
+    // Get latest hero
+    const [heroRows] = await db.execute(`
+      SELECT id 
+      FROM hero_section 
+      ORDER BY updated_at DESC 
+      LIMIT 1
+    `);
 
-    console.log("PATCH /hero/:id/image called");
-    console.log("Hero ID:", id, "File ID:", fileId);
-
-    if (!fileId) {
-      return res.status(400).json({ message: "fileId is required" });
-    }
-
-    const [heroRows] = await db.execute(
-      "SELECT * FROM hero_section WHERE id = ?",
-      [id]
-    );
     if (!heroRows.length) {
-      return res.status(404).json({ message: "Hero not found" });
+      return res.status(404).json({ message: "No hero found" });
     }
 
-    const [fileRows] = await db.execute(
-      "SELECT * FROM files WHERE id = ?",
-      [fileId]
-    );
+    const heroId = heroRows[0].id;
+
+    // Get latest uploaded file (image only)
+    const [fileRows] = await db.execute(`
+      SELECT id 
+      FROM files 
+      WHERE file_type = 'image'
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `);
+
     if (!fileRows.length) {
-      return res.status(404).json({ message: "File not found" });
+      return res.status(404).json({ message: "No image file found" });
     }
 
+    const fileId = fileRows[0].id;
+
+    // Update hero_section
     await db.execute(
-      "UPDATE hero_section SET hero_file_id = ? WHERE id = ?",
-      [fileId, id]
+      `UPDATE hero_section 
+       SET hero_file_id = ? 
+       WHERE id = ?`,
+      [fileId, heroId]
     );
 
-    res.json({ message: "Hero image updated successfully" });
+    res.json({ message: "Hero image updated using latest uploaded image" });
 
   } catch (error) {
-    console.error("Error in updateHeroImage:", error);
-    res.status(500).json({ message: "Failed to update hero image", error: error.message });
+    console.error(error);
+    res.status(500).json({ message: "Failed to update hero image" });
   }
 };
 
