@@ -17,4 +17,4 @@ async function uploadController(req, res) {
   }
 }
 
-module.exports = { uploadController };
+module.exports = uploadController;
