@@ -3,13 +3,13 @@ const controller = require("../controller/hero.controller");
 
 const router = express.Router();
 
-router.post("/", controller.createHero);
-router.get("/", controller.getHero);
+router.post("/hero", controller.createHero);
+router.get("/hero", controller.getHero);
 
 // Update text
-router.put("/:id", controller.updateHeroContent);
+router.put("/hero/:id", controller.updateHeroContent);
 
 // Update image only
-router.patch("/:id/image", controller.updateHeroImage);
+router.patch("/hero/:id/image", controller.updateHeroImage);
 
 module.exports = router;
