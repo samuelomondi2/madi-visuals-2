@@ -4,9 +4,11 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 type HeroContent = {
+  id: number;
   title: string;
   name: string;
   description: string;
+  hero_image_url: string | null;
 };
 
 export default function Hero() {
@@ -21,7 +23,7 @@ export default function Hero() {
           return;
         }
         const data = await res.json();
-        setContent(data.hero_section);
+        setContent(data.hero);
       } catch {
         setContent(null);
       }
@@ -64,13 +66,13 @@ export default function Hero() {
 
         {/* Right Image */}
         <div className="relative h-[420px] md:h-[600px] md:-mr-24">
-          <Image
-            src="/hero.webp"
-            alt="Madi Visuals photographer holding camera"
-            fill
-            priority
-            className="rounded-xl object-cover"
-          />
+        <Image
+          src={content.hero_image_url || "/hero.webp"}
+          alt="Hero image"
+          fill
+          priority
+          className="rounded-xl object-cover"
+        />
         </div>
 
       </div>
