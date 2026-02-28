@@ -387,7 +387,7 @@ export default function Dashboard() {
                         onClick={async () => {
                           const token = getToken();
                           if (!token) return;
-                        
+
                           try {
                             const res = await fetch(
                               `${process.env.NEXT_PUBLIC_API_URL}/api/hero/1/image`,
@@ -400,16 +400,15 @@ export default function Dashboard() {
                                 body: JSON.stringify({ fileId: file.id }),
                               }
                             );
-                        
+
                             if (!res.ok) throw new Error("Failed to set hero");
-                        
+
                             alert("Hero updated successfully");
                           } catch (err) {
                             console.error(err);
                             alert("Failed to set hero");
                           }
                         }}
-                        className="bg-[#D4AF37] px-2 py-1 text-xs rounded hover:opacity-90"
                       >
                         Set Hero
                       </button>

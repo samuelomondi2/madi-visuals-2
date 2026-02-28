@@ -8,7 +8,7 @@ type HeroContent = {
   title: string;
   name: string;
   description: string;
-  hero_image_url: string | null;
+  hero_image_url?: string | null;
 };
 
 export default function Hero() {
@@ -66,13 +66,23 @@ export default function Hero() {
 
         {/* Right Image */}
         <div className="relative h-[420px] md:h-[600px] md:-mr-24">
-        <Image
-          src={content.hero_image_url || "/hero.webp"}
-          alt="Hero image"
-          fill
-          priority
-          className="rounded-xl object-cover"
-        />
+          {content.hero_image_url ? (
+            <Image
+              src={content.hero_image_url}
+              alt={`${content.name} hero image`}
+              fill
+              priority
+              className="rounded-xl object-cover"
+            />
+          ) : (
+            <Image
+              src="/hero.webp" // fallback
+              alt="Default hero image"
+              fill
+              priority
+              className="rounded-xl object-cover"
+            />
+          )}
         </div>
 
       </div>
