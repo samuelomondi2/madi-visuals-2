@@ -17,7 +17,7 @@ interface ContactMessage {
   updatedAt: string;
 }
 
-export default async function Dashboard() {
+export default function Dashboard() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
