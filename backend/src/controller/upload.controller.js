@@ -32,3 +32,9 @@ exports.uploadFile = async (req, res) => {
     });
   }
 };
+
+
+exports.getFiles = async (req, res) => {
+    const files = await fileModel.getAllFiles();
+    res.json(files);
+  };
