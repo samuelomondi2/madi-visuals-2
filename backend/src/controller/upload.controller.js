@@ -1,20 +1,34 @@
-const { uploadImage, getOptimizedUrl } = require('../services/cloudinary.service');
+const uploadService = require("../services/upload.service");
 
-async function uploadController(req, res) {
+exports.uploadFile = async (req, res) => {
   try {
-    if (!req.body.imageUrl) {
-      return res.status(400).json({ message: 'No image URL provided' });
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const publicId = `uploads/${Date.now()}`;
-    const result = await uploadImage(req.body.imageUrl, publicId);
+    const { url, fileType } = uploadService.generateFileUrl(req, req.file);
 
-    const optimizedUrl = getOptimizedUrl(publicId, { width: 500, height: 500, crop: 'auto', gravity: 'auto' });
+    const fileData = {
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      fileType,
+      url,
+    };
 
-    return res.json({ uploaded: result, optimizedUrl });
+    const fileId = await uploadService.saveFileMetadata(fileData);
+
+    return res.status(201).json({
+      message: "File uploaded & saved to DB",
+      id: fileId,
+      url,
+    });
+
   } catch (error) {
-    return res.status(500).json({ message: 'Upload failed', error: error.message });
+    return res.status(500).json({
+      message: "Upload failed",
+      error: error.message,
+    });
   }
-}
-
-module.exports = uploadController;
+};
