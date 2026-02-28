@@ -17,7 +17,7 @@ exports.getHero = async () => {
       h.title,
       h.name,
       h.description,
-      f.url AS image
+      f.url AS hero_image_url
     FROM hero_section h
     LEFT JOIN files f 
       ON h.hero_file_id = f.id
@@ -25,7 +25,7 @@ exports.getHero = async () => {
     LIMIT 1
   `);
 
-  return rows[0];
+  return rows[0] || null;
 };
 
 // Update hero TEXT
