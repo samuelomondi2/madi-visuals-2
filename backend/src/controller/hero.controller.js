@@ -25,21 +25,44 @@ exports.getHero = async (req, res) => {
 };
 
 // Update text content
-exports.updateHeroContent = async (req, res) => {
+exports.updateHeroImage = async (req, res) => {
   try {
     const { id } = req.params;
+    const { fileId } = req.body;
 
-    await heroService.updateHeroContent({
-      id,
-      ...req.body,
-    });
+    console.log("PATCH /hero/:id/image called");
+    console.log("Hero ID:", id, "File ID:", fileId);
 
-    res.json({ message: "Hero content updated successfully" });
+    if (!fileId) {
+      return res.status(400).json({ message: "fileId is required" });
+    }
+
+    const [heroRows] = await db.execute(
+      "SELECT * FROM hero_section WHERE id = ?",
+      [id]
+    );
+    if (!heroRows.length) {
+      return res.status(404).json({ message: "Hero not found" });
+    }
+
+    const [fileRows] = await db.execute(
+      "SELECT * FROM files WHERE id = ?",
+      [fileId]
+    );
+    if (!fileRows.length) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    await db.execute(
+      "UPDATE hero_section SET hero_file_id = ? WHERE id = ?",
+      [fileId, id]
+    );
+
+    res.json({ message: "Hero image updated successfully" });
+
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to update hero content",
-      error: error.message,
-    });
+    console.error("Error in updateHeroImage:", error);
+    res.status(500).json({ message: "Failed to update hero image", error: error.message });
   }
 };
 
