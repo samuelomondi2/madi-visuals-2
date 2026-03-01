@@ -1,11 +1,12 @@
 const heroVideoService = require("../controller/herovideo.controller");
 
-exports.createHeroVideo = async (req, res, next) => {
+exports.createHeroVideo = async (req, res) => {
     try {
       await heroVideoService.createHeroVideo(req.body);
       res.status(201).json({ message: "Hero Video URL created successfully" });
     } catch (error) {
-      next(error);
+      console.error(error);
+      res.status(500).json({ message: error.message });
     }
 };
 

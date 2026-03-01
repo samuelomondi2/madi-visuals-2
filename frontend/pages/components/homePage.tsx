@@ -29,6 +29,8 @@ export default function HomePage() {
         if (!res.ok) return;
   
         const data = await res.json();
+
+        console.log("Degugging:", data)
   
         if (data?.hero_video_url) {
           setHeroVideo((prev) => {

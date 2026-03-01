@@ -93,7 +93,7 @@ export default function Dashboard() {
 
   const fetchCurrentHero = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hero/current`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hero/hero-video`);
       if (!res.ok) throw new Error("Failed to fetch current hero");
       const data = await res.json();
       setCurrentHero(data);
@@ -351,7 +351,7 @@ export default function Dashboard() {
                   if (!token) return setUploadMessage("Not authorized");
 
                   try {
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/url`, {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hero-video`, {
                       method: "POST",
                       headers: {
                         "Content-Type": "application/json",
