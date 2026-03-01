@@ -9,6 +9,7 @@ const protectedRoutes = require('./src/routes/protected.route');
 const conctactRoute = require('./src/routes/contact.route')
 const heroRoute = require("./src/routes/hero.route");
 const uploadRoutes = require("./src/routes/upload.route");
+const heroVideoRoutes = require("./src/routes/herovideo.route");
 const errorHandler = require("./src/middleware/errorHandler");
 
 const app = express();
@@ -22,6 +23,7 @@ app.use('/auth', authRoutes);
 app.use('/api', conctactRoute)
 app.use('/api', protectedRoutes);
 app.use('/api', heroRoute);
+app.use('/api', heroVideoRoutes);
 
 // Serve static files
 // Host Media on Your Own Server (Node.js Static Folder)
