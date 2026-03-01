@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import AdminHero from "./admin-hero";
 import React from "react";
 
-
 interface ContactMessage {
   id: number;
   name: string;
@@ -28,6 +27,8 @@ export default function Dashboard() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadMessage, setUploadMessage] = useState("");
   const [activeTab, setActiveTab] = useState<"messages" | "media" | "hero">("messages");
+  const [videoUrlInput, setVideoUrlInput] = useState<string>("");
+  const [currentHero, setCurrentHero] = useState<{ type: "image" | "video"; url: string } | null>(null);
   const router = useRouter();
 
   const getToken = () =>
@@ -90,18 +91,21 @@ export default function Dashboard() {
     }
   };
 
-  const fetchLatestVideo = async () => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files`);
-    const data = await res.json();
-    const latestVideo = data
-      .filter((file: any) => file.file_type === "video")
-      .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
-    return latestVideo?.url || null;
+  const fetchCurrentHero = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hero/current`);
+      if (!res.ok) throw new Error("Failed to fetch current hero");
+      const data = await res.json();
+      setCurrentHero(data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
     fetchMessages();
     fetchMedia();
+    fetchCurrentHero();
   }, []);
 
   /* -------------------- Actions -------------------- */
@@ -131,6 +135,39 @@ export default function Dashboard() {
     } catch (err) {
       console.error(err);
       setUploadMessage("Failed to upload file");
+    }
+  };
+
+  const handleHeroVideoURL = async (videoUrl: string) => {
+    const token = getToken();
+    if (!token) {
+      setUploadMessage("Not authorized");
+      return;
+    }
+  
+    try {
+      setUploadMessage("Updating hero video...");
+  
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/hero-video`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ url: videoUrl }),
+        }
+      );
+  
+      if (!res.ok) throw new Error("Failed to update");
+  
+      const data = await res.json();
+  
+      setUploadMessage(data.message || "Hero video updated ✅");
+    } catch (err) {
+      console.error(err);
+      setUploadMessage("Failed to update hero video ❌");
     }
   };
 
@@ -210,9 +247,13 @@ export default function Dashboard() {
           Media
         </button>
       </div>
+
       {/* Tab Content */}
       <div>
-        {activeTab === "hero" && <AdminHero />}
+        {/* Hero Tab */}
+        {activeTab === "hero" && <AdminHero hero={currentHero} />}
+
+        {/* Messages Tab */}
         {activeTab === "messages" && (
           <>
             {loading ? (
@@ -251,115 +292,85 @@ export default function Dashboard() {
                               <button
                                 onClick={() => toggleStatus(msg.id, msg.status)}
                                 className="bg-[#D4AF37] text-black px-3 py-1 rounded hover:opacity-90 transition"
-                                aria-label={`Toggle status for message from ${msg.name}`}
                               >
                                 {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
                               </button>
                               <button
                                 onClick={() => handleDeleteMessage(msg.id)}
                                 className="bg-red-600 px-3 py-1 rounded hover:opacity-90 transition"
-                                aria-label={`Delete message from ${msg.name}`}
                               >
                                 Delete
                               </button>
                               <button
                                 onClick={() => handleViewToggle(msg.id)}
                                 className="bg-gray-700 px-3 py-1 rounded hover:opacity-90 transition"
-                                aria-label={`${viewId === msg.id ? "Hide" : "View"} details for message from ${msg.name}`}
                               >
                                 {viewId === msg.id ? "Hide" : "View"}
                               </button>
                             </td>
                           </tr>
-                          {viewId === msg.id && (
-                            <tr className={idx % 2 === 0 ? "bg-[#111]" : "bg-[#222]"}>
-                              <td colSpan={7} className="p-4 text-sm">
-                                <p><strong>Email:</strong> {msg.email}</p>
-                                <p><strong>Phone:</strong> {msg.phone || "-"}</p>
-                                <p><strong>Message:</strong> {msg.message}</p>
-                                <p><strong>Status:</strong> {msg.status}</p>
-                                <p><strong>Created At:</strong> {new Date(msg.createdAt).toLocaleString()}</p>
-                                <p><strong>Updated At:</strong> {new Date(msg.updatedAt).toLocaleString()}</p>
-                              </td>
-                            </tr>
-                          )}
                         </React.Fragment>
                       ))}
                     </tbody>
                   </table>
                 </div>
-
-                {/* Mobile Cards */}
-                <div className="sm:hidden flex flex-col space-y-4">
-                  {messages.map((msg) => (
-                    <div key={msg.id} className="bg-[#1a1a1a] rounded p-4 shadow-md">
-                      <p><strong>Name:</strong> {msg.name}</p>
-                      <p><strong>Email:</strong> {msg.email}</p>
-                      <p><strong>Phone:</strong> {msg.phone || "-"}</p>
-                      <p><strong>Message:</strong> {msg.message}</p>
-                      <p><strong>Status:</strong> {msg.status}</p>
-                      <p><strong>Date:</strong> {new Date(msg.createdAt).toLocaleString()}</p>
-
-                      <div className="mt-3 flex space-x-2">
-                        <button
-                          onClick={() => toggleStatus(msg.id, msg.status)}
-                          className="bg-[#D4AF37] text-black px-3 py-1 rounded hover:opacity-90 transition flex-1"
-                          aria-label={`Toggle status for message from ${msg.name}`}
-                        >
-                          {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteMessage(msg.id)}
-                          className="bg-red-600 px-3 py-1 rounded hover:opacity-90 transition flex-1"
-                          aria-label={`Delete message from ${msg.name}`}
-                        >
-                          Delete
-                        </button>
-                        <button
-                          onClick={() => handleViewToggle(msg.id)}
-                          className="bg-gray-700 px-3 py-1 rounded hover:opacity-90 transition flex-1"
-                          aria-label={`${viewId === msg.id ? "Hide" : "View"} details for message from ${msg.name}`}
-                        >
-                          {viewId === msg.id ? "Hide" : "View"}
-                        </button>
-                      </div>
-
-                      {viewId === msg.id && (
-                        <div className="mt-3 bg-[#111] p-3 rounded text-sm space-y-1">
-                          <p><strong>Updated At:</strong> {new Date(msg.updatedAt).toLocaleString()}</p>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
               </>
             )}
-  </>
-)}
+          </>
+        )}
 
+        {/* Media Tab */}
         {activeTab === "media" && (
           <>
             {/* Upload Section */}
-            <div className="flex flex-col md:flex-row items-start gap-4 mb-6">
+            <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
               <input
                 type="file"
+                accept="image/*,video/*"
                 onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                className="p-2 bg-black border border-neutral-700 rounded"
+                className="w-full md:w-auto p-2 bg-neutral-900 text-white border border-neutral-700 rounded"
               />
               <button
-                onClick={() => {
-                  if (uploadFile) {
-                    // uploadFile is guaranteed to be a File here
-                    handleUpload(uploadFile);
-                  } else {
-                    setUploadMessage("No file selected");
+                onClick={() => uploadFile && handleUpload(uploadFile)}
+                className="bg-[#D4AF37] text-black px-4 py-2 rounded hover:opacity-90 transition"
+              >
+                Upload File
+              </button>
+
+              <input
+                type="text"
+                placeholder="Enter video URL"
+                value={videoUrlInput}
+                onChange={(e) => setVideoUrlInput(e.target.value)}
+                className="w-full md:w-auto p-2 bg-neutral-900 text-white border border-neutral-700 rounded"
+              />
+              <button
+                onClick={async () => {
+                  if (!videoUrlInput) return setUploadMessage("No URL provided");
+                  const token = getToken();
+                  if (!token) return setUploadMessage("Not authorized");
+
+                  try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/url`, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                      },
+                      body: JSON.stringify({ url: videoUrlInput, type: "video" }),
+                    });
+                    const data = await res.json();
+                    setUploadMessage(data.message || "Video URL added successfully!");
+                    fetchMedia();
+                    setVideoUrlInput("");
+                  } catch {
+                    setUploadMessage("Failed to add video URL");
                   }
                 }}
-                className="bg-[#D4AF37] px-4 py-2 text-black rounded hover:opacity-90 transition"
+                className="bg-[#D4AF37] text-black px-4 py-2 rounded hover:opacity-90 transition"
               >
-                Upload
+                Add Video URL
               </button>
-              {uploadMessage && <span className="text-green-400">{uploadMessage}</span>}
             </div>
 
             {/* Media Grid */}
@@ -372,11 +383,16 @@ export default function Dashboard() {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {mediaFiles.map((file) => (
-                  <div key={file.id} className="bg-[#1a1a1a] p-2 rounded relative">
+                  <div
+                    key={file.id}
+                    className={`bg-[#1a1a1a] p-2 rounded relative border-2 ${
+                      currentHero?.url === file.url ? "border-[#D4AF37]" : "border-transparent"
+                    }`}
+                  >
                     {file.file_type === "image" ? (
-                      <img src={file.url} alt={file.original_name} className="w-full h-40 object-cover rounded"/>
+                      <img src={file.url} alt={file.original_name} className="w-full h-40 object-cover rounded" />
                     ) : (
-                      <video src={file.url} controls className="w-full h-40 rounded"/>
+                      <video src={file.url} controls className="w-full h-40 rounded" />
                     )}
                     <p className="text-xs text-neutral-400 truncate mt-1">{file.original_name}</p>
 
@@ -393,8 +409,7 @@ export default function Dashboard() {
                             });
                             if (!res.ok) throw new Error("Failed to delete media");
                             setMediaFiles(mediaFiles.filter((m) => m.id !== file.id));
-                          } catch (err) {
-                            console.error(err);
+                          } catch {
                             alert("Failed to delete media");
                           }
                         }}
@@ -402,30 +417,30 @@ export default function Dashboard() {
                       >
                         Delete
                       </button>
+
                       <button
                         onClick={async () => {
                           const token = getToken();
                           if (!token) return;
-                        
                           try {
-                            const res = await fetch(
-                              `${process.env.NEXT_PUBLIC_API_URL}/api/hero/image/latest`,
-                              {
-                                method: "PATCH",
-                                headers: {
-                                  Authorization: `Bearer ${token}`,
-                                },
-                              }
-                            );
-                        
+                            const endpoint =
+                              file.file_type === "image"
+                                ? `${process.env.NEXT_PUBLIC_API_URL}/api/hero/image/latest`
+                                : `${process.env.NEXT_PUBLIC_API_URL}/api/hero/video/latest`;
+
+                            const res = await fetch(endpoint, {
+                              method: "PATCH",
+                              headers: { Authorization: `Bearer ${token}` },
+                            });
                             if (!res.ok) throw new Error("Failed to set hero");
-                        
-                            alert("Hero updated successfully");
-                          } catch (err) {
-                            console.error(err);
+
+                            setCurrentHero({ type: file.file_type, url: file.url });
+                            alert("Hero updated successfully!");
+                          } catch {
                             alert("Failed to set hero");
                           }
                         }}
+                        className="bg-[#D4AF37] px-2 py-1 text-xs rounded hover:opacity-90"
                       >
                         Set Hero
                       </button>
@@ -438,7 +453,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Logout Button */}
+      {/* Logout */}
       <div className="mt-8">
         <button
           onClick={handleLogout}

@@ -1,32 +1,83 @@
-import Footer from "./footer";
+"use client";
+
+import { useEffect, useState } from "react";
+import Navbar from "./navbar";
 import Hero from "./hero";
 import HeroVideo from "./hero-video";
-import Navbar from "./navbar";
-import { useEffect, useState } from "react";
+import Footer from "./footer";
+
+type HeroVideoResponse = {
+  id: number;
+  url: string;
+  updated_at: string;
+};
 
 export default function HomePage() {
-    const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [heroVideo, setHeroVideo] = useState<HeroVideoResponse | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        async function loadVideo() {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files`);
-          const data = await res.json();
-          const latestVideo = data
-            .filter((file: any) => file.file_type === "video")
-            .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
-          setVideoUrl(latestVideo?.url || null);
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+  
+    async function loadHeroVideo() {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/hero-video`,
+          { cache: "no-store" }
+        );
+  
+        if (!res.ok) return;
+  
+        const data = await res.json();
+  
+        if (data?.hero_video_url) {
+          setHeroVideo((prev) => {
+            if (prev?.url !== data.hero_video_url.url) {
+              return data.hero_video_url;
+            }
+            return prev;
+          });
         }
-        loadVideo();
-    }, []);
+      } catch (err) {
+        console.error("Failed to fetch hero video", err);
+      }
+    }
+  
+    loadHeroVideo();
+    interval = setInterval(loadHeroVideo, 30000);
+  
+    return () => clearInterval(interval);
+  }, []);
 
-    return (
-        <>
-            <Navbar/>
-            <div style={{ textAlign: 'center', marginTop: '50px' }}>
-                <Hero/>
-                {videoUrl && <HeroVideo videoUrl={videoUrl} posterUrl="/hero.webp" />}
-                <Footer/>
-            </div>
-        </>
-    )
+  return (
+    <>
+      <Navbar />
+
+      <main className="w-full mt-12">
+        <Hero />
+
+        {loading ? (
+          <img
+            src="/hero.webp"
+            alt="Hero Placeholder"
+            className="w-full h-auto mt-8"
+          />
+        ) : heroVideo ? (
+          <HeroVideo
+            key={heroVideo.url} // 🔥 forces reload when URL changes
+            videoUrl={heroVideo.url}
+            posterUrl="/hero.webp"
+          />
+        ) : (
+          <img
+            src="/hero.webp"
+            alt="Hero Placeholder"
+            className="w-full h-auto mt-8"
+          />
+        )}
+
+        <Footer />
+      </main>
+    </>
+  );
 }
