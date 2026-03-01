@@ -21,5 +21,5 @@ module.exports = cors({
 });
 
 
-
+console.log('Allowed origins:', allowedOrigins);
 
