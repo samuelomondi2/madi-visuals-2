@@ -1,4 +1,4 @@
-const heroVideoService = require("../controller/herovideo.controller");
+const heroVideoService = require("../services/herovideo.service");
 
 exports.createHeroVideo = async (req, res) => {
     try {
