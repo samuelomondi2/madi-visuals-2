@@ -16,6 +16,7 @@ exports.getHeroVideo = async (req, res) => {
   
       const hero_video_url = await heroVideoService.getHeroVideo();
   
+      console.log("Hero video fetched:", hero_video_url);
       if (!hero_video_url) {
         return res.status(404).json({ message: "No hero video url found" });
       }
