@@ -15,14 +15,15 @@ exports.getHeroVideo = async (req, res) => {
       res.set("Cache-Control", "no-store");
   
       const hero_video_url = await heroVideoService.getHeroVideo();
+      console.log("DB returned:", hero_video_url);
   
-      console.log("Hero video fetched:", hero_video_url);
       if (!hero_video_url) {
         return res.status(404).json({ message: "No hero video url found" });
       }
   
       res.json({ hero_video_url });
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch hero video url" });
+      console.error("GET hero video error:", error.stack || error);
+      res.status(500).json({ message: error.message }); // <-- show actual SQL / Node error
     }
   };
