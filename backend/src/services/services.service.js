@@ -2,7 +2,7 @@ const db = require("../config/db");
 
 exports.getAllServices = async () => {
     const [rows] = await db.execute(`
-      SELECT id, name, price, duration_minutes, description 
+      SELECT id, name, base_price, duration_minutes, description 
       FROM services
     `);
   
