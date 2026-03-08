@@ -11,6 +11,8 @@ const heroRoute = require("./src/routes/hero.route");
 const uploadRoutes = require("./src/routes/upload.route");
 const heroVideoRoutes = require("./src/routes/herovideo.route");
 const serviceRoutes = require("./src/routes/services.route");
+const availabilityRoutes = require("./src/routes/availability.route");
+const bookingRoutes = require("./src/routes/booking.route");
 const errorHandler = require("./src/middleware/errorHandler");
 
 const app = express();
@@ -26,6 +28,8 @@ app.use('/api', protectedRoutes);
 app.use('/api', heroRoute);
 app.use('/api', heroVideoRoutes);
 app.use('/api', serviceRoutes);
+app.use('/api', availabilityRoutes);
+app.use('/api', bookingRoutes);
 
 // Serve static files
 // Host Media on Your Own Server (Node.js Static Folder)
