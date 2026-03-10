@@ -1,43 +1,152 @@
 const db = require("../config/db");
 const servicesService = require("./services.service");
+const {generateSlots, isOverlap} = require("../middleware/util.middleware")
+
+export const setAdminAvailability = async (day, start, end) => {
+  await db.execute(
+    `INSERT INTO admin_availability (day_of_week, start_time, end_time)
+     VALUES (?, ?, ?)
+     ON DUPLICATE KEY UPDATE start_time=?, end_time=?`,
+    [day, start, end, start, end]
+  );
+};
 
 export const getAvailability = async (date) => {
 
-  const services = servicesService.getAllServices;
+  const services = await servicesService.getAllServices();
+  const day = new Date(date).getDay();
+
+  const [hours] = await db.execute(
+    "SELECT start_time,end_time FROM working_hours WHERE day_of_week=?",
+    [day]
+  );
+
+  if (!hours.length) return [];
+
+  const { start_time, end_time } = hours[0];
+
+  const [breaks] = await db.execute(
+    "SELECT start_time,end_time FROM breaks WHERE day_of_week=?",
+    [day]
+  );
 
   const availability = [];
 
-  for (let service of services) {
+  for (const service of services) {
+
+    const duration = service.duration_minutes * 60000;
+
+    const slots = generateSlots(start_time, end_time, duration, date);
+
     const [bookings] = await db.execute(
-      "SELECT start_time, end_time FROM bookings WHERE booking_date = ? AND service_id = ?",
+      `SELECT start_time,end_time
+       FROM bookings
+       WHERE booking_date=? AND service_id=?`,
       [date, service.id]
     );
 
-    // Working hours: 09:00 to 17:00
-    const slots = [];
-    let current = new Date(`${date}T09:00:00`);
-    const end = new Date(`${date}T17:00:00`);
-    const durationMs = service.duration_minutes * 60 * 1000;
+    const blocked = [...bookings, ...breaks];
 
-    while (current.getTime() + durationMs <= end.getTime()) {
-      const slotStart = current.toTimeString().slice(0, 5);
-      const slotEndDate = new Date(current.getTime() + durationMs);
-      const slotEnd = slotEndDate.toTimeString().slice(0, 5);
-
-      const conflict = bookings.some(
-        (b) => slotStart < b.end_time && slotEnd > b.start_time
-      );
-
-      if (!conflict) slots.push(slotStart);
-      current = new Date(current.getTime() + durationMs);
-    }
+    const freeSlots = slots
+      .filter(slot => {
+        return !blocked.some(b =>
+          isOverlap(slot.start, slot.end, b.start_time, b.end_time)
+        );
+      })
+      .map(slot => slot.start);
 
     availability.push({
       id: service.id,
       name: service.name,
-      available_slots: slots,
+      available_slots: freeSlots
     });
   }
 
   return availability;
 };
+
+// export const getAvailability = async (date) => {
+
+//   const services = await servicesService.getAllServices();
+
+//   const day = new Date(date).getDay();
+
+//   // check special day
+//   const [special] = await db.execute(
+//     "SELECT * FROM special_days WHERE date = ?",
+//     [date]
+//   );
+
+//   if (special.length && special[0].is_closed) return [];
+
+//   let startTime, endTime;
+
+//   if (special.length) {
+//     startTime = special[0].start_time;
+//     endTime = special[0].end_time;
+//   } else {
+
+//     const [hours] = await db.execute(
+//       "SELECT start_time, end_time FROM working_hours WHERE day_of_week = ?",
+//       [day]
+//     );
+
+//     if (!hours.length) return [];
+
+//     startTime = hours[0].start_time;
+//     endTime = hours[0].end_time;
+//   }
+
+//   const [breaks] = await db.execute(
+//     "SELECT start_time, end_time FROM breaks WHERE day_of_week = ?",
+//     [day]
+//   );
+
+//   const availability = [];
+
+//   for (const service of services) {
+
+//     const [bookings] = await db.execute(
+//       `SELECT start_time, end_time
+//        FROM bookings
+//        WHERE booking_date = ? AND service_id = ?`,
+//       [date, service.id]
+//     );
+
+//     const slots = [];
+
+//     let current = new Date(`${date}T${startTime}`);
+//     const end = new Date(`${date}T${endTime}`);
+
+//     const duration = service.duration_minutes * 60 * 1000;
+
+//     while (current.getTime() + duration <= end.getTime()) {
+
+//       const slotStart = current.toTimeString().slice(0,5);
+//       const slotEnd = new Date(current.getTime() + duration)
+//         .toTimeString().slice(0,5);
+
+//       const bookingConflict = bookings.some(
+//         b => slotStart < b.end_time && slotEnd > b.start_time
+//       );
+
+//       const breakConflict = breaks.some(
+//         b => slotStart < b.end_time && slotEnd > b.start_time
+//       );
+
+//       if (!bookingConflict && !breakConflict) {
+//         slots.push(slotStart);
+//       }
+
+//       current = new Date(current.getTime() + duration);
+//     }
+
+//     availability.push({
+//       id: service.id,
+//       name: service.name,
+//       available_slots: slots
+//     });
+//   }
+
+//   return availability;
+// };
