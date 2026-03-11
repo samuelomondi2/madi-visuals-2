@@ -1,7 +1,7 @@
 const db = require("../config/db");
 
 // Create a new booking
-export const createBooking = async (bookingData) => {
+exports.createBooking = async (bookingData) => {
   const {
     service_id,
     booking_date,
@@ -41,13 +41,13 @@ export const createBooking = async (bookingData) => {
 };
 
 // Get all bookings (optional, for admin)
-export const getAllBookings = async () => {
+exports.getAllBookings = async () => {
   const [rows] = await pool.query("SELECT * FROM bookings ORDER BY booking_date DESC, start_time ASC");
   return rows;
 };
 
 // Get booking by ID
-export const getBookingById = async (id) => {
+exports.getBookingById = async (id) => {
   const [rows] = await pool.query("SELECT * FROM bookings WHERE id = ?", [id]);
   return rows[0] || null;
 };
