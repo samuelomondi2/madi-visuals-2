@@ -1,7 +1,7 @@
 const bookingService = require("../services/booking.service");
 
 // POST /bookings
-export const createBooking = async (req, res) => {
+exports.createBooking = async (req, res) => {
   try {
     const bookingId = await bookingService.createBooking(req.body);
 
@@ -19,7 +19,7 @@ export const createBooking = async (req, res) => {
 };
 
 // GET /bookings (admin)
-export const getBookings = async (req, res) => {
+exports.getBookings = async (req, res) => {
   try {
     const bookings = await bookingService.getAllBookings();
     res.json({ bookings });
@@ -30,7 +30,7 @@ export const getBookings = async (req, res) => {
 };
 
 // GET /bookings/:id
-export const getBooking = async (req, res) => {
+exports.getBooking = async (req, res) => {
   try {
     const { id } = req.params;
     const booking = await bookingService.getBookingById(id);
