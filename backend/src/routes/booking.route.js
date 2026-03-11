@@ -7,4 +7,4 @@ router.post("/bookings", controller.createBooking);
 router.get("/bookings", controller.getBookings);
 router.get("/bookings/:id", controller.getBooking);
 
-export default router;
+module.exports = router;
