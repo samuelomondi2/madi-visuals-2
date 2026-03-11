@@ -2,7 +2,7 @@ const db = require("../config/db");
 const servicesService = require("./services.service");
 const {generateSlots, isOverlap} = require("../middleware/util.middleware")
 
-export const setAdminAvailability = async (day, start, end) => {
+exports.setAdminAvailability = async (day, start, end) => {
   await db.execute(
     `INSERT INTO admin_availability (day_of_week, start_time, end_time)
      VALUES (?, ?, ?)
@@ -11,7 +11,7 @@ export const setAdminAvailability = async (day, start, end) => {
   );
 };
 
-export const getAvailability = async (date) => {
+exports.getAvailability = async (date) => {
 
   const services = await servicesService.getAllServices();
   const day = new Date(date).getDay();
