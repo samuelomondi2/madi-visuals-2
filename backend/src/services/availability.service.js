@@ -2,14 +2,38 @@ const db = require("../config/db");
 const servicesService = require("./services.service");
 const {generateSlots, isOverlap} = require("../middleware/util.middleware")
 
-exports.setAdminAvailability = async (day, start, end) => {
-  await db.execute(
-    `INSERT INTO admin_availability (day_of_week, start_time, end_time)
-     VALUES (?, ?, ?)
-     ON DUPLICATE KEY UPDATE start_time=?, end_time=?`,
-    [day, start, end, start, end]
-  );
+exports.setAdminAvailability = async (req, res) => {
+
+  const schedule = req.body;
+
+  for (const day of schedule) {
+
+    if (!day.enabled) {
+      await db.execute(
+        "DELETE FROM working_hours WHERE day_of_week=?",
+        [day.id]
+      );
+      continue;
+    }
+
+    await db.execute(
+      `REPLACE INTO admin_availability (day_of_week,start_time,end_time)
+       VALUES (?,?,?)`,
+      [day.id, day.start_time, day.end_time]
+    );
+  }
+
+  res.json({ success: true });
 };
+
+// exports.setAdminAvailability = async (day, start, end) => {
+//   await db.execute(
+//     `INSERT INTO admin_availability (day_of_week, start_time, end_time)
+//      VALUES (?, ?, ?)
+//      ON DUPLICATE KEY UPDATE start_time=?, end_time=?`,
+//     [day, start, end, start, end]
+//   );
+// };
 
 exports.getAvailability = async (date) => {
 
