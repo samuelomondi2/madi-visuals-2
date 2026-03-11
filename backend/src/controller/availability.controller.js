@@ -1,6 +1,6 @@
 const availabilityService = require("../services/availability.service");
 
-export const setAdminAvailability = async (req, res) => {
+exports.setAdminAvailability = async (req, res) => {
   try {
     const { day_of_week, start_time, end_time } = req.body;
 
@@ -16,7 +16,7 @@ export const setAdminAvailability = async (req, res) => {
   }
 };
 
-export const getAvailability = async (req, res) => {
+exports.getAvailability = async (req, res) => {
     try {
       const { date } = req.query;
       if (!date) return res.status(400).json({ message: "Date is required" });
