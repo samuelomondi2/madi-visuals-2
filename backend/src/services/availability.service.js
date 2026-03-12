@@ -10,7 +10,7 @@ exports.setAdminAvailability = async (req, res) => {
 
     if (!day.enabled) {
       await db.execute(
-        "DELETE FROM working_hours WHERE day_of_week=?",
+        "DELETE FROM admin_availability WHERE day_of_week=?",
         [day.id]
       );
       continue;
@@ -41,7 +41,7 @@ exports.getAvailability = async (date) => {
   const day = new Date(date).getDay();
 
   const [hours] = await db.execute(
-    "SELECT start_time,end_time FROM working_hours WHERE day_of_week=?",
+    "SELECT start_time,end_time FROM admin_availability WHERE day_of_week=?",
     [day]
   );
 
@@ -50,7 +50,7 @@ exports.getAvailability = async (date) => {
   const { start_time, end_time } = hours[0];
 
   const [breaks] = await db.execute(
-    "SELECT start_time,end_time FROM breaks WHERE day_of_week=?",
+    "SELECT start_time,end_time FROM admin_breaks WHERE day_of_week=?",
     [day]
   );
 
