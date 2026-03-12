@@ -21,16 +21,8 @@ exports.setAdminAvailability = async (schedule) => {
     );
   }
 
+  return true;
 };
-
-// exports.setAdminAvailability = async (day, start, end) => {
-//   await db.execute(
-//     `INSERT INTO admin_availability (day_of_week, start_time, end_time)
-//      VALUES (?, ?, ?)
-//      ON DUPLICATE KEY UPDATE start_time=?, end_time=?`,
-//     [day, start, end, start, end]
-//   );
-// };
 
 exports.getAvailability = async (date) => {
 

@@ -97,8 +97,11 @@ export default function AvailabilityPage() {
 
         </div>
       ))}
-
-      <button onClick={saveAvailability}>
+        <br/>
+      <button 
+        onClick={saveAvailability}
+        className="bg-[#D4AF37] text-black px-5 py-2 rounded hover:opacity-90 transition"
+      >
         Save Availability
       </button>
     </div>
