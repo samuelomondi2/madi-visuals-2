@@ -18,25 +18,32 @@ export type ScheduleDay = {
     start_time: string;
     end_time: string;
     enabled: boolean;
-  };
+ };
 
 export default function AvailabilityPage() {
 
-   const [schedule, setSchedule] = useState<ScheduleDay[]>([]);
+    const [schedule, setSchedule] = useState<ScheduleDay[]>(
+        days.map((d) => ({
+          ...d,
+          start_time: "09:00",
+          end_time: "17:00",
+          enabled: false
+        }))
+      );
 
-   const updateField = (
-    index: number,
-    field: keyof ScheduleDay,
-    value: string | boolean
-  ) => {
-    const updated = [...schedule];
-    updated[index][field] = value as never;
-    setSchedule(updated);
-  };
+    const updateField = (
+        index: number,
+        field: keyof ScheduleDay,
+        value: string | boolean
+    ) => {
+        const updated = [...schedule];
+        updated[index][field] = value as never;
+        setSchedule(updated);
+};
 
   const saveAvailability = async () => {
 
-    await fetch("/api/admin/availability", {
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/availability`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

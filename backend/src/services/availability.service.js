@@ -2,9 +2,7 @@ const db = require("../config/db");
 const servicesService = require("./services.service");
 const {generateSlots, isOverlap} = require("../middleware/util.middleware")
 
-exports.setAdminAvailability = async (req, res) => {
-
-  const schedule = req.body;
+exports.setAdminAvailability = async (schedule) => {
 
   for (const day of schedule) {
 
@@ -23,7 +21,6 @@ exports.setAdminAvailability = async (req, res) => {
     );
   }
 
-  res.json({ success: true });
 };
 
 // exports.setAdminAvailability = async (day, start, end) => {

@@ -2,16 +2,15 @@ const availabilityService = require("../services/availability.service");
 
 exports.setAdminAvailability = async (req, res) => {
   try {
-    const { day_of_week, start_time, end_time } = req.body;
 
-    await availabilityService.setAdminAvailability(
-      day_of_week,
-      start_time,
-      end_time
-    );
+    const schedule = req.body;
+
+    await availabilityService.setAdminAvailability(schedule);
 
     res.json({ message: "Availability updated" });
+
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: err.message });
   }
 };
