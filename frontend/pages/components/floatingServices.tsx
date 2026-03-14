@@ -40,9 +40,10 @@ export default function FloatingBooking() {
               Book Session
             </button>
 
-            <Link href="/#services" className="rounded-lg border border-neutral-700 text-white text-xs py-1.5 text-center hover:border-[#D4AF37] hover:text-[#D4AF37]">
+            <a href="/#services" className="rounded-lg border border-neutral-700 text-white text-xs py-1.5 text-center hover:border-[#D4AF37] hover:text-[#D4AF37] inline-block">
               Services & Pricing
-            </Link>
+            </a>
+            
             <Link href="https://madivisuals27.pixieset.com/sampleshots/" className="rounded-lg border border-neutral-700 text-white text-xs py-1.5 text-center hover:border-[#D4AF37] hover:text-[#D4AF37]">
               View Portfolio
             </Link>

@@ -5,7 +5,7 @@ import Navbar from "./navbar";
 import Hero from "./hero";
 import HeroVideo from "./hero-video";
 import Footer from "./footer";
-import Services from "./services";
+import Services from "../services";
 import FloatingServices from "./floatingServices";
 import PopupForm from "./test";
 import BookingModal from "./bookOnline";
