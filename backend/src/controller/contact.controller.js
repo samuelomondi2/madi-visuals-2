@@ -18,3 +18,13 @@ exports.getContacts = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.reviewedContact = async (req, res, next) => {
+  const {id} = req.params;
+  try {
+    await contactService.reviewdContact({id});
+    res.status(201).json({ message: 'Resolved'})
+  } catch (error) {
+    next(error);
+  }
+}

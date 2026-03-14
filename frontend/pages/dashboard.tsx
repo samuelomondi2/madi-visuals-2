@@ -12,7 +12,7 @@ interface ContactMessage {
   email: string;
   phone?: string;
   message: string;
-  status: "pending" | "resolved";
+  status: "pending" | "reviewed";
   createdAt: string;
   updatedAt: string;
 }
@@ -155,9 +155,9 @@ export default function Dashboard() {
     }
   };
 
-  const toggleStatus = async (id: number, currentStatus: "pending" | "resolved") => {
+  const toggleStatus = async (id: number, currentStatus: "pending" | "reviewed") => {
     const token = getToken();
-    const newStatus = currentStatus === "pending" ? "resolved" : "pending";
+    const newStatus = currentStatus === "pending" ? "reviewed" : "pending";
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/${id}`, {

@@ -21,6 +21,22 @@ exports.getContacts = async () => {
   return rows;
 };
 
+exports.reviewdContact = async ({ id }) => {
+  await db.query(
+    `
+    UPDATE contact
+    SET status = CASE
+      WHEN status = 'pending' THEN 'reviewed'
+      ELSE 'pending'
+    END
+    WHERE id = $1
+    RETURNING *;
+    `,
+    [id]
+  );
+};
+
+
 // ###Filtering by status
 // const status = req.query.status;
 // let query = `SELECT ... FROM contact WHERE deleted_at IS NULL`;
