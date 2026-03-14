@@ -8,7 +8,6 @@ interface BookingModalProps {
 }
 
 export default function BookingModal({ open, setOpen }: BookingModalProps) {
-  // const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 2));
@@ -70,50 +69,65 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
             </div>
 
             <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-              {step === 1 && (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
-                    required
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email Address"
-                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
-                    required
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Phone Number"
-                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
-                  />
-                  <select
-                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
-                    required
-                  >
-                    <option value="">Select Service</option>
-                    <option value="lifestyle">Lifestyle Shoot</option>
-                    <option value="couple">Couple/Duo Shoot</option>
-                    <option value="sports">Sports Photography/Videography</option>
-                    <option value="event">Special Event</option>
-                  </select>
-                  <textarea
-                    placeholder="Additional Notes"
-                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
-                    rows={3}
-                  ></textarea>
+            {step === 1 && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
+                  required
+                />
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
+                  required
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone Number"
+                  className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
+                />
 
-                  <button
-                    type="button"
-                    onClick={nextStep}
-                    className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 mt-4 hover:opacity-90 transition"
-                  >
-                    Next
-                  </button>
-                </>
-              )}
+                {/* New Schedule Inputs */}
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none flex-1"
+                    required
+                  />
+                  <input
+                    type="time"
+                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none flex-1"
+                    required
+                  />
+                </div>
+
+                <select
+                  className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
+                  required
+                >
+                  <option value="">Select Service</option>
+                  <option value="lifestyle">Lifestyle Shoot</option>
+                  <option value="couple">Couple/Duo Shoot</option>
+                  <option value="sports">Sports Photography/Videography</option>
+                  <option value="event">Special Event</option>
+                </select>
+                <textarea
+                  placeholder="Additional Notes"
+                  className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
+                  rows={3}
+                ></textarea>
+
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 mt-4 hover:opacity-90 transition"
+                >
+                  Next
+                </button>
+              </>
+            )}
 
               {step === 2 && (
                 <>
