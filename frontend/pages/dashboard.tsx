@@ -156,9 +156,10 @@ export default function Dashboard() {
   };
 
   const toggleStatus = async (id: number, currentStatus: "pending" | "reviewed") => {
+    if (currentStatus !== "pending") return; 
+  
     const token = getToken();
-    const newStatus = currentStatus === "pending" ? "reviewed" : "pending";
-
+  
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/${id}`, {
         method: "PATCH",
@@ -166,17 +167,19 @@ export default function Dashboard() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: "reviewed" }),
       });
+  
       if (!res.ok) throw new Error("Failed to update status");
+  
       setMessages(messages.map((msg) =>
-        msg.id === id ? { ...msg, status: newStatus } : msg
+        msg.id === id ? { ...msg, status: "reviewed" } : msg
       ));
     } catch (err) {
       console.error(err);
       alert("Failed to update status");
     }
-  };
+  };  
 
   const handleViewToggle = (id: number) => {
     setViewId(viewId === id ? null : id);
@@ -266,12 +269,14 @@ export default function Dashboard() {
                         <p className="mb-3">{new Date(msg.createdAt).toLocaleString()}</p>
 
                         <div className="flex flex-wrap gap-2">
-                          <button
-                            onClick={() => toggleStatus(msg.id, msg.status)}
-                            className="bg-[#D4AF37] text-black px-3 py-1 rounded"
-                          >
-                            {msg.status === "pending" ? "Resolve" : "Pending"}
-                          </button>
+                            {msg.status === "pending" && (
+                              <button
+                                onClick={() => toggleStatus(msg.id, msg.status)}
+                                className="bg-[#D4AF37] text-black px-3 py-1 rounded"
+                              >
+                                Mark as Reviewed
+                              </button>
+                            )}
 
                           <button
                             onClick={() => handleDeleteMessage(msg.id)}
@@ -302,7 +307,6 @@ export default function Dashboard() {
                     <tbody>
                     {messages.map((msg, idx) => (
                       <React.Fragment key={msg.id}>
-                        
                         {/* Main Row */}
                         <tr className={idx % 2 === 0 ? "bg-black" : "bg-[#1a1a1a]"}>
                           <td className="py-2 px-4 truncate max-w-xs">{msg.id}</td>
@@ -316,12 +320,16 @@ export default function Dashboard() {
                           </td>
 
                           <td className="py-2 px-4 text-center space-x-2">
-                            <button
-                              onClick={() => toggleStatus(msg.id, msg.status)}
-                              className="bg-[#D4AF37] text-black px-3 py-1 rounded"
-                            >
-                              {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
-                            </button>
+
+                            {/* Only render this button if status is pending */}
+                            {msg.status === "pending" && (
+                              <button
+                                onClick={() => toggleStatus(msg.id, msg.status)}
+                                className="bg-[#D4AF37] text-black px-3 py-1 rounded"
+                              >
+                                Mark as Reviewed
+                              </button>
+                            )}
 
                             <button
                               onClick={() => handleDeleteMessage(msg.id)}
@@ -344,47 +352,38 @@ export default function Dashboard() {
                           <tr className="bg-[#111]">
                             <td colSpan={8} className="p-6">
                               <div className="bg-[#1a1a1a] p-6 rounded-lg border border-neutral-800">
-
                                 <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
                                   Message Details
                                 </h3>
-
                                 <div className="grid md:grid-cols-2 gap-4 text-sm">
-
                                   <div>
                                     <p className="text-neutral-400">Name</p>
                                     <p>{msg.name}</p>
                                   </div>
-
                                   <div>
                                     <p className="text-neutral-400">Email</p>
                                     <p>{msg.email}</p>
                                   </div>
-
                                   <div>
                                     <p className="text-neutral-400">Phone</p>
                                     <p>{msg.phone || "-"}</p>
                                   </div>
-
                                   <div>
                                     <p className="text-neutral-400">Status</p>
                                     <p className="capitalize">{msg.status}</p>
                                   </div>
-
                                 </div>
-
                                 <div className="mt-4">
                                   <p className="text-neutral-400 mb-1">Message</p>
                                   <p className="leading-relaxed">{msg.message}</p>
                                 </div>
-
                               </div>
                             </td>
                           </tr>
                         )}
-
                       </React.Fragment>
                     ))}
+
                     </tbody>
                   </table>
                 </div>
