@@ -20,11 +20,11 @@ exports.getContacts = async (req, res, next) => {
 };
 
 exports.reviewedContact = async (req, res, next) => {
-  const {id} = req.params;
+  const { id } = req.params;
   try {
-    await contactService.reviewdContact({id});
-    res.status(201).json({ message: 'Resolved'})
+    const updatedContact = await contactService.reviewdContact({ id });
+    res.status(200).json({ message: 'Resolved', data: updatedContact });
   } catch (error) {
     next(error);
   }
-}
+};

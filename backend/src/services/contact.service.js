@@ -29,12 +29,20 @@ exports.reviewdContact = async ({ id }) => {
       WHEN status = 'pending' THEN 'reviewed'
       ELSE 'pending'
     END
-    WHERE id = $1
-    RETURNING *;
+    WHERE id = ?
     `,
     [id]
   );
+
+  // Fetch the updated row if needed
+  const [updatedRows] = await db.query(
+    `SELECT * FROM contact WHERE id = ?`,
+    [id]
+  );
+
+  return updatedRows[0]; // return the updated row
 };
+
 
 
 // ###Filtering by status
