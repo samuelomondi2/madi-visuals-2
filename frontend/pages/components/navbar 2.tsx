@@ -27,18 +27,14 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <ul className="hidden items-center gap-8 md:flex">
-            <li>
-              <Link href="/about" className="text-sm font-medium text-white transition hover:text-[#D4AF37]">About</Link>
-            </li>
-
-            <li>
+            {/* <li>
               <Link href="/services" className="text-sm font-medium text-white transition hover:text-[#D4AF37]">
                 Services & Pricing
               </Link>
-            </li>
+            </li> */}
 
             <li>
-              <Link href="/portfolio" className="text-sm font-medium text-white transition hover:text-[#D4AF37]">
+              <Link href="https://madivisuals27.pixieset.com/sampleshots/" className="text-sm font-medium text-white transition hover:text-[#D4AF37]">
                 Portfolio
               </Link>
             </li>
@@ -61,9 +57,9 @@ export default function Navbar() {
           </Link>
 
           {/* Mobile Menu Button */}
-          <button
+          {/* <button
             onClick={() => setOpen(!open)}
-            className="md:hidden rounded-lg border border-neutral-700 p-2 text-[#D4AF37]"
+            className="hidden lg:inline-block rounded-lg border border-neutral-700 p-2 text-[#D4AF37]"
             aria-label="Toggle Menu"
           >
             <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -73,21 +69,17 @@ export default function Navbar() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
               )}
             </svg>
-          </button>
+          </button> */}
         </div>
 
         {/* Mobile Menu */}
-        {open && (
+        {/* {open && (
           <div className="mt-4 space-y-3 rounded-xl border border-neutral-800 bg-black p-4 md:hidden">
-            <Link href="/about" className="block rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-neutral-900 hover:text-[#D4AF37]" onClick={() => setOpen(false)}>
-              About
-            </Link>
-
             <Link href="/services" className="block rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-neutral-900 hover:text-[#D4AF37]" onClick={() => setOpen(false)}>
               Services & Pricing
             </Link>
 
-            <Link href="/portfolio" className="block rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-neutral-900 hover:text-[#D4AF37]" onClick={() => setOpen(false)}>
+            <Link href="https://madivisuals27.pixieset.com/sampleshots/" className="block rounded-lg px-3 py-2 text-sm font-medium text-white hover:bg-neutral-900 hover:text-[#D4AF37]" onClick={() => setOpen(false)}>
               Portfolio
             </Link>
 
@@ -107,7 +99,7 @@ export default function Navbar() {
               Book Now
             </Link>
           </div>
-        )}
+        )} */}
       </nav>
     </header>
   );

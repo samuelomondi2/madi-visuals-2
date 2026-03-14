@@ -5,6 +5,10 @@ import Navbar from "./navbar";
 import Hero from "./hero";
 import HeroVideo from "./hero-video";
 import Footer from "./footer";
+import Services from "./services";
+import FloatingServices from "./floatingServices";
+import PopupForm from "./test";
+import BookingModal from "./bookOnline";
 
 type HeroVideoResponse = {
   id: number;
@@ -43,6 +47,8 @@ export default function HomePage() {
     <>
       <Navbar />
 
+      <FloatingServices/>
+
       <main className="w-full mt-12">
         <Hero />
 
@@ -52,6 +58,8 @@ export default function HomePage() {
           <img src="/hero.webp" alt="Hero Placeholder" className="w-full h-auto mt-8" />
         )}
 
+        <Services/>
+        
         <Footer />
       </main>
     </>

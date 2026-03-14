@@ -79,7 +79,7 @@ export default function ContactPage() {
       <main className="bg-black text-white px-6 md:px-12 py-20">
         <section className="mx-auto max-w-3xl">
           <h2 className="mb-6 text-3xl font-semibold text-[#D4AF37]">
-            Send Us a Message
+            Send Me a Message
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
