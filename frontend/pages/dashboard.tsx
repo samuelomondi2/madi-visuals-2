@@ -139,39 +139,6 @@ export default function Dashboard() {
     }
   };
 
-  const handleHeroVideoURL = async (videoUrl: string) => {
-    const token = getToken();
-    if (!token) {
-      setUploadMessage("Not authorized");
-      return;
-    }
-  
-    try {
-      setUploadMessage("Updating hero video...");
-  
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/hero-video`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ url: videoUrl }),
-        }
-      );
-  
-      if (!res.ok) throw new Error("Failed to update");
-  
-      const data = await res.json();
-  
-      setUploadMessage(data.message || "Hero video updated ✅");
-    } catch (err) {
-      console.error(err);
-      setUploadMessage("Failed to update hero video ❌");
-    }
-  };
-
   const handleDeleteMessage = async (id: number) => {
     const token = getToken();
     try {
@@ -217,15 +184,14 @@ export default function Dashboard() {
 
   /* -------------------- UI -------------------- */
   return (
-    <div className="p-4 md:p-8 bg-black min-h-screen text-white">
-
+    <div className="bg-black min-h-screen text-white">
       <h1 className="text-3xl md:text-4xl font-bold mb-4 text-[#D4AF37]">Admin Dashboard</h1>
 
       {/* Tabs */}
-      <div className="flex space-x-4 mb-6 border-b border-neutral-700">
+      <div className="flex overflow-x-auto whitespace-nowrap gap-2 pb-2 mb-6 border-b border-neutral-700">
         <button
           onClick={() => setActiveTab("hero")}
-          className={`px-4 py-2 font-semibold rounded-t ${
+          className={`px-4 py-2 font-semibold rounded-t flex-shrink-0 ${
             activeTab === "hero" ? "bg-[#D4AF37] text-black" : "text-white hover:text-[#D4AF37]"
           }`}
         >
@@ -233,7 +199,7 @@ export default function Dashboard() {
         </button>
         <button
           onClick={() => setActiveTab("messages")}
-          className={`px-4 py-2 font-semibold rounded-t ${
+          className={`px-4 py-2 font-semibold rounded-t flex-shrink-0 ${
             activeTab === "messages" ? "bg-[#D4AF37] text-black" : "text-white hover:text-[#D4AF37]"
           }`}
         >
@@ -241,7 +207,7 @@ export default function Dashboard() {
         </button>
         <button
           onClick={() => setActiveTab("media")}
-          className={`px-4 py-2 font-semibold rounded-t ${
+          className={`px-4 py-2 font-semibold rounded-t flex-shrink-0 ${
             activeTab === "media" ? "bg-[#D4AF37] text-black" : "text-white hover:text-[#D4AF37]"
           }`}
         >
@@ -249,7 +215,7 @@ export default function Dashboard() {
         </button>
         <button
           onClick={() => setActiveTab("availability")}
-          className={`px-4 py-2 font-semibold rounded-t ${
+          className={`px-4 py-2 font-semibold rounded-t flex-shrink-0 ${
             activeTab === "availability" ? "bg-[#D4AF37] text-black" : "text-white hover:text-[#D4AF37]"
           }`}
         >
@@ -273,12 +239,58 @@ export default function Dashboard() {
               <p>No messages yet.</p>
             ) : (
               <>
+                {/* Mobile Messages */}
+                <div className="sm:hidden space-y-4 mb-6">
+                    {messages.map((msg) => (
+                      <div key={msg.id} className="bg-[#1a1a1a] p-4 rounded border border-neutral-800">
+                        
+                        <p className="text-sm text-neutral-400">ID</p>
+                        <p className="mb-2">{msg.id}</p>
+
+                        <p className="text-sm text-neutral-400">Name</p>
+                        <p className="mb-2">{msg.name}</p>
+
+                        <p className="text-sm text-neutral-400">Email</p>
+                        <p className="mb-2 break-all">{msg.email}</p>
+
+                        <p className="text-sm text-neutral-400">Phone</p>
+                        <p className="mb-2">{msg.phone || "-"}</p>
+
+                        <p className="text-sm text-neutral-400">Message</p>
+                        <p className="mb-2">{msg.message}</p>
+
+                        <p className="text-sm text-neutral-400">Status</p>
+                        <p className="mb-3 capitalize">{msg.status}</p>
+
+                        <p className="text-sm text-neutral-400">Date</p>
+                        <p className="mb-3">{new Date(msg.createdAt).toLocaleString()}</p>
+
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={() => toggleStatus(msg.id, msg.status)}
+                            className="bg-[#D4AF37] text-black px-3 py-1 rounded"
+                          >
+                            {msg.status === "pending" ? "Resolve" : "Pending"}
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteMessage(msg.id)}
+                            className="bg-red-600 px-3 py-1 rounded"
+                          >
+                            Delete
+                          </button>
+                        </div>
+
+                      </div>
+                    ))}
+                </div>
                 {/* Desktop Table */}
                 <div className="hidden sm:block overflow-x-auto rounded-lg border border-neutral-800 mb-6">
                   <table className="min-w-full table-fixed border-collapse">
                     <thead className="bg-[#2c2c2c] text-white">
                       <tr>
-                        <th className="py-3 px-4 text-left rounded-tl-lg">Name</th>
+                        <th className="py-3 px-4 text-left rounded-tl-lg">ID</th>
+                        <th className="py-3 px-4 text-left">Name</th>
                         <th className="py-3 px-4 text-left">Email</th>
                         <th className="py-3 px-4 text-left">Phone</th>
                         <th className="py-3 px-4 text-left">Message</th>
@@ -288,38 +300,91 @@ export default function Dashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {messages.map((msg, idx) => (
-                        <React.Fragment key={msg.id}>
-                          <tr className={idx % 2 === 0 ? "bg-black" : "bg-[#1a1a1a]"}>
-                            <td className="py-2 px-4 truncate max-w-xs">{msg.name}</td>
-                            <td className="py-2 px-4 truncate max-w-xs">{msg.email}</td>
-                            <td className="py-2 px-4 truncate max-w-xs">{msg.phone || "-"}</td>
-                            <td className="py-2 px-4 truncate max-w-xs">{msg.message}</td>
-                            <td className="py-2 px-4 capitalize">{msg.status}</td>
-                            <td className="py-2 px-4 whitespace-nowrap">{new Date(msg.createdAt).toLocaleString()}</td>
-                            <td className="py-2 px-4 text-center space-x-2">
-                              <button
-                                onClick={() => toggleStatus(msg.id, msg.status)}
-                                className="bg-[#D4AF37] text-black px-3 py-1 rounded hover:opacity-90 transition"
-                              >
-                                {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
-                              </button>
-                              <button
-                                onClick={() => handleDeleteMessage(msg.id)}
-                                className="bg-red-600 px-3 py-1 rounded hover:opacity-90 transition"
-                              >
-                                Delete
-                              </button>
-                              <button
-                                onClick={() => handleViewToggle(msg.id)}
-                                className="bg-gray-700 px-3 py-1 rounded hover:opacity-90 transition"
-                              >
-                                {viewId === msg.id ? "Hide" : "View"}
-                              </button>
+                    {messages.map((msg, idx) => (
+                      <React.Fragment key={msg.id}>
+                        
+                        {/* Main Row */}
+                        <tr className={idx % 2 === 0 ? "bg-black" : "bg-[#1a1a1a]"}>
+                          <td className="py-2 px-4 truncate max-w-xs">{msg.id}</td>
+                          <td className="py-2 px-4 truncate max-w-xs">{msg.name}</td>
+                          <td className="py-2 px-4 truncate max-w-xs">{msg.email}</td>
+                          <td className="py-2 px-4 truncate max-w-xs">{msg.phone || "-"}</td>
+                          <td className="py-2 px-4 truncate max-w-xs">{msg.message}</td>
+                          <td className="py-2 px-4 capitalize">{msg.status}</td>
+                          <td className="py-2 px-4 whitespace-nowrap">
+                            {new Date(msg.createdAt).toLocaleString()}
+                          </td>
+
+                          <td className="py-2 px-4 text-center space-x-2">
+                            <button
+                              onClick={() => toggleStatus(msg.id, msg.status)}
+                              className="bg-[#D4AF37] text-black px-3 py-1 rounded"
+                            >
+                              {msg.status === "pending" ? "Mark Resolved" : "Mark Pending"}
+                            </button>
+
+                            <button
+                              onClick={() => handleDeleteMessage(msg.id)}
+                              className="bg-red-600 px-3 py-1 rounded"
+                            >
+                              Delete
+                            </button>
+
+                            <button
+                              onClick={() => handleViewToggle(msg.id)}
+                              className="bg-gray-700 px-3 py-1 rounded"
+                            >
+                              {viewId === msg.id ? "Hide" : "View"}
+                            </button>
+                          </td>
+                        </tr>
+
+                        {/* Expanded View Row */}
+                        {viewId === msg.id && (
+                          <tr className="bg-[#111]">
+                            <td colSpan={8} className="p-6">
+                              <div className="bg-[#1a1a1a] p-6 rounded-lg border border-neutral-800">
+
+                                <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
+                                  Message Details
+                                </h3>
+
+                                <div className="grid md:grid-cols-2 gap-4 text-sm">
+
+                                  <div>
+                                    <p className="text-neutral-400">Name</p>
+                                    <p>{msg.name}</p>
+                                  </div>
+
+                                  <div>
+                                    <p className="text-neutral-400">Email</p>
+                                    <p>{msg.email}</p>
+                                  </div>
+
+                                  <div>
+                                    <p className="text-neutral-400">Phone</p>
+                                    <p>{msg.phone || "-"}</p>
+                                  </div>
+
+                                  <div>
+                                    <p className="text-neutral-400">Status</p>
+                                    <p className="capitalize">{msg.status}</p>
+                                  </div>
+
+                                </div>
+
+                                <div className="mt-4">
+                                  <p className="text-neutral-400 mb-1">Message</p>
+                                  <p className="leading-relaxed">{msg.message}</p>
+                                </div>
+
+                              </div>
                             </td>
                           </tr>
-                        </React.Fragment>
-                      ))}
+                        )}
+
+                      </React.Fragment>
+                    ))}
                     </tbody>
                   </table>
                 </div>
