@@ -49,6 +49,7 @@ exports.deleteContact = async ({ id }) => {
     SET deleted = 1
     WHERE id = ?
     AND deleted = 0
+    AND deleted_at = CURRENT_TIMESTAMP
     `,
     [id]
   );

@@ -15,7 +15,10 @@ interface ContactMessage {
   status: "pending" | "reviewed";
   createdAt: string;
   updatedAt: string;
+  deleted?: 0 | 1;     
+  deletedAt?: string | null; 
 }
+
 
 export default function Dashboard() {
   const [messages, setMessages] = useState<ContactMessage[]>([]);
@@ -62,7 +65,9 @@ export default function Dashboard() {
         status: msg.status,
         createdAt: msg.created_at,
         updatedAt: msg.updated_at,
-      }));
+        deleted: msg.deleted,       
+        deletedAt: msg.deleted_at,   
+      }));      
       setMessages(mapped);
     } catch (err) {
       console.error(err);
@@ -155,7 +160,7 @@ export default function Dashboard() {
   
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/contact/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/contact/${id}/delete`,
         {
           method: "PATCH",
           headers: {
@@ -305,12 +310,14 @@ export default function Dashboard() {
                               </button>
                             )}
 
-                          <button
-                            onClick={() => handleDeleteMessage(msg.id)}
-                            className="bg-red-600 px-3 py-1 rounded"
-                          >
-                            Delete
-                          </button>
+                            {!msg.deleted && (
+                              <button
+                                onClick={() => handleDeleteMessage(msg.id)}
+                                className="bg-red-600 px-3 py-1 rounded"
+                              >
+                                Delete
+                              </button>
+                            )}
                         </div>
 
                       </div>
@@ -358,12 +365,14 @@ export default function Dashboard() {
                               </button>
                             )}
 
-                            <button
-                              onClick={() => handleDeleteMessage(msg.id)}
-                              className="bg-red-600 px-3 py-1 rounded"
-                            >
-                              Delete
-                            </button>
+                            {!msg.deleted && (
+                              <button
+                                onClick={() => handleDeleteMessage(msg.id)}
+                                className="bg-red-600 px-3 py-1 rounded"
+                              >
+                                Delete
+                              </button>
+                            )}
 
                             <button
                               onClick={() => handleViewToggle(msg.id)}
