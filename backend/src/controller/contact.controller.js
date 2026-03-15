@@ -45,3 +45,19 @@ exports.deleteContact = async (req, res, next) => {
   }
 };
 
+exports.getFilteredContacts = async (req, res, next) => {
+  try {
+    const { status, deleted } = req.query;
+
+    const contacts = await contactService.getFilteredContacts({
+      status,
+      deleted,
+    });
+
+    res.json(contacts);
+  } catch (err) {
+    next(err);
+  }
+};
+
+

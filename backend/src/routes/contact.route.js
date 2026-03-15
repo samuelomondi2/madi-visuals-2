@@ -7,6 +7,6 @@ const router = express.Router();
 router.post('/contact', contactLimiter, controller.contact);
 router.get('/contact', controller.getContacts);
 router.patch('/contact/:id', controller.reviewedContact);
-router.patch('/contact/:id', controller.deleteContact);
+router.patch('/contact/:id/delete', controller.deleteContact);
 
 module.exports = router;
