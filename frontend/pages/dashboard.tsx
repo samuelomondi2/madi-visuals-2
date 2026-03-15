@@ -103,10 +103,21 @@ export default function Dashboard() {
     }
   };
 
+  const fetchFilteredMessages = async (status?: string) => {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/contact?status=${status}&deleted=0`
+    );
+  
+    const data = await res.json();
+    setMessages(data);
+  };
+  
+
   useEffect(() => {
     fetchMessages();
     fetchMedia();
     fetchCurrentHero();
+    fetchFilteredMessages();
   }, []);
 
   /* -------------------- Actions -------------------- */

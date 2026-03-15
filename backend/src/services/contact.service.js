@@ -55,3 +55,65 @@ exports.deleteContact = async ({ id }) => {
 
   return result;
 };
+
+// Filtering
+exports.getFilteredContacts = async ({ status, deleted }) => {
+  let query = await db.query(`SELECT * FROM contact WHERE 1=1`);
+  const params = [];
+
+  if (status) {
+    query += ` AND status = ?`;
+    params.push(status);
+  }
+
+  if (deleted !== undefined) {
+    query += ` AND deleted = ?`;
+    params.push(deleted);
+  }
+
+  const [rows] = await db.query(query, params);
+  return rows;
+};
+
+
+// exports.deletedContacts = async() => {
+//   const [rows] = await db.query(
+//     `SELECT id, name, email, phone, message, status, created_at, updated_at 
+//      FROM contact 
+//      WHERE deleted = 1
+//      ORDER BY created_at DESC`
+//   );
+//   return rows;
+// };
+
+// exports.activeContacts = async() => {
+//   const [rows] = await db.query(
+//     `SELECT id, name, email, phone, message, status, created_at, updated_at 
+//      FROM contact 
+//      WHERE deleted = 0
+//      ORDER BY created_at DESC`
+//   );
+//   return rows;
+// };
+
+// exports.pendingStatusContacts = async() => {
+//   const [rows] = await db.query(
+//     `SELECT id, name, email, phone, message, status, created_at, updated_at 
+//      FROM contact 
+//      WHERE status = pending
+//      AND deleted = 0
+//      ORDER BY created_at DESC`
+//   );
+//   return rows;
+// };
+
+// exports.reviewedStatusContacts = async() => {
+//   const [rows] = await db.query(
+//     `SELECT id, name, email, phone, message, status, created_at, updated_at 
+//      FROM contact 
+//      WHERE status = reviewed
+//      AND deleted = 0
+//      ORDER BY created_at DESC`
+//   );
+//   return rows;
+// };
