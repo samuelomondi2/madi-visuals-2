@@ -141,19 +141,35 @@ export default function Dashboard() {
 
   const handleDeleteMessage = async (id: number) => {
     const token = getToken();
+  
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to delete message");
-      setMessages(messages.filter((msg) => msg.id !== id));
-      if (viewId === id) setViewId(null);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/contact/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      if (!res.ok) {
+        throw new Error("Failed to delete message");
+      }
+  
+      // remove deleted message from UI
+      setMessages((prev) => prev.filter((msg) => msg.id !== id));
+  
+      if (viewId === id) {
+        setViewId(null);
+      }
+  
     } catch (err) {
       console.error(err);
       alert("Failed to delete message");
     }
-  };
+  };  
 
   const toggleStatus = async (id: number, currentStatus: "pending" | "reviewed") => {
     if (currentStatus !== "pending") return; 

@@ -23,8 +23,25 @@ exports.reviewedContact = async (req, res, next) => {
   const { id } = req.params;
   try {
     const updatedContact = await contactService.reviewdContact({ id });
-    res.status(200).json({ message: 'Resolved', data: updatedContact });
+    res.status(200).json({ message: 'Resolved contact', data: updatedContact });
   } catch (error) {
     next(error);
   }
 };
+
+exports.deleteContact = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const result = await contactService.deleteContact({ id });
+
+    res.status(200).json({
+      message: "Contact soft deleted",
+      data: result
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+

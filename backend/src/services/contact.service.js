@@ -34,24 +34,24 @@ exports.reviewdContact = async ({ id }) => {
     [id]
   );
 
-  // Fetch the updated row if needed
   const [updatedRows] = await db.query(
     `SELECT * FROM contact WHERE id = ?`,
     [id]
   );
 
-  return updatedRows[0]; // return the updated row
+  return updatedRows[0]; 
 };
 
+exports.deleteContact = async ({ id }) => {
+  const [result] = await db.query(
+    `
+    UPDATE contact
+    SET deleted = 1
+    WHERE id = ?
+    AND deleted = 0
+    `,
+    [id]
+  );
 
-
-// ###Filtering by status
-// const status = req.query.status;
-// let query = `SELECT ... FROM contact WHERE deleted_at IS NULL`;
-// const params = [];
-// if (status) {
-//   query += ` AND status = ?`;
-//   params.push(status);
-// }
-// query += ` ORDER BY created_at DESC`;
-// const [rows] = await db.query(query, params);
+  return result;
+};
