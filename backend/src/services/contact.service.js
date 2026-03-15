@@ -1,6 +1,15 @@
 const db = require('../config/db');
+const adminEmail = require("./adminEmailService");
 
 exports.contact = async ({ name, email, phone, message }) => {
+  const emailDetails = await adminEmail.getEmailDetails(); // fetch latest row
+  const adminEmailAddress = emailDetails?.[0]?.email;
+  const adminPassword = emailDetails?.[0]?.password;
+
+  if (!adminEmailAddress || !adminPassword) {
+    throw new Error("Admin email credentials not configured");
+  }
+
   const status = 'pending';      
   const deleted_at = null;        
 
@@ -9,6 +18,29 @@ exports.contact = async ({ name, email, phone, message }) => {
      VALUES (?, ?, ?, ?, ?, ?)`,
     [name, email, phone, message, status, deleted_at]
   );
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: adminEmailAddress, 
+      pass: adminPassword, 
+    },
+  });
+
+  const mailOptions = {
+    from: `"${name}" <${email}>`,
+    to: adminEmailAddress,
+    subject: `New Contact Message from ${name}`,
+    text: `
+    Name: ${name}
+    Email: ${email}
+    Phone: ${phone || "-"}
+    Message:
+    ${message}
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
 };
 
 exports.getContacts = async () => {
@@ -57,7 +89,7 @@ exports.deleteContact = async ({ id }) => {
 
 // Filtering
 exports.getFilteredContacts = async ({ status, deleted }) => {
-  let query = await db.query(`SELECT * FROM contact WHERE 1=1`);
+  let query = `SELECT * FROM contact WHERE 1=1`;
   const params = [];
 
   if (status) {
