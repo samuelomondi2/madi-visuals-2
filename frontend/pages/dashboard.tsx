@@ -175,7 +175,11 @@ export default function Dashboard() {
       }
   
       // remove deleted message from UI
-      setMessages((prev) => prev.filter((msg) => msg.id !== id));
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === id ? { ...msg, deleted: 1, deletedAt: new Date().toISOString() } : msg
+        )
+      );      
   
       if (viewId === id) {
         setViewId(null);
@@ -310,7 +314,7 @@ export default function Dashboard() {
                               </button>
                             )}
 
-                            {!msg.deleted && (
+                            {msg.deleted !== 1 && (
                               <button
                                 onClick={() => handleDeleteMessage(msg.id)}
                                 className="bg-red-600 px-3 py-1 rounded"
@@ -318,8 +322,8 @@ export default function Dashboard() {
                                 Delete
                               </button>
                             )}
-                        </div>
 
+                        </div>
                       </div>
                     ))}
                 </div>
@@ -365,7 +369,7 @@ export default function Dashboard() {
                               </button>
                             )}
 
-                            {!msg.deleted && (
+                            {msg.deleted !== 1 && (
                               <button
                                 onClick={() => handleDeleteMessage(msg.id)}
                                 className="bg-red-600 px-3 py-1 rounded"
@@ -373,6 +377,7 @@ export default function Dashboard() {
                                 Delete
                               </button>
                             )}
+
 
                             <button
                               onClick={() => handleViewToggle(msg.id)}

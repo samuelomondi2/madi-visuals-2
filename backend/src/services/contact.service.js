@@ -46,10 +46,8 @@ exports.deleteContact = async ({ id }) => {
   const [result] = await db.query(
     `
     UPDATE contact
-    SET deleted = 1
-    WHERE id = ?
-    AND deleted = 0
-    AND deleted_at = CURRENT_TIMESTAMP
+    SET deleted = 1, deleted_at = NOW()
+    WHERE id = ? AND deleted = 0
     `,
     [id]
   );
