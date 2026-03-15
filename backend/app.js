@@ -13,6 +13,7 @@ const heroVideoRoutes = require("./src/routes/herovideo.route");
 const serviceRoutes = require("./src/routes/services.route");
 const availabilityRoutes = require("./src/routes/availability.route");
 const bookingRoutes = require("./src/routes/booking.route");
+const adminEmail = require("./src/routes/adminEmailRoutes");
 const errorHandler = require("./src/middleware/errorHandler");
 
 const app = express();
@@ -30,6 +31,7 @@ app.use('/api', heroVideoRoutes);
 app.use('/api', serviceRoutes);
 app.use('/api', availabilityRoutes);
 app.use('/api', bookingRoutes);
+app.use('/api', adminEmail);
 
 // Serve static files
 // Host Media on Your Own Server (Node.js Static Folder)
