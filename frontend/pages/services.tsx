@@ -1,59 +1,19 @@
 'use client';
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-const lifestyleServices = [
-  {
-    title: "Lifestyle Shoot",
-    duration: "30 minutes",
-    price: "$125",
-    delivery: "3–5 business days",
-  },
-  {
-    title: "Couple / Duo Shoot",
-    duration: "30 minutes",
-    price: "$150",
-    delivery: "3–5 business days",
-  },
-  {
-    title: "Group Shoot (3–5 people)",
-    duration: "30 minutes",
-    price: "$175",
-    delivery: "3–5 business days",
-  },
-];
-
-const sportsVideo = [
-  {
-    title: "Single Player Highlight Reel",
-    price: "$100",
-    delivery: "3–5 business days",
-  },
-  {
-    title: "Media Team Collaboration Add-On",
-    price: "+$25",
-    delivery: "Optional add-on",
-  },
-];
-
-const sportsPhoto = [
-  {
-    title: "Team Portrait Session",
-    duration: "1 hour",
-    price: "$150",
-    delivery: "3–5 business days",
-  },
-  {
-    title: "Individual Player Session",
-    price: "$75",
-    delivery: "3–5 business days",
-  },
-  {
-    title: "Media Team Collaboration Add-On",
-    price: "+$25",
-    delivery: "Optional add-on",
-  },
-];
+type Service = {
+  id: number;
+  name: string;
+  duration: number | null;
+  base_price: number | string;
+  delivery: string;
+  category: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
 const addons = [
   { title: "Extra Hours", description: "Price upon request" },
@@ -85,6 +45,82 @@ function ServiceCard({ title, duration, price, delivery, description }: any) {
 }
 
 export default function Services() {
+  const [loading, setLoading] = useState(true);
+  const [service, setService] = useState<Service[]>([]);
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const getToken = () => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("token") || sessionStorage.getItem("token");
+  };
+
+  const fetchServices = async () => {
+    setLoading(true);
+    const token = getToken();
+    if (!token) return router.push("/login");
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/services`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch services");
+      const data = await res.json();
+      const mapped = data.services.map((service: any) => ({
+        id: service.id,
+        name: service.name,
+        duration: service.duration,
+        base_price: service.base_price,
+        delivery: service.delivery,
+        category: service.category,
+        createdAt: service.created_at,
+        updatedAt: service.updated_at, 
+      }));
+      setService(mapped);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load services");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const lifestyleServices = service.filter(
+    (s) => s.category === "Lifestyle Photography"
+  );
+  
+  const sportsVideo = service.filter(
+    (s) => s.category === "Sports Videography"
+  );
+  
+  const sportsPhoto = service.filter(
+    (s) => s.category === "Sports Photography"
+  );
+  
+  const comboServices = service.filter(
+    (s) => s.category === "Photo & Video Combo"
+  );
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="pt-24 text-center text-white">
+        Loading services...
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="pt-24 text-center text-red-500">
+        {error}
+      </main>
+    );
+  }
+
   return (
     <main className="pt-24 bg-black text-white min-h-screen">
       <section className="mx-auto max-w-7xl px-6 py-12">
@@ -107,8 +143,14 @@ export default function Services() {
           </p>
 
           <div className="grid gap-6 md:grid-cols-3">
-            {lifestyleServices.map((service, i) => (
-              <ServiceCard key={i} {...service} />
+            {lifestyleServices.map((service) => (
+              <ServiceCard
+              key={service.id}
+              title={service.name}
+              duration={service.duration ? `${service.duration} mins` : ""}
+              price={`$${Number(service.base_price)}`}
+              delivery={service.delivery}
+            />
             ))}
           </div>
         </Section>
@@ -116,8 +158,14 @@ export default function Services() {
         {/* Sports Videography */}
         <Section title="Sports Videography">
           <div className="grid gap-6 md:grid-cols-2">
-            {sportsVideo.map((service, i) => (
-              <ServiceCard key={i} {...service} />
+            {sportsVideo.map((service) => (
+              <ServiceCard
+                key={service.id}
+                title={service.name}
+                duration={service.duration ? `${service.duration} mins` : ""}
+                price={`$${Number(service.base_price)}`}
+                delivery={service.delivery}
+              />
             ))}
           </div>
         </Section>
@@ -125,8 +173,14 @@ export default function Services() {
         {/* Sports Photography */}
         <Section title="Sports Photography">
           <div className="grid gap-6 md:grid-cols-3">
-            {sportsPhoto.map((service, i) => (
-              <ServiceCard key={i} {...service} />
+            {sportsPhoto.map((service) => (
+              <ServiceCard
+                key={service.id}
+                title={service.name}
+                duration={service.duration ? `${service.duration} mins` : ""}
+                price={`$${Number(service.base_price)}`}
+                delivery={service.delivery}
+              />
             ))}
           </div>
         </Section>
@@ -134,12 +188,14 @@ export default function Services() {
         {/* Combo */}
         <Section title="Photo & Video Combo">
           <div className="max-w-md mx-auto">
+          {comboServices.map((service: any) => (
             <ServiceCard
-              title="Sports Event Coverage"
-              price="$150 per event/game"
-              description="Includes curated photos and short-form video clips"
-              delivery="3–5 business days"
+              key={service.id}
+              title={service.name}
+              price={`$${service.base_price}`}
+              delivery={service.delivery}
             />
+          ))}
           </div>
         </Section>
 
