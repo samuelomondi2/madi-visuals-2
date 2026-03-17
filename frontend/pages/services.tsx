@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 type Service = {
   id: number;
@@ -48,21 +47,12 @@ export default function Services() {
   const [loading, setLoading] = useState(true);
   const [service, setService] = useState<Service[]>([]);
   const [error, setError] = useState("");
-  const router = useRouter();
-
-  const getToken = () => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem("token") || sessionStorage.getItem("token");
-  };
 
   const fetchServices = async () => {
     setLoading(true);
-    const token = getToken();
-    if (!token) return router.push("/login");
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/services`, {
-        headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error("Failed to fetch services");
       const data = await res.json();
