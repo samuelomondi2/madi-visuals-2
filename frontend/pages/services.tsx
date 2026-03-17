@@ -138,7 +138,7 @@ export default function Services() {
               key={service.id}
               title={service.name}
               duration={service.duration ? `${service.duration} mins` : ""}
-              price={`$${Number(service.base_price)}`}
+              price={`$${service.base_price}`}
               delivery={service.delivery}
             />
             ))}
@@ -153,7 +153,7 @@ export default function Services() {
                 key={service.id}
                 title={service.name}
                 duration={service.duration ? `${service.duration} mins` : ""}
-                price={`$${Number(service.base_price)}`}
+                price={`$${service.base_price}`}
                 delivery={service.delivery}
               />
             ))}
@@ -168,7 +168,7 @@ export default function Services() {
                 key={service.id}
                 title={service.name}
                 duration={service.duration ? `${service.duration} mins` : ""}
-                price={`$${Number(service.base_price)}`}
+                price={`$${service.base_price}`}
                 delivery={service.delivery}
               />
             ))}

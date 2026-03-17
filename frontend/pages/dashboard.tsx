@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import AdminHero from "./admin-hero";
 import React from "react";
 import AvailabilityPage from "./availability";
+import AdminServices from "./admin-services";
 
 interface ContactMessage {
   id: number;
@@ -31,7 +32,7 @@ export default function Dashboard() {
   const [mediaError, setMediaError] = useState("");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadMessage, setUploadMessage] = useState("");
-  const [activeTab, setActiveTab] = useState<"messages" | "media" | "availability" | "hero">("messages");
+  const [activeTab, setActiveTab] = useState<"messages" | "media" | "availability" | "services" | "hero">("messages");
   const [videoUrlInput, setVideoUrlInput] = useState<string>("");
   const [currentHero, setCurrentHero] = useState<{ type: "image" | "video"; url: string } | null>(null);
   const [email, setEmail] = useState("");
@@ -301,6 +302,14 @@ export default function Dashboard() {
           }`}
         >
           Availability
+        </button>
+        <button
+          onClick={() => setActiveTab("services")}
+          className={`px-4 py-2 font-semibold rounded-t flex-shrink-0 ${
+            activeTab === "services" ? "bg-[#D4AF37] text-black" : "text-white hover:text-[#D4AF37]"
+          }`}
+        >
+          Services
         </button>
       </div>
 
@@ -645,6 +654,9 @@ export default function Dashboard() {
 
         {/* Availability Tab */}
         {activeTab === "availability" && <AvailabilityPage/> }
+
+        {/* Services Tab */}
+        {activeTab === "services" && <AdminServices/> }
       </div>
 
       {/* Logout */}
