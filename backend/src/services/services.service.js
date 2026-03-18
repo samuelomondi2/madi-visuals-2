@@ -26,7 +26,7 @@ exports.addAService = async ({ name, duration, base_price, delivery, category })
     [name, duration, base_price, delivery, category]
   );
 
-  return result.insertId;
+  return result; 
 };
 
 exports.updateAService = async (id, updates) => {
@@ -53,4 +53,6 @@ exports.updateAService = async (id, updates) => {
   return result;
 };
 
-
+exports.deleteAService = async ({ id }) => {
+  await db.query(`DELETE FROM services WHERE id = ?`, [id]);
+};

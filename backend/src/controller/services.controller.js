@@ -37,26 +37,26 @@ exports.getService = async (req, res) => {
 
 exports.addService = async (req, res) => {
   try {
-    res.set("Cache-Control", "no-store");
-
     const { name, duration, base_price, delivery, category } = req.body;
 
-    const serviceId = await servicesService.addAService({
+    const result = await servicesService.addAService({
       name,
       duration,
       base_price,
       delivery,
-      category
+      category,
+    });
+
+    const service = await servicesService.getASingleService({
+      id: result.insertId,
     });
 
     res.status(201).json({
       success: true,
-      service_id: serviceId,
-      message: "Service created successfully",
+      service,
     });
-
   } catch (error) {
-    console.error("ADD service error:", error.stack || error);
+    console.error(error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -85,5 +85,22 @@ exports.updateService = async (req, res) => {
   } catch (err) {
     console.error("Service updating error:", err);
     res.status(500).json({ message: err.message });
+  }
+};
+
+exports.deleteService = async (req, res) => {
+  try {
+    res.set("Cache-Control", "no-store");
+
+    const { id } = req.params;
+    await servicesService.deleteAService({ id }); 
+
+    res.status(200).json({
+      success: true,
+      message: "Service deleted successfully",
+    });
+  } catch (error) {
+    console.error("Service deletion error:", error);
+    res.status(500).json({ message: error.message });
   }
 };

@@ -8,5 +8,6 @@ router.get("/services", controller.getServices);
 router.get("/services/:id", controller.getService);
 router.post("/services", authenticateToken, controller.addService);
 router.patch("/services/:id", authenticateToken, controller.updateService);
+router.delete("/services/:id", authenticateToken, controller.deleteService);
 
 module.exports = router;
