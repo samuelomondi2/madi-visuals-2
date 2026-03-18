@@ -25,48 +25,60 @@ exports.setAdminAvailability = async (schedule) => {
 };
 
 exports.getAvailability = async (date) => {
-
   const services = await servicesService.getAllServices();
   const day = new Date(date).getDay();
 
+  // Get admin hours for the day
   const [hours] = await db.execute(
     "SELECT start_time,end_time FROM admin_availability WHERE day_of_week=?",
     [day]
   );
 
-  if (!hours.length) return [];
+  if (!hours.length) {
+    console.log(`No admin availability set for day_of_week=${day}`);
+    return [];
+  }
 
   const { start_time, end_time } = hours[0];
+  console.log("Admin hours:", start_time, "-", end_time);
 
+  // Get breaks for the day
   const [breaks] = await db.execute(
     "SELECT start_time,end_time FROM admin_breaks WHERE day_of_week=?",
     [day]
   );
+  console.log("Breaks:", breaks);
 
   const availability = [];
 
   for (const service of services) {
+    const durationMinutes = service.duration ?? 30; // fallback 30 mins
+    const duration = durationMinutes * 60000;
 
-    const duration = service.duration * 60000;
+    console.log(`Service: ${service.name}, Duration: ${durationMinutes} mins`);
 
+    // Generate all possible slots
     const slots = generateSlots(start_time, end_time, duration, date);
+    console.log("Generated slots:", slots.map(s => s.start));
 
+    // Get bookings for this service on this date
     const [bookings] = await db.execute(
-      `SELECT start_time,end_time
-       FROM bookings
-       WHERE booking_date=? AND service_id=?`,
+      `SELECT start_time,end_time FROM bookings WHERE booking_date=? AND service_id=?`,
       [date, service.id]
     );
 
     const blocked = [...bookings, ...breaks];
 
+    // Filter out slots that overlap with breaks or bookings
     const freeSlots = slots
-      .filter(slot => {
-        return !blocked.some(b =>
+      .filter(slot =>
+        !blocked.some(b =>
           isOverlap(slot.start, slot.end, b.start_time, b.end_time)
-        );
-      })
+        )
+      )
       .map(slot => slot.start);
+
+    console.log("Free slots for service", service.name, ":", freeSlots);
 
     availability.push({
       id: service.id,
