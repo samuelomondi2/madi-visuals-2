@@ -77,15 +77,17 @@ export default function AdminServices() {
   
       const data = await res.json();
   
-      // ✅ construct proper Service object
-      const createdService: Service = {
-        id: data.service_id,
-        ...newService,
-      };
+      console.log("API RESPONSE:", data);
   
-      setServices((prev) => [...prev, createdService]);
+      const createdService: Service = {
+        ...data.service,
+        base_price: Number(data.service.base_price),
+      };
+
+      setServices((prev) => [createdService, ...prev]);
   
       setShowAddModal(false);
+  
       setNewService({
         name: "",
         category: "",
@@ -93,6 +95,7 @@ export default function AdminServices() {
         duration: null,
         delivery: "",
       });
+  
     } catch (err) {
       console.error(err);
     }
