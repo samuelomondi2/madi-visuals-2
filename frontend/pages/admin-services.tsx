@@ -27,6 +27,7 @@ export default function AdminServices() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
+  const [categories, setCategories] = useState<string[]>([]);
   const [newService, setNewService] = useState<NewService>({
     name: "",
     category: "",
@@ -163,6 +164,13 @@ export default function AdminServices() {
     fetchServices();
   }, []);
 
+  useEffect(() => {
+    const uniqueCategories = Array.from(
+      new Set(services.map((s) => s.category).filter(Boolean))
+    );
+    setCategories(uniqueCategories);
+  }, [services]);
+
   if (loading) return <p className="p-6 text-center text-white">Loading services...</p>;
 
   return (
@@ -233,13 +241,18 @@ export default function AdminServices() {
                 onChange={(e) => setNewService({ ...newService, name: e.target.value })}
                 className="p-2 rounded bg-neutral-800 text-white"
               />
-              <input
-                type="text"
-                placeholder="Category"
-                value={newService.category}
-                onChange={(e) => setNewService({ ...newService, category: e.target.value })}
-                className="p-2 rounded bg-neutral-800 text-white"
-              />
+                <select
+                    value={newService.category}
+                    onChange={(e) => setNewService({ ...newService, category: e.target.value })}
+                    className="p-2 rounded bg-neutral-800 text-white"
+                    >
+                    <option value="">Select category</option>
+                    {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                        {cat}
+                        </option>
+                    ))}
+                </select>
               <input
                 type="number"
                 placeholder="Price"
@@ -310,17 +323,20 @@ export default function AdminServices() {
                 />
 
                 {/* Category */}
-                <input
-                type="text"
-                value={editingService.category}
-                onChange={(e) =>
-                    setEditingService({
-                    ...editingService,
-                    category: e.target.value,
-                    })
-                }
-                className="p-3 rounded bg-neutral-800 text-white"
-                />
+                <select
+                    value={editingService.category}
+                    onChange={(e) =>
+                        setEditingService({ ...editingService, category: e.target.value })
+                    }
+                    className="p-3 rounded bg-neutral-800 text-white"
+                    >
+                    <option value="">Select category</option>
+                    {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                        {cat}
+                        </option>
+                    ))}
+                </select>
 
                 {/* Price */}
                 <input
