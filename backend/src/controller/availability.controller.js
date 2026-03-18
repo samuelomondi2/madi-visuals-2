@@ -1,4 +1,5 @@
 const availabilityService = require("../services/availability.service");
+const db = require("../config/db");
 
 exports.setAdminAvailability = async (req, res) => {
   try {
