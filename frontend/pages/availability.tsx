@@ -216,22 +216,9 @@ export default function AdminSchedule() {
                 onChange={e => handleSpecialDayChange(i, "date", e.target.value)}
                 className="bg-gray-800 p-1 rounded"
               />
-              <input
-                type="time"
-                value={s.start_time}
-                onChange={e => handleSpecialDayChange(i, "start_time", e.target.value)}
-                className="bg-gray-800 p-1 rounded"
-              />
-              <span>to</span>
-              <input
-                type="time"
-                value={s.end_time}
-                onChange={e => handleSpecialDayChange(i, "end_time", e.target.value)}
-                className="bg-gray-800 p-1 rounded"
-              />
               <label className="ml-2">
                 <input
-                  type="checkbox"
+                  type="radio"
                   checked={s.is_closed}
                   onChange={e => handleSpecialDayChange(i, "is_closed", e.target.checked)}
                 /> Closed
