@@ -47,7 +47,7 @@ exports.getAvailability = async (date) => {
 
   for (const service of services) {
 
-    const duration = service.duration_minutes * 60000;
+    const duration = service.duration * 60000;
 
     const slots = generateSlots(start_time, end_time, duration, date);
 
@@ -77,89 +77,3 @@ exports.getAvailability = async (date) => {
 
   return availability;
 };
-
-// export const getAvailability = async (date) => {
-
-//   const services = await servicesService.getAllServices();
-
-//   const day = new Date(date).getDay();
-
-//   // check special day
-//   const [special] = await db.execute(
-//     "SELECT * FROM special_days WHERE date = ?",
-//     [date]
-//   );
-
-//   if (special.length && special[0].is_closed) return [];
-
-//   let startTime, endTime;
-
-//   if (special.length) {
-//     startTime = special[0].start_time;
-//     endTime = special[0].end_time;
-//   } else {
-
-//     const [hours] = await db.execute(
-//       "SELECT start_time, end_time FROM working_hours WHERE day_of_week = ?",
-//       [day]
-//     );
-
-//     if (!hours.length) return [];
-
-//     startTime = hours[0].start_time;
-//     endTime = hours[0].end_time;
-//   }
-
-//   const [breaks] = await db.execute(
-//     "SELECT start_time, end_time FROM breaks WHERE day_of_week = ?",
-//     [day]
-//   );
-
-//   const availability = [];
-
-//   for (const service of services) {
-
-//     const [bookings] = await db.execute(
-//       `SELECT start_time, end_time
-//        FROM bookings
-//        WHERE booking_date = ? AND service_id = ?`,
-//       [date, service.id]
-//     );
-
-//     const slots = [];
-
-//     let current = new Date(`${date}T${startTime}`);
-//     const end = new Date(`${date}T${endTime}`);
-
-//     const duration = service.duration_minutes * 60 * 1000;
-
-//     while (current.getTime() + duration <= end.getTime()) {
-
-//       const slotStart = current.toTimeString().slice(0,5);
-//       const slotEnd = new Date(current.getTime() + duration)
-//         .toTimeString().slice(0,5);
-
-//       const bookingConflict = bookings.some(
-//         b => slotStart < b.end_time && slotEnd > b.start_time
-//       );
-
-//       const breakConflict = breaks.some(
-//         b => slotStart < b.end_time && slotEnd > b.start_time
-//       );
-
-//       if (!bookingConflict && !breakConflict) {
-//         slots.push(slotStart);
-//       }
-
-//       current = new Date(current.getTime() + duration);
-//     }
-
-//     availability.push({
-//       id: service.id,
-//       name: service.name,
-//       available_slots: slots
-//     });
-//   }
-
-//   return availability;
-// };
