@@ -89,3 +89,21 @@ exports.getAvailability = async (date) => {
 
   return availability;
 };
+
+exports.updateAvailability = async ({ id, start_time, end_time, enabled }) => {
+  if (!enabled) {
+    await db.execute(
+      "DELETE FROM admin_availability WHERE day_of_week = ?",
+      [id]
+    );
+    return true;
+  }
+
+  await db.execute(
+    `REPLACE INTO admin_availability (day_of_week, start_time, end_time)
+     VALUES (?, ?, ?)`,
+    [id, start_time, end_time]
+  );
+
+  return true;
+};

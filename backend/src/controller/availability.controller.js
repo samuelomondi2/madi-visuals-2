@@ -29,6 +29,19 @@ exports.getAvailability = async (req, res) => {
     }
 };
 
+exports.updateAvailability = async (req, res) => {
+  try {
+    const { id, start_time, end_time, enabled } = req.body;
+
+    await availabilityService.updateAvailability({id, start_time, end_time, enabled});
+
+    res.json({ message: "Availability Updated"})
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ message: error.message });
+  }
+}
+
 exports.getAllBreaks = async (req, res) => {
   try {
     const [rows] = await db.execute("SELECT * FROM admin_breaks ORDER BY day_of_week");
