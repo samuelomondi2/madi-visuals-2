@@ -62,28 +62,24 @@ exports.addService = async (req, res) => {
 };
 
 exports.updateService = async (req, res) => {
+  res.set("Cache-Control", "no-store");
+  
   try {
-    res.set("Cache-Control", "no-store");
-
     const { id } = req.params;
 
-    const updates = req.body;
+    await servicesService.updateAService({
+      id,
+      ...req.body,
+    });
 
-    const result = await servicesService.updateAService(id, updates);
-
-    if (!result || result.affectedRows === 0) {
-      return res.status(404).json({
-        message: "Service not found"
-      });
-    }
+    const updatedService = await servicesService.getASingleService({ id });
 
     res.json({
       success: true,
-      message: "Service updated successfully"
+      service: updatedService,
     });
-
   } catch (err) {
-    console.error("Service updating error:", err);
+    console.error(err);
     res.status(500).json({ message: err.message });
   }
 };

@@ -62,20 +62,37 @@ export default function AdminServices() {
   const handleAdd = async () => {
     const token = getToken();
     if (!token) return router.push("/login");
-
+  
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/services`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(newService),
       });
-
+  
       if (!res.ok) throw new Error("Failed to add service");
-
-      const addedService = await res.json();
-      setServices((prev) => [...prev, addedService]);
+  
+      const data = await res.json();
+  
+      // ✅ construct proper Service object
+      const createdService: Service = {
+        id: data.service_id,
+        ...newService,
+      };
+  
+      setServices((prev) => [...prev, createdService]);
+  
       setShowAddModal(false);
-      setNewService({ name: "", category: "", base_price: 0, duration: null, delivery: "" });
+      setNewService({
+        name: "",
+        category: "",
+        base_price: 0,
+        duration: null,
+        delivery: "",
+      });
     } catch (err) {
       console.error(err);
     }
@@ -104,28 +121,6 @@ export default function AdminServices() {
     }
   };
 
-  const handleEdit = async (serviceId: number) => {
-    const token = getToken();
-    if (!token) return router.push("/login");
-
-    setActionLoading(serviceId);
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/services/${serviceId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name: "Updated Name" }),
-      });
-
-      if (!res.ok) throw new Error("Failed to edit service");
-      const updatedService = await res.json();
-      setServices((prev) => prev.map((s) => (s.id === serviceId ? updatedService : s)));
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
   const handleUpdate = async () => {
     if (!editingService) return;
   
@@ -147,10 +142,12 @@ export default function AdminServices() {
   
       if (!res.ok) throw new Error("Failed to update service");
   
-      const data = await res.json();
-  
       setServices((prev) =>
-        prev.map((s) => (s.id === editingService.id ? data.service : s))
+        prev.map((s) =>
+          s.id === editingService.id
+            ? { ...s, ...editingService }
+            : s
+        )
       );
   
       setShowEditModal(false);
@@ -159,7 +156,6 @@ export default function AdminServices() {
       console.error(err);
     }
   };
-
   useEffect(() => {
     fetchServices();
   }, []);
@@ -181,7 +177,7 @@ export default function AdminServices() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-1">
-          {services.map((service) => (
+          {services.filter((s) => s && s.id).map((service) => (
             <div
               key={service.id}
               className="bg-neutral-900 p-4 rounded-lg shadow-sm flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2"
@@ -390,3 +386,4 @@ export default function AdminServices() {
     </main>
   );
 }
+
