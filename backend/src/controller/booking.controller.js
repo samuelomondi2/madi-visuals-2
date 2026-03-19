@@ -22,5 +22,3 @@ exports.createBookingController = async (req, res) => {
     res.status(500).json({ error: err.message || 'Internal server error' });
   }
 };
-
-module.exports = { createBookingController };
