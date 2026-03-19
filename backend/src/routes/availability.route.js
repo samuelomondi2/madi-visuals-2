@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const controller = require("../controllers/availability.controller");
+const controller = require("../controller/availability.controller");
 
 router.get("/availability", controller.getAvailability);
 router.post("/availability", controller.setAdminAvailability);           
