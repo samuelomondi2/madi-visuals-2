@@ -67,25 +67,29 @@ exports.deleteBreak = async (id) => {
 };
 
 // --- Get availability for a date --- //
+exports.getAvailability = async (date) => {
+  if (!date) throw new Error("Date is required");
 
-exports.getAvailability = async (date, day_of_week = null) => {
+  // Get all services
   const services = await servicesService.getAllServices();
-  const day = day_of_week ?? new Date(date).getDay();
 
-  // Get admin hours
+  // Determine day_of_week (0=Sunday, 6=Saturday)
+  const day = new Date(date).getDay();
+
+  // 1️⃣ Get admin hours for this day
   const [hours] = await db.execute(
     "SELECT start_time, end_time FROM admin_availability WHERE day_of_week=?",
     [day]
   );
 
   if (!hours.length) {
-    console.log(`No admin availability for day_of_week=${day}`);
-    return [];
+    console.log(`No admin availability set for day_of_week=${day}`);
+    return []; // closed
   }
 
   let { start_time, end_time } = hours[0];
 
-  // Check special day override
+  // 2️⃣ Check if there's a special day override
   const [specialDays] = await db.execute(
     "SELECT start_time, end_time, is_closed FROM special_days WHERE date=?",
     [date]
@@ -93,12 +97,12 @@ exports.getAvailability = async (date, day_of_week = null) => {
 
   if (specialDays.length) {
     const special = specialDays[0];
-    if (special.is_closed) return []; // closed
+    if (special.is_closed) return []; // closed for the day
     start_time = special.start_time;
     end_time = special.end_time;
   }
 
-  // Get breaks
+  // 3️⃣ Get breaks for this day
   const [breaks] = await db.execute(
     "SELECT start_time, end_time FROM admin_breaks WHERE day_of_week=?",
     [day]
@@ -106,29 +110,31 @@ exports.getAvailability = async (date, day_of_week = null) => {
 
   const availability = [];
 
+  // 4️⃣ Generate slots per service
   for (const service of services) {
-    const durationMinutes = service.duration ?? 30;
-    const durationMs = durationMinutes * 60000;
+    const durationMinutes = service.duration ?? 30; // fallback 30 mins
+    const durationMs = durationMinutes * 60 * 1000;
 
-    // Generate slots
+    // Generate all potential slots
     const slots = generateSlots(start_time, end_time, durationMs, date);
 
-    // Get bookings
+    // 5️⃣ Get bookings for this service on this date
     const [bookings] = await db.execute(
       "SELECT start_time, end_time FROM bookings WHERE booking_date=? AND service_id=?",
       [date, service.id]
     );
 
+    // Combine breaks + bookings
     const blocked = [...bookings, ...breaks];
 
-    // Filter out overlapping slots
+    // 6️⃣ Filter out slots that overlap with breaks or bookings
     const freeSlots = slots
       .filter(slot =>
         !blocked.some(b =>
           isOverlap(slot.start, slot.end, b.start_time, b.end_time)
         )
       )
-      .map(slot => slot.start);
+      .map(slot => slot.start); // return only start times
 
     availability.push({
       id: service.id,
