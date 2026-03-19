@@ -1,14 +1,15 @@
 const express = require("express");
-const controller = require("../controller/availability.controller");
-
 const router = express.Router();
+const controller = require("../controllers/availability.controller");
 
-router.get("/availability", controller.getAvailability);
-router.post("/availability", controller.setAdminAvailability);
-router.put("/availability", controller.updateAvailability);
-router.get("/breaks", controller.getAllBreaks);
-router.post("/breaks", controller.saveBreaks);
-router.get("/special_days", controller.getAllSpecialDays);
-router.post("/special_days", controller.saveSpecialDays);
+router.get("/availability/:day_of_week", controller.getAvailabilityByDay); 
+router.post("/availability", controller.setAdminAvailability);           
+router.put("/availability/:day_of_week", controller.updateAvailability); 
+router.delete("/availability/:day_of_week", controller.deleteAvailability); 
+
+router.get("/breaks/:day_of_week", controller.getBreaksByDay);
+router.post("/breaks", controller.saveBreaks);        
+router.put("/breaks/:id", controller.updateBreak);   
+router.delete("/breaks/:id", controller.deleteBreak);
 
 module.exports = router;
