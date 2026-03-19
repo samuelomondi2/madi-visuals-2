@@ -1,45 +1,18 @@
 const bookingService = require("../services/booking.service");
 
-// POST /bookings
-exports.createBooking = async (req, res) => {
+exports.createBookingController = async (req, res) => {
   try {
-    const bookingId = await bookingService.createBooking(req.body);
+    const requiredFields = ['service_id', 'booking_date', 'start_time', 'end_time', 'client_name'];
+    for (let field of requiredFields) {
+      if (!req.body[field]) {
+        return res.status(400).json({ error: `${field} is required.` });
+      }
+    }
 
-    // TODO: send email & SMS confirmation
-
-    res.status(201).json({
-      success: true,
-      booking_id: bookingId,
-      message: "Booking created. Pending payment.",
-    });
+    const booking = await bookingService.createBooking(req.body);
+    res.status(201).json({ message: 'Booking created successfully', booking });
   } catch (err) {
-    console.error("CREATE booking error:", err);
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// GET /bookings (admin)
-exports.getBookings = async (req, res) => {
-  try {
-    const bookings = await bookingService.getAllBookings();
-    res.json({ bookings });
-  } catch (err) {
-    console.error("GET bookings error:", err);
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// GET /bookings/:id
-exports.getBooking = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const booking = await bookingService.getBookingById(id);
-
-    if (!booking) return res.status(404).json({ message: "Booking not found" });
-
-    res.json({ booking });
-  } catch (err) {
-    console.error("GET booking error:", err);
-    res.status(500).json({ message: err.message });
+    console.error('Error creating booking:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
