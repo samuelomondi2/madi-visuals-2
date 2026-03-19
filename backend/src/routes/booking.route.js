@@ -4,7 +4,7 @@ const controller = require("../controller/booking.controller");
 const router = express.Router();
 
 router.post("/bookings", controller.createBookingController);
-router.get("/bookings", controller.getBookings);
-router.get("/bookings/:id", controller.getBooking);
+// router.get("/bookings", controller.getBookings);
+// router.get("/bookings/:id", controller.getBooking);
 
 module.exports = router;
