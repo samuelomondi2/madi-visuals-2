@@ -70,7 +70,6 @@ exports.deleteBreak = async (id) => {
 exports.getAvailability = async (date) => {
   if (!date) throw new Error("Date is required");
 
-  // Get all services
   const services = await servicesService.getAllServices();
 
   // Determine day_of_week (0=Sunday, 6=Saturday)

@@ -1,6 +1,5 @@
-const db = require("../config/db");
+const db = require('../config/db'); // Your MySQL connection
 
-// Create a new booking
 exports.createBooking = async (bookingData) => {
   const {
     service_id,
@@ -14,40 +13,34 @@ exports.createBooking = async (bookingData) => {
     location,
     notes,
     total_amount,
-    payment_status,
+    payment_status
   } = bookingData;
 
-  const [result] = await db.execute(
-    `INSERT INTO bookings
-    (service_id, booking_date, start_time, end_time, client_name, client_email, client_phone, event_type, location, notes, total_amount, payment_status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      service_id,
-      booking_date,
-      start_time,
-      end_time,
-      client_name,
-      client_email,
-      client_phone,
-      event_type,
-      location,
-      notes,
-      total_amount,
-      payment_status || "pending",
-    ]
-  );
+  const query = `
+    INSERT INTO bookings 
+      (service_id, booking_date, start_time, end_time, client_name, client_email, client_phone, event_type, location, notes, total_amount, payment_status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
 
-  return result.insertId;
-};
+  const values = [
+    service_id,
+    booking_date,
+    start_time,
+    end_time,
+    client_name,
+    client_email || null,
+    client_phone || null,
+    event_type || null,
+    location || null,
+    notes || null,
+    total_amount || null,
+    payment_status || 'pending'
+  ];
 
-// Get all bookings (optional, for admin)
-exports.getAllBookings = async () => {
-  const [rows] = await pool.query("SELECT * FROM bookings ORDER BY booking_date DESC, start_time ASC");
-  return rows;
-};
-
-// Get booking by ID
-exports.getBookingById = async (id) => {
-  const [rows] = await pool.query("SELECT * FROM bookings WHERE id = ?", [id]);
-  return rows[0] || null;
+  return new Promise((resolve, reject) => {
+    db.query(query, values, (err, result) => {
+      if (err) return reject(err);
+      resolve({ id: result.insertId, ...bookingData });
+    });
+  });
 };
