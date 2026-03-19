@@ -2,16 +2,17 @@ const availabilityService = require("../services/availability.service");
 
 // --- Availability --- //
 
-exports.getAvailabilityByDay = async (req, res) => {
+exports.getAvailability = async (req, res) => {
   try {
-    const day = parseInt(req.params.day_of_week); // 0-6
-    const date = req.query.date;
-    const availability = await availabilityService.getAvailability(date, day);
-    res.json({ date: date || null, availability });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const { date } = req.query;
+    if (!date) return res.status(400).json({ message: "Date is required" });
+
+    const availability = await availabilityService.getAvailability(date);
+    res.json({ date, services: availability });
+  } catch (err) {
+    console.error("GET availability error:", err);
+    res.status(500).json({ message: err.message });
   }
-};
 
 exports.setAdminAvailability = async (req, res) => {
   try {
