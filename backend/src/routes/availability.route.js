@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.get("/availability", controller.getAvailability);
 router.post("/availability", controller.setAdminAvailability);
+router.put("/availability", controller.updateAvailability);
 router.get("/breaks", controller.getAllBreaks);
 router.post("/breaks", controller.saveBreaks);
 router.get("/special_days", controller.getAllSpecialDays);
