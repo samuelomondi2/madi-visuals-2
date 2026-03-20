@@ -1,5 +1,17 @@
 const db = require('../config/db');
 
+exports.getDuration = async (id) => {
+  try {
+    const [result] = await db.query(
+      `SELECT duration FROM services WHERE id = ?`, [id]
+    )
+    return result
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 exports.createBooking = async (bookingData) => {
   const {
     service_id,
@@ -17,17 +29,12 @@ exports.createBooking = async (bookingData) => {
 
   console.log('Fetching service...');
   console.log('service_id:', service_id);
-  const service = await new Promise((resolve, reject) => {
-    db.query(
-      `SELECT duration FROM services WHERE id = ?`,
-      [service_id],
-      (err, results) => {
-        if (err) return reject(err);
-        if (!results.length) return reject(new Error('Service not found'));
-        resolve(results[0]);
-      }
-    );
-  });
+  const service = await getDuration(service_id);
+  if (!service || service.duration == null) {
+    throw new Error('Service not found or invalid duration');
+  }
+  const duration = service.duration;
+  console.log("Next step...")
 
   try {
     console.log('Computing end time...');
