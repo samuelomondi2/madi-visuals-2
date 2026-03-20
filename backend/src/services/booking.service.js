@@ -1,6 +1,6 @@
 const db = require('../config/db');
 
-exports.getDuration = async (id) => {
+exports.getDuration = async ({id}) => {
   try {
     const [rows] = await db.query(
       `SELECT duration FROM services WHERE id = ?`, [id]
