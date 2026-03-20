@@ -1,11 +1,14 @@
 const db = require('../config/db');
 
-exports.getDuration = async ({id}) => {
+exports.getDuration = async (id) => {
   try {
-    const [result] = await db.query(
+    const [rows] = await db.query(
       `SELECT duration FROM services WHERE id = ?`, [id]
-    )
-    return result
+    );
+    if (!rows.length) {
+      throw new Error('Service not found');
+    }
+    return { duration: rows[0].duration }; 
   } catch (error) {
     console.error(error);
     throw error;
