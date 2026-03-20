@@ -17,13 +17,14 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [messages, setMessages] = useState<ServiceMessage[]>([]);
+  const [success, setSuccess] = useState("");
   const [form, setForm] = useState({
     client_name: "",
     client_email: "",
     client_phone: "",
     booking_date: "",
     start_time: "",
-    service_id: "",
+    service_id: 0,
     notes: ""
   });
 
@@ -49,11 +50,41 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     }
   };
 
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    alert("Booking submitted!");
-    setOpen(false);
-    setStep(1);
+  const handlePartialSubmit = async () => {
+    if (!form.client_name || !form.client_email || !form.booking_date || !form.start_time || !form.service_id) {
+      setError("Please fill in all required fields.");
+      return false;
+    }
+  
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, payment_status: "pending" })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to create booking");
+      }
+  
+      setSuccess("Booking created successfully!");
+      setForm({ client_name: "", client_email: "", client_phone: "", booking_date: "", start_time: "", service_id: 0, notes: "" });
+      console.log(form);
+
+      setStep(1);
+      setOpen(false);
+      return true;
+  
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Something went wrong.");
+      return false;
+    }
+  };
+
+  const handleNextStep = async () => {
+    const success = await handlePartialSubmit();
+    if (success) nextStep();
   };
 
   useEffect(() => {
@@ -108,7 +139,7 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
               </div>
             </div>
 
-            <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+            <form className="flex flex-col gap-3">
             {step === 1 && (
               <>
                 <input
@@ -154,6 +185,8 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                 </div>
 
                 <select
+                  value={form.service_id}
+                  onChange={(e) => setForm({ ...form, service_id: Number(e.target.value) })}
                   className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
                   required
                 >
@@ -166,14 +199,17 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                 </select>
                 <textarea
                   placeholder="Additional Notes"
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
                   rows={3}
-                ></textarea>
+                />
 
                 <button
                   type="button"
-                  onClick={nextStep}
-                  className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 mt-4 hover:opacity-90 transition"
+                  onClick={handleNextStep}
+                  disabled={loading}
+                  className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 mt-4 hover:opacity-90 transition disabled:opacity-50"
                 >
                   Next
                 </button>
