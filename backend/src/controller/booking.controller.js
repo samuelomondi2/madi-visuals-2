@@ -31,3 +31,19 @@ exports.getBookings = async (req, res) => {
     res.status(500).json({ message: error.message })
   }
 }
+
+exports.getBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const booking = await bookingService.getABooking({ id });
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    res.status(200).json({ booking });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

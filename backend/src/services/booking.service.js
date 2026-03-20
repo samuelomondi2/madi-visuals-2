@@ -106,3 +106,15 @@ exports.getAllBookings = async () => {
     throw error;
   }
 }
+
+exports.getABooking = async ({ id }) => {
+  try {
+    const [results] = await db.query(
+      `SELECT * FROM bookings WHERE id = ?`, [id]
+    )
+    return results[0]
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
