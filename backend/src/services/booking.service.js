@@ -6,15 +6,16 @@ exports.createBooking = async (bookingData) => {
     booking_date,
     start_time,
     client_name,
-    client_email,
-    client_phone,
-    event_type,
-    location,
-    notes,
-    total_amount,
-    payment_status
+    client_email = null,
+    client_phone = null,
+    event_type = null,
+    location = null,
+    notes = null,
+    total_amount = null,
+    payment_status = 'pending'
   } = bookingData;
 
+  // Get service duration
   const service = await new Promise((resolve, reject) => {
     db.query(
       `SELECT duration FROM services WHERE id = ?`,
@@ -27,19 +28,16 @@ exports.createBooking = async (bookingData) => {
     );
   });
 
-  const duration = service.duration;
+  const duration = service.duration || 0;
 
-  const { end_time } = await new Promise((resolve, reject) => {
-    db.query(
-      `SELECT ADDTIME(?, SEC_TO_TIME(? * 60)) AS end_time`,
-      [start_time, duration],
-      (err, results) => {
-        if (err) return reject(err);
-        resolve(results[0]);
-      }
-    );
-  });
+  // Compute end time in JS
+  const [hours, minutes] = start_time.split(':').map(Number);
+  const totalMinutes = hours * 60 + minutes + duration;
+  const endHour = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
+  const endMinute = (totalMinutes % 60).toString().padStart(2, '0');
+  const computed_end_time = `${endHour}:${endMinute}:00`;
 
+  // Check for conflicts
   const conflicts = await new Promise((resolve, reject) => {
     db.query(
       `SELECT b.id
@@ -59,28 +57,15 @@ exports.createBooking = async (bookingData) => {
     );
   });
 
-  if (conflicts.length > 0) {
-    throw new Error('Time slot already booked');
-  }
+  if (conflicts.length > 0) throw new Error('Time slot already booked');
 
+  // Insert booking
   const result = await new Promise((resolve, reject) => {
     db.query(
       `INSERT INTO bookings 
       (service_id, booking_date, start_time, client_name, client_email, client_phone, event_type, location, notes, total_amount, payment_status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        service_id,
-        booking_date,
-        start_time,
-        client_name,
-        client_email || null,
-        client_phone || null,
-        event_type || null,
-        location || null,
-        notes || null,
-        total_amount || null,
-        payment_status || 'pending'
-      ],
+      [service_id, booking_date, start_time, client_name, client_email, client_phone, event_type, location, notes, total_amount, payment_status],
       (err, res) => {
         if (err) return reject(err);
         resolve(res);
@@ -91,7 +76,7 @@ exports.createBooking = async (bookingData) => {
   return {
     id: result.insertId,
     ...bookingData,
-    computed_end_time: end_time
+    computed_end_time
   };
 };
 
