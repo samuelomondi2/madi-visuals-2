@@ -15,7 +15,7 @@ exports.createBooking = async (bookingData) => {
     payment_status = 'pending'
   } = bookingData;
 
-  // Get service duration
+  console.log('Fetching service...');
   const service = await new Promise((resolve, reject) => {
     db.query(
       `SELECT duration FROM services WHERE id = ?`,
@@ -28,16 +28,17 @@ exports.createBooking = async (bookingData) => {
     );
   });
 
+  console.log('Computing end time...');
+
   const duration = service.duration || 0;
 
-  // Compute end time in JS
   const [hours, minutes] = start_time.split(':').map(Number);
   const totalMinutes = hours * 60 + minutes + duration;
   const endHour = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
   const endMinute = (totalMinutes % 60).toString().padStart(2, '0');
   const computed_end_time = `${endHour}:${endMinute}:00`;
 
-  // Check for conflicts
+  console.log('Checking conflicts...');
   const conflicts = await new Promise((resolve, reject) => {
     db.query(
       `SELECT b.id
@@ -56,10 +57,10 @@ exports.createBooking = async (bookingData) => {
       }
     );
   });
+  console.log('Inserting booking...');
 
   if (conflicts.length > 0) throw new Error('Time slot already booked');
 
-  // Insert booking
   const result = await new Promise((resolve, reject) => {
     db.query(
       `INSERT INTO bookings 
