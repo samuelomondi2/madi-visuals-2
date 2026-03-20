@@ -7,6 +7,6 @@ router.post("/bookings", controller.createBookingController);
 router.get("/bookings", controller.getBookings);
 router.get("/bookings/:id", controller.getBooking);
 
-router.get("/duration", controller.getDuration);
+router.get("/duration/:service_id", controller.getDuration);
 
 module.exports = router;
