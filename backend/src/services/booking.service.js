@@ -16,6 +16,7 @@ exports.createBooking = async (bookingData) => {
   } = bookingData;
 
   console.log('Fetching service...');
+  console.log('service_id:', service_id);
   const service = await new Promise((resolve, reject) => {
     db.query(
       `SELECT duration FROM services WHERE id = ?`,
