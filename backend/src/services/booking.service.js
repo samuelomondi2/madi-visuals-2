@@ -29,15 +29,19 @@ exports.createBooking = async (bookingData) => {
     );
   });
 
-  console.log('Computing end time...');
-
-  const duration = service.duration || 0;
-
-  const [hours, minutes] = start_time.split(':').map(Number);
-  const totalMinutes = hours * 60 + minutes + duration;
-  const endHour = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
-  const endMinute = (totalMinutes % 60).toString().padStart(2, '0');
-  const computed_end_time = `${endHour}:${endMinute}:00`;
+  try {
+    console.log('Computing end time...');
+    const [hours, minutes] = start_time.split(':').map(Number);
+    console.log({ hours, minutes, duration });
+    const totalMinutes = hours * 60 + minutes + duration;
+    const endHour = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
+    const endMinute = (totalMinutes % 60).toString().padStart(2, '0');
+    const computed_end_time = `${endHour}:${endMinute}:00`;
+    console.log('Computed end time:', computed_end_time);
+  } catch (err) {
+    console.error('Error computing end time:', err);
+    throw err;
+  }
 
   console.log('Checking conflicts...');
   const conflicts = await new Promise((resolve, reject) => {
