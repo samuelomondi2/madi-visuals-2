@@ -22,3 +22,12 @@ exports.createBookingController = async (req, res) => {
     res.status(500).json({ error: err.message || 'Internal server error' });
   }
 };
+
+exports.getBookings = async (req, res) => {
+  try {
+    const results = await bookingService.getAllBookings();
+    res.status(200).json({ results })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}

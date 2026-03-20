@@ -15,7 +15,6 @@ exports.createBooking = async (bookingData) => {
     payment_status
   } = bookingData;
 
-  // 1. Get service duration
   const service = await new Promise((resolve, reject) => {
     db.query(
       `SELECT duration FROM services WHERE id = ?`,
@@ -30,7 +29,6 @@ exports.createBooking = async (bookingData) => {
 
   const duration = service.duration;
 
-  // 2. Compute end time
   const { end_time } = await new Promise((resolve, reject) => {
     db.query(
       `SELECT ADDTIME(?, SEC_TO_TIME(? * 60)) AS end_time`,
@@ -42,7 +40,6 @@ exports.createBooking = async (bookingData) => {
     );
   });
 
-  // 3. 🔥 Check for conflicts (EXECUTE IT)
   const conflicts = await new Promise((resolve, reject) => {
     db.query(
       `SELECT b.id
@@ -66,7 +63,6 @@ exports.createBooking = async (bookingData) => {
     throw new Error('Time slot already booked');
   }
 
-  // 4. Insert booking
   const result = await new Promise((resolve, reject) => {
     db.query(
       `INSERT INTO bookings 
@@ -98,3 +94,15 @@ exports.createBooking = async (bookingData) => {
     computed_end_time: end_time
   };
 };
+
+exports.getAllBookings = async () => {
+  try {
+    const [results] = await db.query(
+      `SELECT * FROM bookings ORDER BY created_at DESC`
+    )
+    return results
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
