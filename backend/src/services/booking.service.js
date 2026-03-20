@@ -1,6 +1,6 @@
 const db = require('../config/db');
 
-exports.getDuration = async (id) => {
+const getDuration = async (id) => {
   try {
     const [result] = await db.query(
       `SELECT duration FROM services WHERE id = ?`, [id]
@@ -35,6 +35,7 @@ exports.createBooking = async (bookingData) => {
   }
   const duration = service.duration;
   console.log("Next step...")
+  let computed_end_time;
 
   try {
     console.log('Computing end time...');
