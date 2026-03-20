@@ -1,17 +1,53 @@
 'use client';
 
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 interface BookingModalProps {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
+interface ServiceMessage {
+  id: number;
+  name: string;
+}
+
 export default function BookingModal({ open, setOpen }: BookingModalProps) {
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [messages, setMessages] = useState<ServiceMessage[]>([]);
+  const [form, setForm] = useState({
+    client_name: "",
+    client_email: "",
+    client_phone: "",
+    booking_date: "",
+    start_time: "",
+    service_id: "",
+    notes: ""
+  });
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 2));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+
+  const fetchServices = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/services`);
+      if (!res.ok) throw new Error("Failed to fetch services");
+      const data = await res.json();
+      const mapped = data.services.map((service: any) => ({
+        id: service.id,
+        name: service.name, 
+      })); 
+      setMessages(mapped);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load contact messages");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
@@ -19,6 +55,10 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     setOpen(false);
     setStep(1);
   };
+
+  useEffect(() => {
+    fetchServices();
+  }, [])
 
   return (
     <>
@@ -74,11 +114,15 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                 <input
                   type="text"
                   placeholder="Full Name"
+                  value={form.client_name}
+                  onChange={(e) => setForm({ ...form, client_name: e.target.value })}
                   className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
                   required
                 />
                 <input
                   type="email"
+                  value={form.client_email}
+                  onChange={(e) => setForm({ ...form, client_email: e.target.value })}
                   placeholder="Email Address"
                   className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
                   required
@@ -86,6 +130,8 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                 <input
                   type="tel"
                   placeholder="Phone Number"
+                  value={form.client_phone}
+                  onChange={(e) => setForm({ ...form, client_phone: e.target.value })}
                   className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
                 />
 
@@ -93,11 +139,15 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                 <div className="flex gap-2">
                   <input
                     type="date"
+                    value={form.booking_date}
+                    onChange={(e) => setForm({ ...form, booking_date: e.target.value })}
                     className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none flex-1"
                     required
                   />
                   <input
                     type="time"
+                    value={form.start_time}
+                    onChange={(e) => setForm({ ...form, start_time: e.target.value })}
                     className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none flex-1"
                     required
                   />
@@ -108,10 +158,11 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                   required
                 >
                   <option value="">Select Service</option>
-                  <option value="lifestyle">Lifestyle Shoot</option>
-                  <option value="couple">Couple/Duo Shoot</option>
-                  <option value="sports">Sports Photography/Videography</option>
-                  <option value="event">Special Event</option>
+                  {messages.map((service) => (
+                    <option key={service.id} value={service.id}>
+                      {service.name}
+                    </option>
+                  ))}
                 </select>
                 <textarea
                   placeholder="Additional Notes"
