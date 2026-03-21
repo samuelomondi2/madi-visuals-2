@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const duration = require("../controller/booking.controller");
 
 exports.getDuration = async ({id}) => {
   try {
@@ -32,7 +33,7 @@ exports.createBooking = async (bookingData) => {
 
   console.log('Fetching service...');
   console.log('service_id:', service_id);
-  const service = await getDuration(service_id);
+  const service = await duration.getDuration(service_id);
   if (!service || service.duration == null) {
     throw new Error('Service not found or invalid duration');
   }
