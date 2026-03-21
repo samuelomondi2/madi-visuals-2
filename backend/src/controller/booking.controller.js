@@ -51,9 +51,9 @@ exports.getBooking = async (req, res) => {
 
 exports.getDuration = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { service_id } = req.params;
 
-    const duration = await bookingService.getDuration({ id });
+    const duration = await bookingService.getDuration({ id: service_id });
 
     if (!duration) {
       return res.status(404).json({ message: 'duration not found' });
