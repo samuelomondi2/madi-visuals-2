@@ -51,16 +51,17 @@ exports.getBooking = async (req, res) => {
 
 exports.getDuration = async (req, res) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
 
-    const duration = bookingService.getDuration({ id })
+    const duration = await bookingService.getDuration({ id });
 
     if (!duration) {
       return res.status(404).json({ message: 'duration not found' });
     }
-    res.status(200).json({ duration });
+
+    res.status(200).json(duration); 
   } catch (error) {
     console.error(error);
-    throw error;
+    res.status(500).json({ message: 'Internal server error' });
   }
-}
+};
