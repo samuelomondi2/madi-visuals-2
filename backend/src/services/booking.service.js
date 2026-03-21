@@ -33,23 +33,30 @@ exports.createBooking = async (bookingData) => {
 
   console.log('Fetching service...');
   console.log('service_id:', service_id);
-  const service = await duration.getDuration(service_id);
-  console.log("duration", service)
+
+  const service = await bookingService.getDuration({ id: service_id });
+
+  console.log("duration", service);
+
   if (!service || service.duration == null) {
     throw new Error('Service not found or invalid duration');
   }
+
   const duration = service.duration;
-  console.log("Next step...")
+
   let computed_end_time;
 
   try {
     console.log('Computing end time...');
     const [hours, minutes] = start_time.split(':').map(Number);
-    console.log({ hours, minutes, duration });
+
     const totalMinutes = hours * 60 + minutes + duration;
     const endHour = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
     const endMinute = (totalMinutes % 60).toString().padStart(2, '0');
-    const computed_end_time = `${endHour}:${endMinute}:00`;
+
+    // ✅ FIXED
+    computed_end_time = `${endHour}:${endMinute}:00`;
+
     console.log('Computed end time:', computed_end_time);
   } catch (err) {
     console.error('Error computing end time:', err);
@@ -57,6 +64,7 @@ exports.createBooking = async (bookingData) => {
   }
 
   console.log('Checking conflicts...');
+
   const conflicts = await new Promise((resolve, reject) => {
     db.query(
       `SELECT b.id
@@ -75,9 +83,10 @@ exports.createBooking = async (bookingData) => {
       }
     );
   });
-  console.log('Inserting booking...');
 
   if (conflicts.length > 0) throw new Error('Time slot already booked');
+
+  console.log('Inserting booking...');
 
   const result = await new Promise((resolve, reject) => {
     db.query(
