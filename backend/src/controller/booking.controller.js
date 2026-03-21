@@ -53,13 +53,13 @@ exports.getDuration = async (req, res) => {
   try {
     const { service_id } = req.params;
 
-    const duration = await bookingService.getDuration({ id: service_id });
+    const service = await bookingService.getDuration({ id: service_id });
 
-    if (!duration) {
+    if (!service) {
       return res.status(404).json({ message: 'duration not found' });
     }
 
-    res.status(200).json(duration); 
+    res.status(200).json(service); 
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
