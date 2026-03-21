@@ -34,6 +34,7 @@ exports.createBooking = async (bookingData) => {
   console.log('Fetching service...');
   console.log('service_id:', service_id);
   const service = await duration.getDuration(service_id);
+  console.log("duration", service)
   if (!service || service.duration == null) {
     throw new Error('Service not found or invalid duration');
   }
