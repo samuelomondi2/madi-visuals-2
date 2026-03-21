@@ -48,10 +48,15 @@ exports.getBooking = async (req, res) => {
   }
 };
 
-
 exports.getDuration = async (req, res) => {
   try {
-    const { service_id } = req.params;
+    console.log("PARAMS:", req.params); 
+
+    const service_id = req.params?.service_id;
+
+    if (!service_id) {
+      return res.status(400).json({ message: 'service_id is required in URL' });
+    }
 
     const service = await bookingService.getDuration({ id: service_id });
 
