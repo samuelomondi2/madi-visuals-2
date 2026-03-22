@@ -8,40 +8,38 @@ const success_url = `${process.env.FRONTEND_URL}/success`;
 const cancel_url = `${process.env.FRONTEND_URL}/cancel`;
 
 exports.createCheckoutSession = async (req, res) => {
-  try {
-    const { items, success_url, cancel_url } = req.body;
-
-    if (!items || !success_url || !cancel_url) {
-      return res.status(400).json({ message: "Missing required fields" });
+    try {
+      const { bookingId } = req.body;
+      if (!bookingId) return res.status(400).json({ message: "Missing required fields" });
+  
+      // Fetch the booking to get price & name
+      const booking = await bookingService.getABooking({ id: bookingId });
+      if (!booking) return res.status(404).json({ message: "Booking not found" });
+  
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: { name: `Booking #${booking.id}` },
+              unit_amount: booking.total_amount * 100,
+            },
+            quantity: 1,
+          },
+        ],
+        mode: "payment",
+        success_url: `${process.env.FRONTEND_URL}/success`,
+        cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+        metadata: { booking_id: booking.id },
+      });
+  
+      res.status(200).json({ sessionId: session.id });
+    } catch (err) {
+      console.error("Stripe session error:", err);
+      res.status(500).json({ message: err.message });
     }
-
-    // Map frontend items to Stripe line items
-    const line_items = items.map(item => ({
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: item.name,
-          description: item.description || "",
-        },
-        unit_amount: item.price * 100, // Stripe expects cents
-      },
-      quantity: item.quantity,
-    }));
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items,
-      mode: "payment",
-      success_url, 
-      cancel_url,  
-    });
-
-    res.status(200).json({ sessionId: session.id });
-  } catch (err) {
-    console.error("Stripe session error:", err);
-    res.status(500).json({ message: err.message });
-  }
-};
+  };
 
 exports.handleStripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
