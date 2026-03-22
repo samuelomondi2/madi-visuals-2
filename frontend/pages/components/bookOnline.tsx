@@ -76,7 +76,6 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     fetchServices();
   }, []);
 
-  // Create pending booking
   const handlePendingBooking = async (): Promise<number | null> => {
     setError("");
     const { client_name, client_email, booking_date, start_time, service_id } = form;

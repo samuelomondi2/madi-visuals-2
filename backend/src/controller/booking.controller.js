@@ -18,6 +18,9 @@ exports.createBookingController = async (req, res) => {
       booking_date,
       start_time,
       client_name,
+      client_email,
+      client_phone,
+      notes,
       payment_status: "pending",
     });
 
