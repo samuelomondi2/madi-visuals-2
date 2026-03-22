@@ -1,6 +1,6 @@
-import bookingService from "../services/booking.service";
-import db from "../config/db";
-import Stripe from "stripe";
+const bookingService = require("../services/booking.service");
+const db = require("../config/db");
+const Stripe = require("stripe");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
