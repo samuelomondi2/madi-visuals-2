@@ -9,4 +9,4 @@ router.post(
   controller.handleStripeWebhook
 );
 
-export default router;
+module.exports = router;
