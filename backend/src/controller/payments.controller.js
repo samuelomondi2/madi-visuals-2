@@ -13,7 +13,7 @@ exports.createCheckoutSession = async (req, res) => {
       if (!bookingId) return res.status(400).json({ message: "Missing required fields" });
   
       // Fetch the booking to get price & name
-      const booking = await bookingService.getABooking({ id: bookingId });
+      const booking = await bookingService.getBookingById({ id: bookingId });
       if (!booking) return res.status(404).json({ message: "Booking not found" });
   
       const session = await stripe.checkout.sessions.create({
