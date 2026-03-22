@@ -54,7 +54,6 @@ exports.createBooking = async (bookingData) => {
     const endHour = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
     const endMinute = (totalMinutes % 60).toString().padStart(2, '0');
 
-    // ✅ FIXED
     computed_end_time = `${endHour}:${endMinute}:00`;
 
     console.log('Computed end time:', computed_end_time);
@@ -65,41 +64,29 @@ exports.createBooking = async (bookingData) => {
 
   console.log('Checking conflicts...');
 
-  const conflicts = await new Promise((resolve, reject) => {
-    db.query(
-      `SELECT b.id
-       FROM bookings b
-       JOIN services s ON b.service_id = s.id
-       WHERE b.service_id = ?
-       AND b.booking_date = ?
-       AND (
-         TIME(?) < ADDTIME(b.start_time, SEC_TO_TIME(s.duration * 60))
-         AND ADDTIME(?, SEC_TO_TIME(? * 60)) > b.start_time
-       )`,
-      [service_id, booking_date, start_time, start_time, duration],
-      (err, results) => {
-        if (err) return reject(err);
-        resolve(results);
-      }
-    );
-  });
+  const [conflicts] = await db.query(
+    `SELECT b.id
+     FROM bookings b
+     JOIN services s ON b.service_id = s.id
+     WHERE b.service_id = ?
+     AND b.booking_date = ?
+     AND (
+       TIME(?) < ADDTIME(b.start_time, SEC_TO_TIME(s.duration * 60))
+       AND ADDTIME(?, SEC_TO_TIME(? * 60)) > b.start_time
+     )`,
+    [service_id, booking_date, start_time, start_time, duration]
+  );
 
   if (conflicts.length > 0) throw new Error('Time slot already booked');
 
   console.log('Inserting booking...');
 
-  const result = await new Promise((resolve, reject) => {
-    db.query(
+  const [result] = await db.query(
       `INSERT INTO bookings 
       (service_id, booking_date, start_time, client_name, client_email, client_phone, event_type, location, notes, total_amount, payment_status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [service_id, booking_date, start_time, client_name, client_email, client_phone, event_type, location, notes, total_amount, payment_status],
-      (err, res) => {
-        if (err) return reject(err);
-        resolve(res);
-      }
+      [service_id, booking_date, start_time, client_name, client_email, client_phone, event_type, location, notes, total_amount, payment_status]
     );
-  });
 
   return {
     id: result.insertId,
