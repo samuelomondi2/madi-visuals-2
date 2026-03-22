@@ -13,7 +13,7 @@ exports.createCheckoutSession = async (req, res) => {
       if (!bookingId) return res.status(400).json({ message: "Missing required fields" });
   
       // Fetch the booking to get price & name
-      const booking = await bookingService.getBookingById({ id: bookingId });
+      const booking = await bookingService.getBookingById(bookingId);
       if (!booking) return res.status(404).json({ message: "Booking not found" });
   
       const session = await stripe.checkout.sessions.create({
@@ -39,7 +39,7 @@ exports.createCheckoutSession = async (req, res) => {
       console.error("Stripe session error:", err);
       res.status(500).json({ message: err.message });
     }
-  };
+};
 
 exports.handleStripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
