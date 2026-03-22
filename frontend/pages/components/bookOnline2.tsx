@@ -1,20 +1,95 @@
 'use client';
 
-import { useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
-export default function BookingModal() {
-  const [open, setOpen] = useState(false);
+interface BookingModalProps {
+  open: boolean;
+  setOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+interface ServiceMessage {
+  id: number;
+  name: string;
+}
+
+export default function BookingModal({ open, setOpen }: BookingModalProps) {
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [messages, setMessages] = useState<ServiceMessage[]>([]);
+  const [success, setSuccess] = useState("");
+  const [form, setForm] = useState({
+    client_name: "",
+    client_email: "",
+    client_phone: "",
+    booking_date: "",
+    start_time: "",
+    service_id: 0,
+    notes: ""
+  });
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 2));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    alert("Booking submitted!");
-    setOpen(false);
-    setStep(1);
+  const fetchServices = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/services`);
+      if (!res.ok) throw new Error("Failed to fetch services");
+      const data = await res.json();
+      const mapped = data.services.map((service: any) => ({
+        id: service.id,
+        name: service.name, 
+      })); 
+      setMessages(mapped);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load contact messages");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handlePartialSubmit = async () => {
+    if (!form.client_name || !form.client_email || !form.booking_date || !form.start_time || !form.service_id) {
+      setError("Please fill in all required fields.");
+      return false;
+    }
+  
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, payment_status: "pending" })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to create booking");
+      }
+  
+      setSuccess("Booking created successfully!");
+      setForm({ client_name: "", client_email: "", client_phone: "", booking_date: "", start_time: "", service_id: 0, notes: "" });
+      console.log(form);
+
+      setStep(1);
+      setOpen(false);
+      return true;
+  
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Something went wrong.");
+      return false;
+    }
+  };
+
+  const handleNextStep = async () => {
+    const success = await handlePartialSubmit();
+    if (success) nextStep();
+  };
+
+  useEffect(() => {
+    fetchServices();
+  }, [])
 
   return (
     <>
@@ -64,51 +139,82 @@ export default function BookingModal() {
               </div>
             </div>
 
-            <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-              {step === 1 && (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
-                    required
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email Address"
-                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
-                    required
-                  />
-                  <input
-                    type="tel"
-                    placeholder="Phone Number"
-                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
-                  />
-                  <select
-                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
-                    required
-                  >
-                    <option value="">Select Service</option>
-                    <option value="lifestyle">Lifestyle Shoot</option>
-                    <option value="couple">Couple/Duo Shoot</option>
-                    <option value="sports">Sports Photography/Videography</option>
-                    <option value="event">Special Event</option>
-                  </select>
-                  <textarea
-                    placeholder="Additional Notes"
-                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
-                    rows={3}
-                  ></textarea>
+            <form className="flex flex-col gap-3">
+            {step === 1 && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={form.client_name}
+                  onChange={(e) => setForm({ ...form, client_name: e.target.value })}
+                  className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
+                  required
+                />
+                <input
+                  type="email"
+                  value={form.client_email}
+                  onChange={(e) => setForm({ ...form, client_email: e.target.value })}
+                  placeholder="Email Address"
+                  className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
+                  required
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone Number"
+                  value={form.client_phone}
+                  onChange={(e) => setForm({ ...form, client_phone: e.target.value })}
+                  className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
+                />
 
-                  <button
-                    type="button"
-                    onClick={nextStep}
-                    className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 mt-4 hover:opacity-90 transition"
-                  >
-                    Next
-                  </button>
-                </>
-              )}
+                {/* New Schedule Inputs */}
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={form.booking_date}
+                    onChange={(e) => setForm({ ...form, booking_date: e.target.value })}
+                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none flex-1"
+                    required
+                  />
+                  <input
+                    type="time"
+                    value={form.start_time}
+                    onChange={(e) => setForm({ ...form, start_time: e.target.value })}
+                    className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none flex-1"
+                    required
+                  />
+                </div>
+
+                <select
+                  value={form.service_id}
+                  onChange={(e) => setForm({ ...form, service_id: Number(e.target.value) })}
+                  className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
+                  required
+                >
+                  <option value="">Select Service</option>
+                  {messages.map((service) => (
+                    <option key={service.id} value={service.id}>
+                      {service.name}
+                    </option>
+                  ))}
+                </select>
+                <textarea
+                  placeholder="Additional Notes"
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"
+                  rows={3}
+                />
+
+                <button
+                  type="button"
+                  onClick={handleNextStep}
+                  disabled={loading}
+                  className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 mt-4 hover:opacity-90 transition disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </>
+            )}
 
               {step === 2 && (
                 <>
