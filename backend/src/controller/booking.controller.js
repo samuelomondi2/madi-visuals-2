@@ -1,72 +1,40 @@
 const bookingService = require("../services/booking.service");
 
-exports.createBookingController = async (req, res) => {
+// Create pending booking (pre-lock)
+exports.createPendingBookingController = async (req, res) => {
   try {
-    const requiredFields = ['service_id', 'booking_date', 'start_time', 'client_name'];
-
-    for (let field of requiredFields) {
-      if (!req.body[field]) {
-        return res.status(400).json({ error: `${field} is required` });
-      }
-    }
-
-    const booking = await bookingService.createBooking(req.body);
-
-    res.status(201).json({
-      message: 'Booking created successfully',
-      booking
-    });
-
+    const pendingBooking = await bookingService.createPendingBooking(req.body);
+    res.status(200).json({ success: true, booking: pendingBooking });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message || 'Internal server error' });
+    res.status(400).json({ success: false, message: err.message });
   }
 };
 
 exports.getBookings = async (req, res) => {
   try {
-    const results = await bookingService.getAllBookings();
-    res.status(200).json({ results })
-  } catch (error) {
-    res.status(500).json({ message: error.message })
+    const bookings = await bookingService.getAllBookings();
+    res.status(200).json(bookings);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-}
+};
 
 exports.getBooking = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const booking = await bookingService.getABooking({ id });
-
-    if (!booking) {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
-
-    res.status(200).json({ booking });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const booking = await bookingService.getABooking({ id: req.params.id });
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+    res.status(200).json(booking);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
 exports.getDuration = async (req, res) => {
   try {
-    console.log("PARAMS:", req.params); 
-
-    const service_id = req.params?.service_id;
-
-    if (!service_id) {
-      return res.status(400).json({ message: 'service_id is required in URL' });
-    }
-
-    const service = await bookingService.getDuration({ id: service_id });
-
-    if (!service) {
-      return res.status(404).json({ message: 'duration not found' });
-    }
-
-    res.status(200).json(service); 
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
+    const duration = await bookingService.getDuration({ id: req.params.service_id });
+    res.status(200).json(duration);
+  } catch (err) {
+    res.status(404).json({ message: err.message });
   }
 };
