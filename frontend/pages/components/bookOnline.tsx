@@ -10,9 +10,8 @@ interface BookingModalProps {
 interface ServiceMessage {
   id: number;
   name: string;
-  price: number; // new field
+  price: number;
 }
-
 
 export default function BookingModal({ open, setOpen }: BookingModalProps) {
   const [step, setStep] = useState(1);
@@ -45,7 +44,7 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
         data.services.map((s: any) => ({
           id: s.id,
           name: s.name,
-          price: s.price ?? 0, // fallback
+          price: s.base_price ?? 0,
         }))
       );
     } catch (err) {
@@ -70,7 +69,7 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
 
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/pending`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -96,10 +95,23 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
   const handleStripeCheckout = async (bookingId: number) => {
     try {
       setLoading(true);
+
+      const selectedService = messages.find((s) => s.id === form.service_id);
+      if (!selectedService) throw new Error("Invalid service selected");
+
       const sessionRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/create-checkout-session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId }),
+        body: JSON.stringify({
+          booking_id: bookingId,
+          items: [
+            {
+              name: selectedService.name,
+              price: selectedService.price,
+              quantity: 1
+            }
+          ]
+        }),
       });
 
       if (!sessionRes.ok) {
@@ -107,8 +119,9 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
         throw new Error(data.message || "Failed to create Stripe Checkout session");
       }
 
-      const { url } = await sessionRes.json();
-      window.location.href = url;
+      const { sessionId } = await sessionRes.json();
+      const stripe = (window as any).Stripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
+      await stripe.redirectToCheckout({ sessionId });
     } catch (err: any) {
       console.error(err);
       setError(err.message || "Failed to start payment");
@@ -117,7 +130,6 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     }
   };
 
-  // Handle Next/Submit button
   const handleNext = async () => {
     if (step === 1) {
       const bookingId = await handlePendingBooking();
@@ -152,7 +164,7 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
           }}
         >
           <div className="bg-black text-white rounded-xl shadow-xl w-full max-w-lg p-8 relative max-h-[90vh] overflow-y-auto">
-            
+
             {/* Close Button */}
             <button
               onClick={() => { setOpen(false); setStep(1); setPendingBookingId(null); }}
@@ -233,7 +245,7 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                   >
                     <option value="">Select Service</option>
                     {messages.map((service) => (
-                      <option key={service.id} value={service.id}>{service.name}</option>
+                      <option key={service.id} value={service.id}>{service.name} - ${service.price}</option>
                     ))}
                   </select>
 
@@ -261,7 +273,6 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                     Review your booking details and proceed to secure payment.
                   </p>
 
-                  {/* Booking Review */}
                   <div className="bg-neutral-900 p-4 rounded-lg mb-4 text-sm text-white">
                     <p><strong>Name:</strong> {form.client_name}</p>
                     <p><strong>Email:</strong> {form.client_email}</p>
