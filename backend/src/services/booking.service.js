@@ -1,5 +1,5 @@
 const db = require('../config/db');
-const bookingService = require("../controller/booking.controller");
+const bookingService = require("./booking.service");
 
 exports.getDuration = async ({id}) => {
   try {
