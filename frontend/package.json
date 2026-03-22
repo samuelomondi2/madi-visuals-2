@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",
+    "@stripe/stripe-js": "^8.11.0",
     "dotenv": "^17.3.1",
     "next": "16.1.6",
     "react": "19.2.3",
