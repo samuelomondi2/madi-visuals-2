@@ -2,9 +2,9 @@ const db = require("../config/db");
 
 exports.createBooking = async (data) => {
   const [result] = await db.query(
-    `INSERT INTO bookings (service_id, booking_date, start_time, client_name, client_email, client_phone, notes)
+    `INSERT INTO bookings (service_id, booking_date, start_time, client_name, client_email)
      VALUES (?, ?, ?, ?, ?)`,
-    [data.service_id, data.booking_date, data.start_time, data.client_name, data.client_email, data.client_phone, data.notes]
+    [data.service_id, data.booking_date, data.start_time, data.client_name, data.client_email]
   );
   return { id: result.insertId, ...data };
 };
