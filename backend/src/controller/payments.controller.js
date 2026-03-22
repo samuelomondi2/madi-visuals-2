@@ -34,7 +34,7 @@ exports.createCheckoutSession = async (req, res) => {
         metadata: { booking_id: booking.id },
       });
   
-      res.status(200).json({ sessionId: session.id });
+      res.status(200).json({ url: session.url  });
     } catch (err) {
       console.error("Stripe session error:", err);
       res.status(500).json({ message: err.message });

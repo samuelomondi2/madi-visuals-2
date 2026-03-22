@@ -108,34 +108,31 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     }
   };
 
-  // Redirect to Stripe Checkout
-const handleStripeCheckout = async (bookingId: number) => {
-  try {
-    const stripe: Stripe | null = await stripePromise;
-    if (!stripe) throw new Error("Stripe failed to load");
-
-    // Call your backend to create a checkout session
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/create-checkout-session`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ bookingId }),
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.message || "Failed to create Stripe session");
+  const handleStripeCheckout = async (bookingId: number) => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/create-checkout-session`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookingId }),
+        }
+      );
+  
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to create Stripe session");
+      }
+  
+      const { url } = await res.json();
+  
+      window.location.href = url;
+  
+    } catch (err: any) {
+      console.error("Stripe checkout error:", err.message || err);
     }
+  };
 
-    const { sessionId } = await res.json();
-
-    // TS sometimes complains, so cast to any
-    const { error } = await (stripe as any).redirectToCheckout({ sessionId });
-    if (error) console.error(error.message);
-  } catch (err: any) {
-    console.error("Stripe checkout error:", err.message || err);
-  }
-};
-  // Handle Next/Submit
   const handleNext = async () => {
     if (step === 1) {
       const bookingId = await handlePendingBooking();
