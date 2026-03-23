@@ -33,15 +33,12 @@ export default function LoginPage() {
         return;
       }
 
-      // console.log("Login response:", data);
-
       if (remember) {
         localStorage.setItem("token", data.token);
       } else {
         sessionStorage.setItem("token", data.token);
       }
 
-      // console.log("Redirecting to dashboard...");
       router.push("/dashboard");
 
     } catch (err) {
