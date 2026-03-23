@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
 
@@ -48,24 +50,15 @@ export default function LoginPage() {
     }
   };
 
+  const toggleVisibility = () => setIsVisible(prev => !prev);
+
   return (
     <div style={styles.page}>
       <div style={styles.card}>
         <div style={styles.logo}>✦</div>
 
         <h1 style={styles.title}>Welcome Back</h1>
-        {/* <p style={styles.subtitle}>
-          Don’t have an account yet?{" "}
-          <span
-            style={styles.signup}
-            onClick={() => router.push("/register")}
-          >
-            Sign up
-          </span>
-        </p> */}
-
         <br/>
-
         <form onSubmit={handleLogin} style={styles.form}>
           <input
             type="email"
@@ -76,14 +69,24 @@ export default function LoginPage() {
             style={styles.input}
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={styles.input}
-          />
+          <div style={styles.inputWrapper}>
+            <input
+              type={isVisible ? "text" : "password"}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={styles.inputWithIcon}
+            />
+
+            <button
+              type="button"
+              onClick={toggleVisibility}
+              style={styles.iconButton}
+            >
+              {isVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
 
           {/* Remember + Forgot Row */}
           <div style={styles.optionsRow}>
@@ -111,18 +114,6 @@ export default function LoginPage() {
             Login
           </button>
         </form>
-
-        {/* <div style={styles.divider}>
-          <span style={styles.line} />
-          <span style={styles.or}>OR</span>
-          <span style={styles.line} />
-        </div>
-
-        <div style={styles.socialContainer}>
-          <button style={styles.socialButton}></button>
-          <button style={styles.socialButton}>G</button>
-          <button style={styles.socialButton}>X</button>
-        </div> */}
       </div>
     </div>
   );
@@ -245,5 +236,34 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: "#D4AF37",
     cursor: "pointer",
     fontWeight: 600,
+  },
+  inputWrapper: {
+    position: "relative",
+    width: "100%",
+  },
+  
+  inputWithIcon: {
+    width: "100%",
+    backgroundColor: "#111",
+    border: "1px solid rgba(212,175,55,0.2)",
+    borderRadius: "10px",
+    padding: "14px 40px 14px 14px", // space for icon
+    color: "#fff",
+    fontSize: "14px",
+    outline: "none",
+  },
+  
+  iconButton: {
+    position: "absolute",
+    right: "10px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    color: "#D4AF37",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
 };
