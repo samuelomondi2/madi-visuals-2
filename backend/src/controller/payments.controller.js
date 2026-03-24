@@ -12,7 +12,6 @@ exports.createCheckoutSession = async (req, res) => {
       const { bookingId } = req.body;
       if (!bookingId) return res.status(400).json({ message: "Missing required fields" });
   
-      // Fetch the booking to get price & name
       const booking = await bookingService.getBookingById(bookingId);
       if (!booking) return res.status(404).json({ message: "Booking not found" });
   

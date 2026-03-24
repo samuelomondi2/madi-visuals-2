@@ -44,3 +44,7 @@ exports.markBookingPaid = async (bookingId, paymentIntent) => {
     [paymentIntent, bookingId]
   );
 };
+
+exports.bookingAvailability = async () => {
+  
+}
