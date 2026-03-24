@@ -36,6 +36,8 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
   const [error, setError] = useState("");
   const [messages, setMessages] = useState<ServiceMessage[]>([]);
   const [pendingBookingId, setPendingBookingId] = useState<number | null>(null);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   const [form, setForm] = useState<FormData>({
     client_name: "",
@@ -72,6 +74,32 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     }
   };
 
+  const fetchAvailability = async (date: string, serviceId: number) => {
+    if (!date || !serviceId) return;
+  
+    try {
+      setLoadingSlots(true);
+  
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/availability?date=${date}`
+      );
+  
+      const data = await res.json();
+  
+      const serviceAvailability = data.services.find(
+        (s: any) => s.id === serviceId
+      );
+  
+      setAvailableSlots(serviceAvailability?.available_slots || []);
+  
+    } catch (err) {
+      console.error(err);
+      setAvailableSlots([]);
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
+
   const fetchLocation = async () => {
     if (!navigator.geolocation) return;
   
@@ -101,10 +129,32 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
       (err) => console.error("Location error:", err)
     );
   };
+
+  const formatTime = (time: string) => {
+    const [h, m] = time.split(":");
+    const hour = Number(h);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const formattedHour = hour % 12 || 12;
+    return `${formattedHour}:${m} ${ampm}`;
+  };
+
   useEffect(() => {
     fetchServices();
     fetchLocation();
   }, []);
+
+  useEffect(() => {
+    if (!form.booking_date || !form.service_id) return;
+    fetchAvailability(form.booking_date, form.service_id);
+  }, [form.booking_date, form.service_id]);
+
+  useEffect(() => {
+    setForm(prev => ({
+      ...prev,
+      start_time: ""
+    }));
+    setAvailableSlots([]);
+  }, [form.booking_date, form.service_id]);
 
   const handlePendingBooking = async (): Promise<number | null> => {
     setError("");
@@ -220,7 +270,31 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                   <input type="tel" placeholder="Phone" value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })} className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"/>
                   <div className="flex gap-2">
                     <input type="date" value={form.booking_date} onChange={(e) => setForm({ ...form, booking_date: e.target.value })} required className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none flex-1"/>
-                    <input type="time" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} required className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none flex-1"/>
+                    <select
+                      disabled={!form.booking_date || !form.service_id || loadingSlots}
+                      value={form.start_time}
+                      onChange={(e) =>
+                        setForm({ ...form, start_time: e.target.value })
+                      }
+                      required
+                      className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700"
+                    >
+                      <option value="">
+                        {loadingSlots
+                          ? "Loading times..."
+                          : !form.booking_date || !form.service_id
+                          ? "Select date & service first"
+                          : availableSlots.length === 0
+                          ? "No available times"
+                          : "Select Time"}
+                      </option>
+
+                      {availableSlots.map((slot) => (
+                        <option key={slot} value={slot}>
+                          {formatTime(slot)}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <select value={form.service_id} onChange={(e) => setForm({ ...form, service_id: Number(e.target.value) })} required className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none">
                     <option value="">Select Service</option>
