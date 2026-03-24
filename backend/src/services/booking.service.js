@@ -48,9 +48,7 @@ exports.markBookingPaid = async (bookingId, paymentIntent) => {
 exports.deleteBookingById = async (id) => {
   const [rows] = await db.query("DELETE * FROM bookings WHERE id = ?", [id]);
   return rows[0];
-};
-
-const db = require("../config/db");
+}
 
 exports.getDashboardStats = async (req, res) => {
   try {
