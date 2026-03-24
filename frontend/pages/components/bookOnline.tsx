@@ -27,6 +27,7 @@ interface FormData {
   start_time: string;
   service_id: number;
   notes: string;
+  location: string;
 }
 
 export default function BookingModal({ open, setOpen }: BookingModalProps) {
@@ -44,6 +45,7 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     start_time: "",
     service_id: 0,
     notes: "",
+    location: ""
   });
 
   // Step controls

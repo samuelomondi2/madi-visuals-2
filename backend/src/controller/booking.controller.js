@@ -12,12 +12,15 @@ exports.createBookingController = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Create booking with status = 'pending'
-    const booking = await bookingService.createBooking({
+    const booking = await bookingService.createBooking({ 
       service_id,
       booking_date,
       start_time,
       client_name,
+      client_email,
+      client_phone,
+      location,
+      notes,
       total_amount: service.base_price,
       payment_status: "pending",
     });
