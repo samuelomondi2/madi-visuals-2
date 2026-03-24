@@ -2,6 +2,7 @@ const bookingService = require("../services/booking.service");
 const Stripe = require("stripe");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const db = require("../config/db");
+const checkAvailability = equire("./availability.controller.js");
 
 const success_url = `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`;
 const cancel_url = `${process.env.FRONTEND_URL}/cancel`;
@@ -22,6 +23,12 @@ exports.createBookingController = async (req, res) => {
     if (!service_id || !booking_date || !start_time || !client_name) {
       return res.status(400).json({ message: "Missing required fields" });
     }
+
+    const isAvailable = await checkAvailability.checkSlotAvailability(service_id, booking_date, start_time);
+    if (!isAvailable) {
+      return res.status(400).json({ message: "Selected day/time is not available." });
+    }
+
     const [services] = await db.query(
       "SELECT base_price, name FROM services WHERE id = ?",
       [service_id]
