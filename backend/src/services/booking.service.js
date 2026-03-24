@@ -2,10 +2,23 @@ const db = require("../config/db");
 
 exports.createBooking = async (data) => {
   const [result] = await db.query(
-    `INSERT INTO bookings (service_id, booking_date, start_time, client_name, client_email, client_phone, location, notes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [data.service_id, data.booking_date, data.start_time, data.client_name, data.client_email, data.client_phone, data.location, data.notes]
+    `INSERT INTO bookings 
+    (service_id, booking_date, start_time, client_name, client_email, client_phone, location, notes, total_amount, payment_status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      data.service_id,
+      data.booking_date,
+      data.start_time,
+      data.client_name,
+      data.client_email,
+      data.client_phone,
+      data.location,
+      data.notes,
+      data.total_amount,
+      data.payment_status
+    ]
   );
+
   return { id: result.insertId, ...data };
 };
 
