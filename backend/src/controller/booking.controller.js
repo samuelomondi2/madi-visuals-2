@@ -7,8 +7,8 @@ const cancel_url = `${process.env.FRONTEND_URL}/cancel`;
 
 exports.createBookingController = async (req, res) => {
   try {
-    const { service_id, booking_date, start_time, client_name } = req.body;
-    if (!service_id || !booking_date || !start_time || !client_name) {
+    const { service_id, booking_date, start_time, client_name, client_email, client_phone, location, notes } = req.body;
+    if (!service_id || !booking_date || !start_time || !client_name || !client_phone || !client_email) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
