@@ -101,3 +101,9 @@ exports.getBooking = async (req, res) => {
   if (!booking) return res.status(404).json({ message: "Booking not found" });
   res.json(booking);
 };
+
+exports.deleteBooking = async (req, res) => {
+  const booking = await bookingService.deleteBookingById(req.params.id);
+  if (!booking) return res.status(404).json({ message: "Booking not found" });
+  res.status(200).json({ message: "Booking deleted" });
+}

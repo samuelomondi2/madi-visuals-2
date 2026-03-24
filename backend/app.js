@@ -15,6 +15,7 @@ const availabilityRoutes = require("./src/routes/availability.route");
 const bookingRoutes = require("./src/routes/booking.route");
 const adminEmail = require("./src/routes/adminEmailRoutes");
 const paymentRoutes = require("./src/routes/payments.route");
+const dashboardStatsRoute = require("./src/routes/dashboardStats.route");
 const errorHandler = require("./src/middleware/errorHandler");
 
 const app = express();
@@ -33,7 +34,8 @@ app.use('/api', serviceRoutes);
 app.use('/api', availabilityRoutes);
 app.use('/api', bookingRoutes);
 app.use('/api', adminEmail);
-app.use('/api', paymentRoutes)
+app.use('/api', paymentRoutes);
+app.use('/api', dashboardStatsRoute);
 
 // Serve static files
 // Host Media on Your Own Server (Node.js Static Folder)

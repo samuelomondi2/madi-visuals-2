@@ -44,3 +44,50 @@ exports.markBookingPaid = async (bookingId, paymentIntent) => {
     [paymentIntent, bookingId]
   );
 };
+
+exports.deleteBookingById = async (id) => {
+  const [rows] = await db.query("DELETE * FROM bookings WHERE id = ?", [id]);
+  return rows[0];
+}
+
+exports.getDashboardStats = async (req, res) => {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+
+    const [bookingsToday] = await db.execute(
+      `SELECT COUNT(*) as count 
+       FROM bookings 
+       WHERE booking_date = ?`,
+      [today]
+    );
+
+    const [revenueToday] = await db.execute(
+      `SELECT COALESCE(SUM(total_amount), 0) as total 
+       FROM bookings 
+       WHERE booking_date = ? 
+       AND payment_status = 'paid'`,
+      [today]
+    );
+
+    const [totalBookings] = await db.execute(
+      `SELECT COUNT(*) as count FROM bookings`
+    );
+
+    const [totalRevenue] = await db.execute(
+      `SELECT COALESCE(SUM(total_amount), 0) as total 
+       FROM bookings 
+       WHERE payment_status = 'paid'`
+    );
+
+    res.json({
+      today_bookings: bookingsToday[0].count,
+      today_revenue: revenueToday[0].total,
+      total_bookings: totalBookings[0].count,
+      total_revenue: totalRevenue[0].total,
+    });
+
+  } catch (err) {
+    console.error("Dashboard stats error:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
