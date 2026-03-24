@@ -2,7 +2,7 @@ const bookingService = require("../services/booking.service");
 const Stripe = require("stripe");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const db = require("../config/db");
-const checkAvailability = equire("./availability.controller.js");
+const checkAvailability = require("./availability.controller.js");
 
 const success_url = `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`;
 const cancel_url = `${process.env.FRONTEND_URL}/cancel`;
