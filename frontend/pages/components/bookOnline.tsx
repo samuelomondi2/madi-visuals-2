@@ -48,11 +48,9 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     location: ""
   });
 
-  // Step controls
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 2));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
-  // Fetch services
   const fetchServices = async () => {
     setLoading(true);
     try {
@@ -74,8 +72,38 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     }
   };
 
+  const fetchLocation = async () => {
+    if (!navigator.geolocation) return;
+  
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+  
+        try {
+          // Optional: convert to human-readable address via Google Maps
+          const res = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=YOUR_GOOGLE_API_KEY`
+          );
+          const data = await res.json();
+  
+          if (data.status === "OK") {
+            const address = data.results[0].formatted_address;
+            setForm(prev => ({ ...prev, location: address }));
+          } else {
+            // fallback to raw coordinates
+            setForm(prev => ({ ...prev, location: `${lat},${lng}` }));
+          }
+        } catch {
+          setForm(prev => ({ ...prev, location: `${lat},${lng}` }));
+        }
+      },
+      (err) => console.error("Location error:", err)
+    );
+  };
   useEffect(() => {
     fetchServices();
+    fetchLocation();
   }, []);
 
   const handlePendingBooking = async (): Promise<number | null> => {
