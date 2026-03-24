@@ -56,14 +56,15 @@ exports.handleStripeWebhook = async (req, res) => {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
+
     const bookingId = session.metadata.booking_id;
 
-    try {
-      await bookingService.markBookingPaid(bookingId, session.payment_intent);
-      console.log(`Booking ${bookingId} marked as paid`);
-    } catch (err) {
-      return res.status(500).send("Webhook handler error");
-    }
+    await db.execute(
+      `UPDATE bookings 
+      SET payment_status='paid', expires_at=NULL 
+      WHERE id=?`,
+      [bookingId]
+    );
   }
 
   res.sendStatus(200);

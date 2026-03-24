@@ -5,6 +5,9 @@ const db = require("../config/db");
 const checkAvailability = require("./availability.controller.js");
 
 const success_url = `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`;
+
+const expiresAt = new Date(Date.now() + 5 * 60 * 1000); 
+
 const cancel_url = `${process.env.FRONTEND_URL}/cancel`;
 
 exports.createBookingController = async (req, res) => {
@@ -51,6 +54,7 @@ exports.createBookingController = async (req, res) => {
       notes,
       total_amount: service.base_price,
       payment_status: "pending",
+      expires_at: expiresAt
     });
 
     // 💳 Stripe session
