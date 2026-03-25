@@ -7,6 +7,8 @@ type HeroContent = {
   title: string;
   name: string;
   description: string;
+  media_url?: string;
+  media_type?: "image" | "video";
 };
 
 type HeroPreview = {
@@ -20,11 +22,14 @@ type AdminHeroProps = {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export default function AdminHero({ hero: liveHero }: AdminHeroProps) {
+export default function AdminHero() {
   const [heroContent, setHeroContent] = useState<HeroContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [preview, setPreview] = useState<HeroPreview>(null);
 
+  // ✅ Fetch hero content
   useEffect(() => {
     async function fetchHero() {
       try {
@@ -41,6 +46,37 @@ export default function AdminHero({ hero: liveHero }: AdminHeroProps) {
     fetchHero();
   }, []);
 
+  // ✅ Upload file (image/video)
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      setUploading(true);
+
+      const res = await fetch(`${API_URL}/api/media`, {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      setPreview({
+        type: data.type,
+        url: data.url,
+      });
+
+    } catch (err) {
+      console.error("Upload failed:", err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // ✅ Handle text changes
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -52,11 +88,17 @@ export default function AdminHero({ hero: liveHero }: AdminHeroProps) {
     });
   };
 
+  // ✅ Save hero content + media
   const handleSave = async () => {
     if (!heroContent) return;
 
     try {
       setSaving(true);
+
+      const mediaUrl =
+        preview?.url || heroContent.media_url || null;
+      const mediaType =
+        preview?.type || heroContent.media_type || null;
 
       await fetch(`${API_URL}/api/hero/${heroContent.id}`, {
         method: "PUT",
@@ -65,37 +107,88 @@ export default function AdminHero({ hero: liveHero }: AdminHeroProps) {
           title: heroContent.title,
           name: heroContent.name,
           description: heroContent.description,
+          media_url: mediaUrl,
+          media_type: mediaType,
         }),
       });
 
       alert("Updated successfully!");
+
+      // persist preview into heroContent
+      setHeroContent((prev) =>
+        prev
+          ? {
+              ...prev,
+              media_url: mediaUrl || undefined,
+              media_type: mediaType || undefined,
+            }
+          : prev
+      );
+
+      setPreview(null);
+
     } catch (err) {
+      console.error(err);
       alert("Update failed.");
     } finally {
       setSaving(false);
     }
   };
 
+  // ✅ Decide what to display (preview > saved)
+  const displayHero: HeroPreview =
+    preview ||
+    (heroContent?.media_url && heroContent.media_type
+      ? {
+          url: heroContent.media_url,
+          type: heroContent.media_type,
+        }
+      : null);
+
+  // ✅ Loading states
   if (loading) return <p className="p-10">Loading...</p>;
   if (!heroContent) return <p className="p-10">No hero content found.</p>;
 
   return (
-    <div className="max-w-4xl mx-auto p-10 flex flex-col md:flex-row gap-8">
-      {/* Left: Preview */}
-      {liveHero && (
+    <div className="max-w-5xl mx-auto p-10 flex flex-col md:flex-row gap-8">
+      
+      {/* 🔥 LEFT: PREVIEW */}
+      {displayHero && (
         <div className="flex-1 bg-black rounded overflow-hidden shadow-md">
-          {liveHero.type === "image" ? (
-            <img src={liveHero.url} alt="Hero Preview" className="w-full h-80 object-cover" />
+          {displayHero.type === "image" ? (
+            <img
+              src={displayHero.url}
+              alt="Hero Preview"
+              className="w-full h-80 object-cover"
+            />
           ) : (
-            <video src={liveHero.url} controls className="w-full h-80 object-cover" />
+            <video
+              src={displayHero.url}
+              controls
+              className="w-full h-80 object-cover"
+            />
           )}
         </div>
       )}
 
-      {/* Right: Editable fields */}
+      {/* 🔥 RIGHT: FORM */}
       <div className="flex-1 space-y-6">
-        <h1 className="text-2xl font-semibold mb-4">Edit Hero Section</h1>
+        <h1 className="text-2xl font-semibold">Edit Hero Section</h1>
 
+        {/* Upload */}
+        <div>
+          <input
+            type="file"
+            accept="image/*,video/*"
+            onChange={handleFileUpload}
+            className="w-full border p-3 rounded"
+          />
+          {uploading && (
+            <p className="text-sm text-gray-400 mt-2">Uploading...</p>
+          )}
+        </div>
+
+        {/* Title */}
         <input
           name="title"
           value={heroContent.title}
@@ -104,6 +197,7 @@ export default function AdminHero({ hero: liveHero }: AdminHeroProps) {
           placeholder="Hero Title"
         />
 
+        {/* Name */}
         <input
           name="name"
           value={heroContent.name}
@@ -112,6 +206,7 @@ export default function AdminHero({ hero: liveHero }: AdminHeroProps) {
           placeholder="Hero Name"
         />
 
+        {/* Description */}
         <textarea
           name="description"
           value={heroContent.description}
@@ -121,10 +216,11 @@ export default function AdminHero({ hero: liveHero }: AdminHeroProps) {
           placeholder="Hero Description"
         />
 
+        {/* Save */}
         <button
           onClick={handleSave}
           disabled={saving}
-          className="bg-[#D4AF37] text-black px-5 py-2 rounded hover:opacity-90 transition"
+          className="bg-[#D4AF37] text-black px-5 py-2 rounded hover:opacity-90 transition disabled:opacity-50"
         >
           {saving ? "Saving..." : "Save Changes"}
         </button>
