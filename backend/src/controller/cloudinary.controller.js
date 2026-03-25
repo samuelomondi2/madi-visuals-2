@@ -11,41 +11,30 @@ exports.uploadMedia = async (req, res) => {
     const file = req.file;
     const isVideo = file.mimetype.startsWith("video");
 
-    const streamUpload = () =>
-      new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            resource_type: isVideo ? "video" : "image",
-            folder: "madi-visuals",
-          },
-          (error, result) => {
-            if (result) resolve(result);
-            else reject(error);
-          }
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: isVideo ? "video" : "image",
+        folder: "madi-visuals",
+      },
+      async (error, result) => {
+        if (error) {
+          console.error(error);
+          return res.status(500).json({ message: "Upload failed" });
+        }
+
+        await db.execute(
+          "INSERT INTO media (media_url, media_type, public_id) VALUES (?, ?, ?)",
+          [result.secure_url, isVideo ? "video" : "image", result.public_id]
         );
 
-        streamifier.createReadStream(file.buffer).pipe(stream);
-      });
-
-    const result = await streamUpload();
-
-    await db.execute(
-      `INSERT INTO media 
-       (media_url, media_type, public_id, original_name, size) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        result.secure_url,
-        isVideo ? "video" : "image",
-        result.public_id,
-        file.originalname,
-        file.size,
-      ]
+        return res.json({
+          url: result.secure_url,
+          type: isVideo ? "video" : "image",
+        });
+      }
     );
 
-    res.json({
-      url: result.secure_url,
-      type: isVideo ? "video" : "image",
-    });
+    stream.end(file.buffer);
 
   } catch (err) {
     console.error(err);
@@ -80,4 +69,19 @@ exports.deleteMedia = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "Delete failed" });
   }
+};
+
+exports.getHero = async (req, res) => {
+  const [rows] = await db.query(
+    "SELECT media_url, media_type FROM hero ORDER BY id DESC LIMIT 1"
+  );
+
+  if (!rows.length) {
+    return res.status(404).json({ message: "No hero found" });
+  }
+
+  res.json({
+    type: rows[0].media_type,
+    url: rows[0].media_url,
+  });
 };
