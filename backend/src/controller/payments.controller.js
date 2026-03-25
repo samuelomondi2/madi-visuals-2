@@ -4,6 +4,8 @@ const Stripe = require("stripe");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+console.log("Stripe key:", process.env.STRIPE_SECRET_KEY?.slice(0, 10));
+
 const success_url = `${process.env.FRONTEND_URL}/success`;
 const cancel_url = `${process.env.FRONTEND_URL}/cancel`;
 
