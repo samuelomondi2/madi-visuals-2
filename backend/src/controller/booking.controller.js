@@ -49,24 +49,20 @@ exports.createBookingController = async (req, res) => {
     // 💳 Stripe session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      mode: "payment",
       line_items: [
         {
           price_data: {
             currency: "usd",
-            product_data: {
-              name: service.name,
-            },
-            unit_amount: service.base_price * 100, // 🔥 correct
+            product_data: { name: `Booking #${booking.id}` },
+            unit_amount: booking.total_amount * 100,
           },
           quantity: 1,
         },
       ],
-      success_url,
-      cancel_url,
-      metadata: {
-        booking_id: booking.id,
-      },
+      mode: "payment",
+      success_url: success_url,
+      cancel_url: cancel_url,
+      metadata: { booking_id: booking.id },
     });
 
     res.status(201).json({

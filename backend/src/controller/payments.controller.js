@@ -29,8 +29,8 @@ exports.createCheckoutSession = async (req, res) => {
           },
         ],
         mode: "payment",
-        success_url: `${process.env.FRONTEND_URL}/success`,
-        cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+        success_url: success_url,
+        cancel_url: cancel_url,
         metadata: { booking_id: booking.id },
       });
   
@@ -56,15 +56,12 @@ exports.handleStripeWebhook = async (req, res) => {
   }
 
   if (event.type === "checkout.session.completed") {
-    const session = event.data.object;
-    const bookingId = session.metadata.booking_id;
-
-    try {
-      await bookingService.markBookingPaid(bookingId, session.payment_intent);
-      console.log(`Booking ${bookingId} marked as paid`);
-    } catch (err) {
-      return res.status(500).send("Webhook handler error");
-    }
+    await db.execute(`
+      UPDATE bookings 
+      SET payment_status='paid', expires_at=NULL 
+      WHERE id=?`,
+      [bookingId]
+    );
   }
 
   res.sendStatus(200);
