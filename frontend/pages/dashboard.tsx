@@ -339,7 +339,7 @@ export default function Dashboard() {
         {/* Hero Tab */}
         {activeTab === "hero" && (
           <>
-            <AdminHero hero={currentHero} />
+            <AdminHero/>
 
             <div className="max-w-md mx-auto p-4 bg-[#1a1a1a] rounded mt-6">
               <h2 className="text-xl font-semibold text-[#D4AF37] mb-4">Admin Email Settings</h2>
