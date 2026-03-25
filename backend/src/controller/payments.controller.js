@@ -28,8 +28,8 @@ exports.createCheckoutSession = async (req, res) => {
           },
         ],
         mode: "payment",
-        success_url: `${process.env.FRONTEND_URL}/success`,
-        cancel_url: `${process.env.FRONTEND_URL}/cancel`,
+        success_url: success_url,
+        cancel_url: cancel_url,
         metadata: { booking_id: booking.id },
       });
   
