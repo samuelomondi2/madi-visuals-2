@@ -16,6 +16,10 @@ type HeroPreview = {
   url: string;
 } | null;
 
+type AdminHeroProps = {
+  hero?: HeroPreview; 
+};
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function AdminHero() {

@@ -2,8 +2,6 @@ const db = require("../config/db");
 const servicesService = require("./services.service");
 const { generateSlots, isOverlap } = require("../middleware/util.middleware");
 
-// --- Weekly schedule --- //
-
 exports.setAdminAvailability = async (schedule) => {
   for (const day of schedule) {
     if (!day.enabled) {
@@ -109,7 +107,11 @@ exports.getAvailability = async (date) => {
         ADDTIME(b.start_time, SEC_TO_TIME(s.duration * 60)) AS end_time
      FROM bookings b
      JOIN services s ON b.service_id = s.id
-     WHERE b.booking_date=?`,
+     WHERE b.booking_date = ?
+     AND (
+       b.payment_status = 'paid'
+       OR (b.payment_status = 'pending' AND b.expires_at > NOW())
+     )`,
     [date]
   );
 

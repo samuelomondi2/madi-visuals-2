@@ -5,8 +5,8 @@ import Link from "next/link";
 import BookingModal from "./bookOnline";
 
 export default function FloatingBooking() {
-  const [panelOpen, setPanelOpen] = useState(false);  // controls panel visibility
-  const [modalOpen, setModalOpen] = useState(false);  // controls booking modal visibility
+  const [panelOpen, setPanelOpen] = useState(false); 
+  const [modalOpen, setModalOpen] = useState(false);  
 
   useEffect(() => {
     const handleScroll = () => {
