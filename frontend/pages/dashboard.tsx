@@ -551,6 +551,7 @@ export default function Dashboard() {
                 onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
                 className="w-full md:w-auto p-2 bg-neutral-900 text-white border border-neutral-700 rounded"
               />
+
               <button
                 onClick={() => uploadFile && handleUpload(uploadFile)}
                 className="bg-[#D4AF37] text-black px-4 py-2 rounded hover:opacity-90 transition"
@@ -565,27 +566,36 @@ export default function Dashboard() {
                 onChange={(e) => setVideoUrlInput(e.target.value)}
                 className="w-full md:w-auto p-2 bg-neutral-900 text-white border border-neutral-700 rounded"
               />
+
               <button
                 onClick={async () => {
-                  if (!videoUrlInput) return setUploadMessage("No URL provided");
+                  if (!videoUrlInput) return toast.error("No URL provided");
+
                   const token = getToken();
-                  if (!token) return setUploadMessage("Not authorized");
+                  if (!token) return toast.error("Not authorized");
 
                   try {
-                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hero-video`, {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                      },
-                      body: JSON.stringify({ url: videoUrlInput, type: "video" }),
-                    });
+                    const res = await fetch(
+                      `${process.env.NEXT_PUBLIC_API_URL}/api/hero-video`,
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                          url: videoUrlInput,
+                          type: "video",
+                        }),
+                      }
+                    );
+
                     const data = await res.json();
-                    setUploadMessage(data.message || "Video URL added successfully!");
+                    toast.success(data.message || "Video added!");
                     fetchMedia();
                     setVideoUrlInput("");
                   } catch {
-                    setUploadMessage("Failed to add video URL");
+                    toast.error("Failed to add video URL");
                   }
                 }}
                 className="bg-[#D4AF37] text-black px-4 py-2 rounded hover:opacity-90 transition"
@@ -607,61 +617,100 @@ export default function Dashboard() {
                   <div
                     key={file.id}
                     className={`bg-[#1a1a1a] p-2 rounded relative border-2 ${
-                      currentHero?.url === file.url ? "border-[#D4AF37]" : "border-transparent"
+                      currentHero?.url === file.url
+                        ? "border-[#D4AF37]"
+                        : "border-transparent"
                     }`}
                   >
-                    {file.file_type === "image" ? (
-                      <img src={file.url} alt={file.original_name} className="w-full h-40 object-cover rounded" />
+                    {/* Preview */}
+                    {file.media_type === "image" ? (
+                      <img
+                        src={file.url}
+                        alt="media"
+                        className="w-full h-40 object-cover rounded"
+                      />
                     ) : (
-                      <video src={file.url} controls className="w-full h-40 rounded" />
+                      <video
+                        src={file.url}
+                        controls
+                        className="w-full h-40 rounded"
+                      />
                     )}
-                    <p className="text-xs text-neutral-400 truncate mt-1">{file.original_name}</p>
+
+                    {/* File name */}
+                    <p className="text-xs text-neutral-400 truncate mt-1">
+                      {file.original_name || "media"}
+                    </p>
 
                     {/* Actions */}
-                    <div className="absolute top-2 right-2 flex flex-col space-y-1">
+                    <div className="absolute top-2 right-2 flex flex-col gap-1">
+                      
+                      {/* Delete */}
                       <button
                         onClick={async () => {
                           const token = getToken();
                           if (!token) return;
+
                           try {
-                            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files/${file.id}`, {
-                              method: "DELETE",
-                              headers: { Authorization: `Bearer ${token}` },
-                            });
-                            if (!res.ok) throw new Error("Failed to delete media");
-                            setMediaFiles(mediaFiles.filter((m) => m.id !== file.id));
+                            const res = await fetch(
+                              `${process.env.NEXT_PUBLIC_API_URL}/api/files/${file.id}`,
+                              {
+                                method: "DELETE",
+                                headers: { Authorization: `Bearer ${token}` },
+                              }
+                            );
+
+                            if (!res.ok) throw new Error();
+
+                            setMediaFiles((prev) =>
+                              prev.filter((m) => m.id !== file.id)
+                            );
+
+                            toast.success("Deleted");
                           } catch {
-                            alert("Failed to delete media");
+                            toast.error("Failed to delete");
                           }
                         }}
-                        className="bg-red-600 px-2 py-1 text-xs rounded hover:opacity-90"
+                        className="bg-red-600 px-2 py-1 text-xs rounded"
                       >
                         Delete
                       </button>
 
+                      {/* Set Hero */}
                       <button
                         onClick={async () => {
                           const token = getToken();
                           if (!token) return;
+
                           try {
-                            const endpoint =
-                              file.file_type === "image"
-                                ? `${process.env.NEXT_PUBLIC_API_URL}/api/hero/image/latest`
-                                : `${process.env.NEXT_PUBLIC_API_URL}/api/hero/video/latest`;
+                            const res = await fetch(
+                              `${process.env.NEXT_PUBLIC_API_URL}/api/hero`,
+                              {
+                                method: "PUT",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  Authorization: `Bearer ${token}`,
+                                },
+                                body: JSON.stringify({
+                                  media_url: file.url,
+                                  media_type: file.media_type,
+                                }),
+                              }
+                            );
 
-                            const res = await fetch(endpoint, {
-                              method: "PATCH",
-                              headers: { Authorization: `Bearer ${token}` },
+                            if (!res.ok) throw new Error();
+
+                            setCurrentHero({
+                              type: file.media_type,
+                              url: file.url,
                             });
-                            if (!res.ok) throw new Error("Failed to set hero");
 
-                            setCurrentHero({ type: file.file_type, url: file.url });
-                            alert("Hero updated successfully!");
+                            toast.success("Hero updated!");
                           } catch {
-                            alert("Failed to set hero");
+                            toast.error("Failed to update hero");
                           }
                         }}
-                        className="bg-[#D4AF37] px-2 py-1 text-xs rounded hover:opacity-90"
+                        className="bg-[#D4AF37] px-2 py-1 text-xs rounded"
                       >
                         Set Hero
                       </button>
