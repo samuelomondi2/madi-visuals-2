@@ -15,7 +15,7 @@ type HeroPreview = {
 } | null;
 
 type AdminHeroProps = {
-  hero?: HeroPreview; // optional live preview from Dashboard
+  hero?: HeroPreview; 
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
