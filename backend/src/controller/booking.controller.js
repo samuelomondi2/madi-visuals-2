@@ -2,8 +2,12 @@ const bookingService = require("../services/booking.service");
 const Stripe = require("stripe");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const db = require("../config/db");
+const checkAvailability = require("./availability.controller.js");
 
 const success_url = `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`;
+
+const expiresAt = new Date(Date.now() + 5 * 60 * 1000); 
+
 const cancel_url = `${process.env.FRONTEND_URL}/cancel`;
 
 exports.createBookingController = async (req, res) => {
@@ -22,6 +26,12 @@ exports.createBookingController = async (req, res) => {
     if (!service_id || !booking_date || !start_time || !client_name) {
       return res.status(400).json({ message: "Missing required fields" });
     }
+
+    const isAvailable = await checkAvailability.checkSlotAvailability(service_id, booking_date, start_time);
+    if (!isAvailable) {
+      return res.status(400).json({ message: "Selected day/time is not available." });
+    }
+
     const [services] = await db.query(
       "SELECT base_price, name FROM services WHERE id = ?",
       [service_id]
@@ -44,6 +54,7 @@ exports.createBookingController = async (req, res) => {
       notes,
       total_amount: service.base_price,
       payment_status: "pending",
+      expires_at: expiresAt
     });
 
     // 💳 Stripe session
@@ -85,4 +96,14 @@ exports.getBooking = async (req, res) => {
   const booking = await bookingService.getBookingById(req.params.id);
   if (!booking) return res.status(404).json({ message: "Booking not found" });
   res.json(booking);
+};
+
+exports.deleteBooking = async (req, res) => {
+  const deletedRows = await bookingService.deleteBookingById(req.params.id);
+
+  if (deletedRows === 0) {
+    return res.status(404).json({ message: "Booking not found" });
+  }
+
+  res.status(200).json({ message: "Booking deleted" });
 };

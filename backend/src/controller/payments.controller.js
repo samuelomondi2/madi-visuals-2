@@ -12,7 +12,6 @@ exports.createCheckoutSession = async (req, res) => {
       const { bookingId } = req.body;
       if (!bookingId) return res.status(400).json({ message: "Missing required fields" });
   
-      // Fetch the booking to get price & name
       const booking = await bookingService.getBookingById(bookingId);
       if (!booking) return res.status(404).json({ message: "Booking not found" });
   
@@ -56,8 +55,12 @@ exports.handleStripeWebhook = async (req, res) => {
   }
 
   if (event.type === "checkout.session.completed") {
-    await db.execute(`
-      UPDATE bookings 
+    const session = event.data.object;
+
+    const bookingId = session.metadata.booking_id;
+
+    await db.execute(
+      `UPDATE bookings 
       SET payment_status='paid', expires_at=NULL 
       WHERE id=?`,
       [bookingId]

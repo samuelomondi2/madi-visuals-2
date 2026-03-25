@@ -83,3 +83,13 @@ exports.deleteBreak = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+exports.checkSlotAvailability = async (service_id, booking_date, start_time) => {
+  const availability = await availabilityService.getAvailability(booking_date);
+
+  const serviceAvailability = availability.find(s => s.id === service_id);
+
+  if (!serviceAvailability) return false;
+
+  return serviceAvailability.available_slots.includes(start_time);
+};
