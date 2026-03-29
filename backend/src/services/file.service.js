@@ -14,13 +14,13 @@ exports.createFile = async (file) => {
 };
 
 exports.getAllFiles = async () => {
-    const [rows] = await db.execute("SELECT * FROM files ORDER BY created_at DESC");
+    const [rows] = await db.execute("SELECT * FROM media ORDER BY created_at DESC");
     return rows;
 };
 
 exports.getFileById = async (id) => {
     const [rows] = await db.execute(
-      "SELECT * FROM files WHERE id = ?",
+      "SELECT * FROM media WHERE id = ?",
       [id]
     );
     return rows[0];
@@ -28,7 +28,7 @@ exports.getFileById = async (id) => {
 
 exports.deleteFile = async (id) => {
     await db.execute(
-        "DELETE FROM files WHERE id = ?",
+        "DELETE FROM media WHERE id = ?",
         [id]
     );
 };
