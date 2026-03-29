@@ -1,25 +1,17 @@
 const db = require("../config/db");
 
-exports.insertFile = async (fileData) => {
-  const query = `
-    INSERT INTO files 
-    (filename, original_name, mimetype, size, file_type, url)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
+exports.createFile = async (file) => {
+  const [result] = await db.execute(
+    `INSERT INTO media (media_url, media_type, public_id, size)
+     VALUES (?, ?, ?, ?)`,
+    [file.media_url, file.media_type, file.public_id, file.size]
+  );
 
-  const values = [
-    fileData.filename,
-    fileData.originalName,
-    fileData.mimetype,
-    fileData.size,
-    fileData.fileType,
-    fileData.url,
-  ];
-
-  const [result] = await db.execute(query, values);
-  return result.insertId;
+  return {
+    id: result.insertId,
+    ...file
+  };
 };
-
 
 exports.getAllFiles = async () => {
     const [rows] = await db.execute("SELECT * FROM files ORDER BY created_at DESC");
