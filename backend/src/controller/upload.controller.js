@@ -2,6 +2,9 @@ const cloudinary = require("../config/cloudinary");
 const filesService = require("../services/file.service");
 const fs = require("fs");
 
+const cloudinary = require("../config/cloudinary");
+const filesService = require("../services/file.service");
+
 exports.uploadFile = async (req, res) => {
   try {
     if (!req.file) {
@@ -11,12 +14,20 @@ exports.uploadFile = async (req, res) => {
       });
     }
 
-    const result = await cloudinary.uploader.upload(req.file.path, {
-      resource_type: "auto"
-    });
+    // 🔥 upload buffer directly to cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: "auto"
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      );
 
-    // remove local file
-    fs.unlinkSync(req.file.path);
+      stream.end(req.file.buffer); // ✅ send buffer
+    });
 
     // detect type
     const mediaType = result.resource_type === "video" ? "video" : "image";
@@ -31,7 +42,7 @@ exports.uploadFile = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "File uploaded",
+      message: "Uploaded to Cloudinary",
       data: savedFile
     });
 
@@ -39,7 +50,8 @@ exports.uploadFile = async (req, res) => {
     console.error(err);
     res.status(500).json({
       success: false,
-      message: "Upload failed"
+      message: "Upload failed",
+      error: err.message
     });
   }
 };
