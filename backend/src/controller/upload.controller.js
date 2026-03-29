@@ -54,6 +54,24 @@ exports.uploadFiles = async (req, res) => {
   }
 };
 
+exports.getFiles = async (req, res) => {
+  try {
+    const files = await filesService.getAllFiles();
+
+    res.status(200).json({
+      success: true,
+      data: files
+    })
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch files",
+      error: err.message
+    });
+  }
+};
+
 exports.deleteFile = async (req, res) => {
   try {
     const { id } = req.params;
