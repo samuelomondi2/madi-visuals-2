@@ -58,6 +58,14 @@ exports.getFiles = async (req, res) => {
   try {
     const files = await filesService.getAllFiles();
 
+    if (files.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No files found",
+        data: []
+      });
+    }
+
     res.status(200).json({
       success: true,
       data: files
