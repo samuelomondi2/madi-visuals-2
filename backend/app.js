@@ -36,11 +36,7 @@ app.use('/api', bookingRoutes);
 app.use('/api', adminEmail);
 app.use('/api', paymentRoutes);
 app.use('/api', dashboardStatsRoute);
-
-// Serve static files
-// Host Media on Your Own Server (Node.js Static Folder)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use("/api/files", uploadRoutes);
+app.use('/api', uploadRoutes);
 
 app.use(errorHandler);
 
