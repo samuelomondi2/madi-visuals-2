@@ -1,46 +1,47 @@
 const cloudinary = require("../config/cloudinary");
 const filesService = require("../services/file.service");
-const fs = require("fs");
 
-exports.uploadFile = async (req, res) => {
+exports.uploadFiles = async (req, res) => {
   try {
-    if (!req.file) {
+    if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "No file uploaded"
+        message: "No files uploaded"
       });
     }
 
-    // 🔥 upload buffer directly to cloudinary
-    const result = await new Promise((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        {
-          resource_type: "auto"
-        },
-        (error, result) => {
-          if (error) return reject(error);
-          resolve(result);
-        }
-      );
+    const uploadPromises = req.files.map(file => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { resource_type: "auto" },
+          (error, result) => {
+            if (error) return reject(error);
+            resolve(result);
+          }
+        );
 
-      stream.end(req.file.buffer); // ✅ send buffer
+        stream.end(file.buffer);
+      });
     });
 
-    // detect type
-    const mediaType = result.resource_type === "video" ? "video" : "image";
+    const results = await Promise.all(uploadPromises);
 
-    // save to DB
-    const savedFile = await filesService.createFile({
-      media_url: result.secure_url,
-      media_type: mediaType,
-      public_id: result.public_id,
-      size: result.bytes
-    });
+    // save all to DB
+    const savedFiles = await Promise.all(
+      results.map(file =>
+        filesService.createFile({
+          media_url: file.secure_url,
+          media_type: file.resource_type === "video" ? "video" : "image",
+          public_id: file.public_id,
+          size: file.bytes
+        })
+      )
+    );
 
     res.status(200).json({
       success: true,
-      message: "Uploaded to Cloudinary",
-      data: savedFile
+      message: "Files uploaded successfully",
+      data: savedFiles
     });
 
   } catch (err) {
@@ -62,12 +63,10 @@ exports.deleteFile = async (req, res) => {
       return res.status(404).json({ message: "File not found" });
     }
 
-    // delete from cloudinary
     await cloudinary.uploader.destroy(file.public_id, {
       resource_type: file.media_type === "video" ? "video" : "image"
     });
 
-    // delete from DB
     await filesService.deleteFile(id);
 
     res.json({ message: "Deleted successfully" });
