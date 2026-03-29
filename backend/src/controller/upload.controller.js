@@ -1,111 +1,67 @@
-const uploadService = require("../services/upload.service");
-const filesService = require("../services/file.service")
-const path = require("path");
+const cloudinary = require("../config/cloudinary");
+const filesService = require("../services/file.service");
 const fs = require("fs");
-
-const ffmpeg = require("fluent-ffmpeg");
-const ffmpegPath = require("ffmpeg-static");
-
-ffmpeg.setFfmpegPath(ffmpegPath);
 
 exports.uploadFile = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-
-    const originalPath = req.file.path;
-    const originalName = req.file.originalname;
-    const ext = path.extname(originalName).toLowerCase();
-
-    let finalFilename = req.file.filename;
-    let mimetype = req.file.mimetype;
-
-    // If .mov -> convert to .mp4
-    if (ext === ".mov") {
-      const mp4Name = `${Date.now()}-${path.parse(originalName).name}.mp4`;
-      const mp4Path = path.join(path.dirname(originalPath), mp4Name);
-
-      await new Promise((resolve, reject) => {
-        ffmpeg(originalPath)
-          .output(mp4Path)
-          .on("end", () => resolve())
-          .on("error", (err) => reject(err))
-          .run();
+      return res.status(400).json({
+        success: false,
+        message: "No file uploaded"
       });
-
-      // remove original .mov file
-      fs.unlinkSync(originalPath);
-
-      finalFilename = mp4Name;
-      mimetype = "video/mp4"; // update
     }
 
-    const fileType = mimetype.startsWith("image") ? "image" : "video";
-
-    const baseUrl =
-      process.env.NODE_ENV === "production"
-        ? `https://${req.get("host")}`
-        : `${req.protocol}://${req.get("host")}`;
-
-    const url = `${baseUrl}/uploads/${fileType}s/${finalFilename}`;
-
-    // Save metadata
-    const fileData = {
-      filename: finalFilename,
-      originalName: originalName,
-      mimetype,
-      size: fs.statSync(path.join(path.dirname(originalPath), finalFilename)).size,
-      fileType,
-      url,
-    };
-
-    const fileId = await uploadService.saveFileMetadata(fileData);
-
-    return res.status(201).json({
-      message: "File uploaded & saved to DB",
-      id: fileId,
-      url,
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      resource_type: "auto"
     });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      message: "Upload failed",
-      error: error.message,
+
+    // remove local file
+    fs.unlinkSync(req.file.path);
+
+    // detect type
+    const mediaType = result.resource_type === "video" ? "video" : "image";
+
+    // save to DB
+    const savedFile = await filesService.createFile({
+      media_url: result.secure_url,
+      media_type: mediaType,
+      public_id: result.public_id,
+      size: result.bytes
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "File uploaded",
+      data: savedFile
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Upload failed"
     });
   }
 };
-
-
-exports.getFiles = async (req, res) => {
-    const files = await filesService.getAllFiles();
-    res.json(files);
-  };
 
 exports.deleteFile = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 1️⃣ Get file from DB
     const file = await filesService.getFileById(id);
     if (!file) {
       return res.status(404).json({ message: "File not found" });
     }
 
-    // 2️⃣ Delete file from disk
-    const filePath = path.join(__dirname, "../../uploads", 
-      file.file_type === "image" ? "images" : "videos",
-      file.filename
-    );
+    // delete from cloudinary
+    await cloudinary.uploader.destroy(file.public_id, {
+      resource_type: file.media_type === "video" ? "video" : "image"
+    });
 
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-
-    // 3️⃣ Delete from DB
+    // delete from DB
     await filesService.deleteFile(id);
 
-    res.json({ message: "File deleted successfully" });
+    res.json({ message: "Deleted successfully" });
 
   } catch (error) {
     res.status(500).json({
