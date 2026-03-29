@@ -2,9 +2,6 @@ const cloudinary = require("../config/cloudinary");
 const filesService = require("../services/file.service");
 const fs = require("fs");
 
-const cloudinary = require("../config/cloudinary");
-const filesService = require("../services/file.service");
-
 exports.uploadFile = async (req, res) => {
   try {
     if (!req.file) {
