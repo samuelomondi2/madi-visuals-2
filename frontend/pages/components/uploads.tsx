@@ -51,11 +51,11 @@ export default function Uploads() {
           await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/set-hero`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: file.id }),
+            body: JSON.stringify({ id: file.id, type: file.media_type }), // pass type
           });
       
-          // Instead of localStorage, fetch from backend
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero`);
+          // Fetch updated hero
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero?type=${file.media_type}`);
           const data = await res.json();
       
           if (data?.hero) {
@@ -64,13 +64,10 @@ export default function Uploads() {
               url: data.hero.media_url,
             });
           }
-      
         } catch (err) {
           console.error("Failed to set hero", err);
         }
     };
-
-    
 
   return (
     <div>
@@ -104,16 +101,21 @@ export default function Uploads() {
                                 className="bg-red-600 px-2 py-1 text-xs rounded" 
                                 onClick={() => handleDelete(file.id)}
                             >Delete</button>
-                            <button 
+                                <button
                                 className="bg-[#D4AF37] px-2 py-1 text-xs rounded"
                                 onClick={() => handleSetHero(file)}
                                 disabled={file.media_type !== "image"}
-                            >Set Hero Image</button>
-                            <button 
+                            >
+                            Set Hero Image
+                            </button>
+
+                            <button
                                 className="bg-[#37d43f] px-2 py-1 text-xs rounded"
                                 onClick={() => handleSetHero(file)}
                                 disabled={file.media_type !== "video"}
-                            >Set Hero Video</button>
+                            >
+                            Set Hero Video
+                            </button>
                         </div>
                     </div>
                 ))}
