@@ -107,11 +107,12 @@ exports.deleteFile = async (req, res) => {
 
 exports.getHero = async (req, res) => {
   try {
-    const hero = await filesService.getHero();
-
-    if (!hero) {
-      return res.status(404).json({ success: false, message: "No hero found" });
+    const type = req.query.type; // "image" or "video"
+    if (!type || !["image", "video"].includes(type)) {
+      return res.status(400).json({ success: false, message: "Valid media type is required" });
     }
+
+    const hero = await filesService.getHero(type);
 
     res.status(200).json({ success: true, hero });
   } catch (error) {
@@ -122,11 +123,13 @@ exports.getHero = async (req, res) => {
 
 exports.setHero = async (req, res) => {
   try {
-    const { id } = req.body;
+    const { id, type } = req.body;
 
     if (!id) return res.status(400).json({ success: false, message: "Media ID is required" });
+    if (!type || !["image", "video"].includes(type))
+      return res.status(400).json({ success: false, message: "Valid media type is required" });
 
-    await filesService.setHero(id);
+    await filesService.setHero(id, type);
 
     res.status(200).json({ success: true, message: "Hero updated successfully" });
   } catch (error) {

@@ -33,18 +33,12 @@ exports.deleteFile = async (id) => {
     );
 };
 
-exports.getHero = async (req, res) => {
-  const type = req.query.type;
-  if (!["image", "video"].includes(type)) {
-    return res.status(400).json({ error: "Invalid media type" });
-  }
-
+exports.getHero = async (type) => {
   const [rows] = await db.execute(
     "SELECT * FROM media WHERE is_hero = TRUE AND media_type = ? LIMIT 1",
     [type]
   );
-
-  res.json({ hero: rows[0] || null });
+  return rows[0] || null;
 };
 
 exports.setHero = async (id, type) => {
@@ -52,7 +46,6 @@ exports.setHero = async (id, type) => {
   if (!type || !["image", "video"].includes(type)) throw new Error("Valid media type is required");
 
   await db.execute("UPDATE media SET is_hero = FALSE WHERE media_type = ?", [type]);
-
   await db.execute("UPDATE media SET is_hero = TRUE WHERE id = ? AND media_type = ?", [id, type]);
 
   return true;
