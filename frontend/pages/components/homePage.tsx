@@ -11,27 +11,25 @@ import FloatingServices from "./floatingServices";
 type HeroType = { type: "image" | "video"; url: string };
 
 export default function HomePage() {
-  const [hero, setHero] = useState<HeroType | null>(null);
+  const [heroImage, setHeroImage] = useState<HeroType | null>(null);
+  const [heroVideo, setHeroVideo] = useState<HeroType | null>(null);
 
   useEffect(() => {
-    const fetchHero = async () => {
+    const fetchHeroes = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero`);
-        const data = await res.json();
-        
-        console.log(data);
-        if (data?.hero) {
-          setHero({
-            type: data.hero.media_type,
-            url: data.hero.media_url,
-          });
-        }
+        const resImage = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero?type=image`);
+        const dataImage = await resImage.json();
+        if (dataImage.hero) setHeroImage({ type: "image", url: dataImage.hero.media_url });
+
+        const resVideo = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero?type=video`);
+        const dataVideo = await resVideo.json();
+        if (dataVideo.hero) setHeroVideo({ type: "video", url: dataVideo.hero.media_url });
       } catch (err) {
-        console.error("Failed to fetch hero", err);
+        console.error(err);
       }
     };
-  
-    fetchHero();
+
+    fetchHeroes();
   }, []);
 
   return (
@@ -40,9 +38,9 @@ export default function HomePage() {
       <FloatingServices />
 
       <main className="w-full mt-12">
-        {hero?.type === "image" && <Hero imageUrl={hero.url}/>}
+        {heroImage && <Hero imageUrl={heroImage.url} />}
         
-        {hero?.type === "video" && <HeroVideo videoUrl={hero.url} posterUrl="/hero.webp" />}
+        {heroVideo && <HeroVideo videoUrl={heroVideo.url} posterUrl="/hero.webp" />}
 
         <Services />
         <Footer />
