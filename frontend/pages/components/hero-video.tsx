@@ -20,3 +20,4 @@ export default function HeroVideo({ videoUrl, posterUrl }: HeroVideoProps) {
     </div>
   );
 }
+
