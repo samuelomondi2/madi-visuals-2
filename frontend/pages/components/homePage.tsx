@@ -14,8 +14,24 @@ export default function HomePage() {
   const [hero, setHero] = useState<HeroType | null>(null);
 
   useEffect(() => {
-    const savedHero = localStorage.getItem("hero");
-    if (savedHero) setHero(JSON.parse(savedHero));
+    const fetchHero = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero`);
+        const data = await res.json();
+        
+        console.log(data);
+        if (data?.hero) {
+          setHero({
+            type: data.hero.media_type,
+            url: data.hero.media_url,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch hero", err);
+      }
+    };
+  
+    fetchHero();
   }, []);
 
   return (
@@ -24,8 +40,8 @@ export default function HomePage() {
       <FloatingServices />
 
       <main className="w-full mt-12">
-        <Hero />
-
+        {hero?.type === "image" && <Hero imageUrl={hero.url}/>}
+        
         {hero?.type === "video" && <HeroVideo videoUrl={hero.url} posterUrl="/hero.webp" />}
 
         <Services />
