@@ -50,21 +50,25 @@ export default function Uploads() {
         try {
           await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/set-hero`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: file.id }),
           });
       
-          setHero({
-            type: file.media_type,
-            url: file.media_url,
-          });
+          // Instead of localStorage, fetch from backend
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero`);
+          const data = await res.json();
+      
+          if (data?.hero) {
+            setHero({
+              type: data.hero.media_type,
+              url: data.hero.media_url,
+            });
+          }
       
         } catch (err) {
           console.error("Failed to set hero", err);
         }
-      };
+    };
 
     
 

@@ -26,9 +26,7 @@ export default function HomePage() {
       <main className="w-full mt-12">
         <Hero />
 
-        {hero?.type === "video" && (
-          <HeroVideo videoUrl={hero.url} />
-        )}
+        {hero?.type === "video" && <HeroVideo videoUrl={hero.url} posterUrl="/hero.webp" />}
 
         <Services />
         <Footer />
