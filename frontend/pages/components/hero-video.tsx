@@ -1,12 +1,16 @@
 'use client';
 
-type HeroVideoProps = { url: string };
+type HeroVideoProps = {
+  videoUrl: string;
+  posterUrl?: string;
+};
 
-export default function HeroVideo({ url }: HeroVideoProps) {
+export default function HeroVideo({ videoUrl, posterUrl }: HeroVideoProps) {
   return (
     <div className="w-full h-80 relative">
       <video
-        src={url}
+        src={videoUrl}
+        poster={posterUrl}
         autoPlay
         muted
         loop
