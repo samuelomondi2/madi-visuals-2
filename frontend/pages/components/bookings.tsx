@@ -76,7 +76,6 @@ export default function Bookings() {
           setBookings(prev => {
             const updated = prev.filter(b => b.id !== id);
       
-            // 👇 fix page overflow
             const newTotalPages = Math.ceil(updated.length / rowsPerPage);
             if (currentPage > newTotalPages) {
               setCurrentPage(newTotalPages || 1);
