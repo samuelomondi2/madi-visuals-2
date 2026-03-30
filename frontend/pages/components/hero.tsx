@@ -33,8 +33,23 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
-    const savedHero = localStorage.getItem("hero");
-    if (savedHero) setHero(JSON.parse(savedHero));
+    const fetchHero = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero`);
+        const data = await res.json();
+  
+        if (data?.hero) {
+          setHero({
+            type: data.hero.media_type,
+            url: data.hero.media_url,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch hero", err);
+      }
+    };
+  
+    fetchHero();
   }, []);
 
   if (!content) return null;
