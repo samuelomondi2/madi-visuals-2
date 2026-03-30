@@ -32,3 +32,20 @@ exports.deleteFile = async (id) => {
         [id]
     );
 };
+
+exports.getHero = async () => {
+  const [rows] = await db.execute(
+    "SELECT * FROM media WHERE is_hero = TRUE LIMIT 1"
+  );
+  return rows[0] || null;
+};
+
+exports.setHero = async (id) => {
+  if (!id) throw new Error("Media ID is required");
+
+  await db.execute("UPDATE media SET is_hero = FALSE");
+
+  await db.execute("UPDATE media SET is_hero = TRUE WHERE id = ?", [id]);
+
+  return true;
+};

@@ -104,3 +104,33 @@ exports.deleteFile = async (req, res) => {
     });
   }
 };
+
+exports.getHero = async (req, res) => {
+  try {
+    const hero = await filesService.getHero();
+
+    if (!hero) {
+      return res.status(404).json({ success: false, message: "No hero found" });
+    }
+
+    res.status(200).json({ success: true, hero });
+  } catch (error) {
+    console.error("Get Hero Error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch hero" });
+  }
+};
+
+exports.setHero = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    if (!id) return res.status(400).json({ success: false, message: "Media ID is required" });
+
+    await filesService.setHero(id);
+
+    res.status(200).json({ success: true, message: "Hero updated successfully" });
+  } catch (error) {
+    console.error("Set Hero Error:", error);
+    res.status(500).json({ success: false, message: "Failed to set hero" });
+  }
+};

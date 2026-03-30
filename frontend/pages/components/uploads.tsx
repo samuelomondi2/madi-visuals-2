@@ -29,12 +29,44 @@ export default function Uploads() {
     }, []);
 
     useEffect(() => {
-        if (hero) {
-          localStorage.setItem("hero", JSON.stringify(hero));
-        }
-    }, [hero]);
+        const fetchHero = async () => {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero`);
+          const data = await res.json();
+      
+          if (data) {
+            setHero({
+              type: data.media_type,
+              url: data.media_url,
+            });
+          }
+        };
+      
+        fetchHero();
+      }, []);
 
     const handleDelete = async ({}) => {}
+
+    const handleSetHero = async (file: any) => {
+        try {
+          await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/set-hero`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: file.id }),
+          });
+      
+          setHero({
+            type: file.media_type,
+            url: file.media_url,
+          });
+      
+        } catch (err) {
+          console.error("Failed to set hero", err);
+        }
+      };
+
+    
 
   return (
     <div>
@@ -70,12 +102,12 @@ export default function Uploads() {
                             >Delete</button>
                             <button 
                                 className="bg-[#D4AF37] px-2 py-1 text-xs rounded"
-                                onClick={() => setHero({ type: "image", url: file.media_url })}
+                                onClick={() => handleSetHero(file)}
                                 disabled={file.media_type !== "image"}
                             >Set Hero Image</button>
                             <button 
                                 className="bg-[#37d43f] px-2 py-1 text-xs rounded"
-                                onClick={() => setHero({ type: "video", url: file.media_url })}
+                                onClick={() => handleSetHero(file)}
                                 disabled={file.media_type !== "video"}
                             >Set Hero Video</button>
                         </div>
