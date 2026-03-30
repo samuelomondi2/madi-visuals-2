@@ -27,6 +27,8 @@ exports.getHero = async (req, res) => {
   }
 };
 
+
+
 // Update text
 exports.updateHeroContent = async (req, res) => {
   try {
