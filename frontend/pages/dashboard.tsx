@@ -9,6 +9,7 @@ import AvailabilityPage from "./availability";
 import AdminServices from "./admin-services";
 import Bookings from "./components/bookings";
 import DashboardStats from "./components/dashboard-stats";
+import Uploads from "./components/uploads";
 
 interface ContactMessage {
   id: number;
@@ -83,26 +84,6 @@ export default function Dashboard() {
     }
   };
 
-  const fetchMedia = async () => {
-    setMediaLoading(true);
-    const token = getToken();
-    if (!token) return;
-
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch media files");
-      const data = await res.json();
-      setMediaFiles(data);
-    } catch (err) {
-      console.error(err);
-      setMediaError("Failed to load media files");
-    } finally {
-      setMediaLoading(false);
-    }
-  };
-
   const fetchEmail = async () => {
     const token = getToken();
     if (!token) return;
@@ -165,7 +146,6 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchMessages();
-    fetchMedia();
     fetchCurrentHero();
     fetchFilteredMessages();
     fetchEmail();
@@ -194,7 +174,6 @@ export default function Dashboard() {
   
       const data = await res.json();
       setUploadMessage(data.message || "Upload successful");
-      fetchMedia();
     } catch (err) {
       console.error(err);
       setUploadMessage("Failed to upload file");
@@ -541,186 +520,7 @@ export default function Dashboard() {
         )}
 
         {/* Media Tab */}
-        {activeTab === "media" && (
-          <>
-            {/* Upload Section */}
-            <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
-              <input
-                type="file"
-                accept="image/*,video/*"
-                onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                className="w-full md:w-auto p-2 bg-neutral-900 text-white border border-neutral-700 rounded"
-              />
-
-              <button
-                onClick={() => uploadFile && handleUpload(uploadFile)}
-                className="bg-[#D4AF37] text-black px-4 py-2 rounded hover:opacity-90 transition"
-              >
-                Upload File
-              </button>
-
-              <input
-                type="text"
-                placeholder="Enter video URL"
-                value={videoUrlInput}
-                onChange={(e) => setVideoUrlInput(e.target.value)}
-                className="w-full md:w-auto p-2 bg-neutral-900 text-white border border-neutral-700 rounded"
-              />
-
-              <button
-                onClick={async () => {
-                  if (!videoUrlInput) return toast.error("No URL provided");
-
-                  const token = getToken();
-                  if (!token) return toast.error("Not authorized");
-
-                  try {
-                    const res = await fetch(
-                      `${process.env.NEXT_PUBLIC_API_URL}/api/hero-video`,
-                      {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                          Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify({
-                          url: videoUrlInput,
-                          type: "video",
-                        }),
-                      }
-                    );
-
-                    const data = await res.json();
-                    toast.success(data.message || "Video added!");
-                    fetchMedia();
-                    setVideoUrlInput("");
-                  } catch {
-                    toast.error("Failed to add video URL");
-                  }
-                }}
-                className="bg-[#D4AF37] text-black px-4 py-2 rounded hover:opacity-90 transition"
-              >
-                Add Video URL
-              </button>
-            </div>
-
-            {/* Media Grid */}
-            {mediaLoading ? (
-              <p>Loading media...</p>
-            ) : mediaError ? (
-              <p className="text-red-500">{mediaError}</p>
-            ) : mediaFiles.length === 0 ? (
-              <p>No media uploaded yet.</p>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {mediaFiles.map((file) => (
-                  <div
-                    key={file.id}
-                    className={`bg-[#1a1a1a] p-2 rounded relative border-2 ${
-                      currentHero?.url === file.url
-                        ? "border-[#D4AF37]"
-                        : "border-transparent"
-                    }`}
-                  >
-                    {/* Preview */}
-                    {file.media_type === "image" ? (
-                      <img
-                        src={file.url}
-                        alt="media"
-                        className="w-full h-40 object-cover rounded"
-                      />
-                    ) : (
-                      <video
-                        src={file.url}
-                        controls
-                        className="w-full h-40 rounded"
-                      />
-                    )}
-
-                    {/* File name */}
-                    <p className="text-xs text-neutral-400 truncate mt-1">
-                      {file.original_name || "media"}
-                    </p>
-
-                    {/* Actions */}
-                    <div className="absolute top-2 right-2 flex flex-col gap-1">
-                      
-                      {/* Delete */}
-                      <button
-                        onClick={async () => {
-                          const token = getToken();
-                          if (!token) return;
-
-                          try {
-                            const res = await fetch(
-                              `${process.env.NEXT_PUBLIC_API_URL}/api/files/${file.id}`,
-                              {
-                                method: "DELETE",
-                                headers: { Authorization: `Bearer ${token}` },
-                              }
-                            );
-
-                            if (!res.ok) throw new Error();
-
-                            setMediaFiles((prev) =>
-                              prev.filter((m) => m.id !== file.id)
-                            );
-
-                            toast.success("Deleted");
-                          } catch {
-                            toast.error("Failed to delete");
-                          }
-                        }}
-                        className="bg-red-600 px-2 py-1 text-xs rounded"
-                      >
-                        Delete
-                      </button>
-
-                      {/* Set Hero */}
-                      <button
-                        onClick={async () => {
-                          const token = getToken();
-                          if (!token) return;
-
-                          try {
-                            const res = await fetch(
-                              `${process.env.NEXT_PUBLIC_API_URL}/api/hero`,
-                              {
-                                method: "PUT",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                  Authorization: `Bearer ${token}`,
-                                },
-                                body: JSON.stringify({
-                                  media_url: file.url,
-                                  media_type: file.media_type,
-                                }),
-                              }
-                            );
-
-                            if (!res.ok) throw new Error();
-
-                            setCurrentHero({
-                              type: file.media_type,
-                              url: file.url,
-                            });
-
-                            toast.success("Hero updated!");
-                          } catch {
-                            toast.error("Failed to update hero");
-                          }
-                        }}
-                        className="bg-[#D4AF37] px-2 py-1 text-xs rounded"
-                      >
-                        Set Hero
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
+        {activeTab === "media" && <Uploads/> }
 
         {/* Availability Tab */}
         {activeTab === "availability" && <AvailabilityPage/> }
