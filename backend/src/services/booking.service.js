@@ -24,7 +24,7 @@ exports.createBooking = async (data) => {
 };
 
 exports.getAllBookings = async () => {
-  const [rows] = await db.query("SELECT * FROM bookings");
+  const [rows] = await db.query("SELECT * FROM bookings ORDER BY created_at DESC");
   return rows;
 };
 

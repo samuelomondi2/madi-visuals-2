@@ -29,7 +29,6 @@ export default function AdminHero() {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<HeroPreview>(null);
 
-  // ✅ Fetch hero content
   useEffect(() => {
     async function fetchHero() {
       try {
@@ -114,7 +113,6 @@ export default function AdminHero() {
 
       alert("Updated successfully!");
 
-      // persist preview into heroContent
       setHeroContent((prev) =>
         prev
           ? {
@@ -145,14 +143,12 @@ export default function AdminHero() {
         }
       : null);
 
-  // ✅ Loading states
   if (loading) return <p className="p-10">Loading...</p>;
   if (!heroContent) return <p className="p-10">No hero content found.</p>;
 
   return (
     <div className="max-w-5xl mx-auto p-10 flex flex-col md:flex-row gap-8">
-      
-      {/* 🔥 LEFT: PREVIEW */}
+
       {displayHero && (
         <div className="flex-1 bg-black rounded overflow-hidden shadow-md">
           {displayHero.type === "image" ? (
