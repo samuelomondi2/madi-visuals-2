@@ -7,6 +7,7 @@ export default function Uploads() {
     const [mediaLoading, setMediaLoading] = useState(true);
     const [mediaFiles, setMediaFiles] = useState<any[]>([]);
     const [mediaError, setMediaError] = useState("");
+    const [hero, setHero] = useState<{ type: "image" | "video"; url: string } | null>(null);
 
     const fetchMedia = async () => {
         setMediaLoading(true);
@@ -25,7 +26,15 @@ export default function Uploads() {
 
     useEffect(() => {
         fetchMedia();
-    }, [])
+    }, []);
+
+    useEffect(() => {
+        if (hero) {
+          localStorage.setItem("hero", JSON.stringify(hero));
+        }
+    }, [hero]);
+
+    const handleDelete = async ({}) => {}
 
   return (
     <div>
@@ -54,6 +63,22 @@ export default function Uploads() {
                                 className="w-full h-40 rounded"
                             />
                         )}
+                        <div className="absolute top-2 right-2 flex flex-col gap-1">
+                            <button 
+                                className="bg-red-600 px-2 py-1 text-xs rounded" 
+                                onClick={() => handleDelete(file.id)}
+                            >Delete</button>
+                            <button 
+                                className="bg-[#D4AF37] px-2 py-1 text-xs rounded"
+                                onClick={() => setHero({ type: "image", url: file.media_url })}
+                                disabled={file.media_type !== "image"}
+                            >Set Hero Image</button>
+                            <button 
+                                className="bg-[#37d43f] px-2 py-1 text-xs rounded"
+                                onClick={() => setHero({ type: "video", url: file.media_url })}
+                                disabled={file.media_type !== "video"}
+                            >Set Hero Video</button>
+                        </div>
                     </div>
                 ))}
             </div>

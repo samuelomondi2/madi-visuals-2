@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
 type HeroContent = {
@@ -11,8 +10,11 @@ type HeroContent = {
   hero_image_url?: string | null;
 };
 
+type HeroType = { type: "image" | "video"; url: string };
+
 export default function Hero() {
   const [content, setContent] = useState<HeroContent | null>(null);
+  const [hero, setHero] = useState<HeroType | null>(null);
 
   useEffect(() => {
     async function fetchHeroContent() {
@@ -30,6 +32,11 @@ export default function Hero() {
     fetchHeroContent();
   }, []);
 
+  useEffect(() => {
+    const savedHero = localStorage.getItem("hero");
+    if (savedHero) setHero(JSON.parse(savedHero));
+  }, []);
+
   if (!content) return null;
 
   const spaceIndex = content.name.indexOf(" ");
@@ -38,10 +45,7 @@ export default function Hero() {
   const lastName =
     spaceIndex === -1 ? "" : content.name.slice(spaceIndex + 1);
 
-  // Normalize the image URL for Next.js
   const heroImageUrl = content.hero_image_url || "/hero.webp";
-
-  console.log("Hero Image URL:", heroImageUrl);
 
   return (
     <section className="bg-black">
@@ -64,26 +68,29 @@ export default function Hero() {
           </p>
         </div>
 
-        {/* Right Image */}
+        {/* Right Hero Media */}
         <div className="relative h-[420px] md:h-[600px] md:-mr-24">
-          {heroImageUrl.startsWith("http") ? (
-            <Image
-              src={heroImageUrl}
-              alt={`${content.name} hero image`}
-              fill
-              priority
-              className="rounded-xl object-cover"
-              // unoptimized // bypass Next.js image optimization
+        {hero ? (
+          hero.type === "image" ? (
+            <img
+              src={hero.url}
+              alt="Hero Image"
+              className="w-full h-full object-cover rounded"
             />
           ) : (
-            <Image
-              src={heroImageUrl} // fallback local image
-              alt="Default hero image"
-              fill
-              priority
-              className="rounded-xl object-cover"
+            <img
+              src={heroImageUrl}
+              alt="Hero Placeholder"
+              className="w-full h-full object-cover rounded"
             />
-          )}
+          )
+        ) : (
+          <img
+            src={heroImageUrl}
+            alt="Hero Placeholder"
+            className="w-full h-full object-cover rounded"
+          />
+        )}
         </div>
       </div>
     </section>

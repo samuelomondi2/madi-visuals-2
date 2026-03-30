@@ -7,29 +7,30 @@ import HeroVideo from "./hero-video";
 import Footer from "./footer";
 import Services from "../services";
 import FloatingServices from "./floatingServices";
-import BookingModal from "./bookOnline";
 
-type HeroVideoResponse = {
-  id: number;
-  url: string;
-  updated_at: string;
-};
+type HeroType = { type: "image" | "video"; url: string };
 
 export default function HomePage() {
+  const [hero, setHero] = useState<HeroType | null>(null);
+
+  useEffect(() => {
+    const savedHero = localStorage.getItem("hero");
+    if (savedHero) setHero(JSON.parse(savedHero));
+  }, []);
 
   return (
     <>
       <Navbar />
-
-      <FloatingServices/>
+      <FloatingServices />
 
       <main className="w-full mt-12">
         <Hero />
-
-        <img src="/hero.webp" alt="Hero Placeholder" className="w-full h-auto mt-8" />
-
-        <Services/>
         
+        {hero?.type === "video" && (
+          <HeroVideo url={hero.url} />
+        )}
+
+        <Services />
         <Footer />
       </main>
     </>
