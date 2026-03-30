@@ -33,11 +33,18 @@ exports.deleteFile = async (id) => {
     );
 };
 
-exports.getHero = async () => {
+exports.getHero = async (req, res) => {
+  const type = req.query.type;
+  if (!["image", "video"].includes(type)) {
+    return res.status(400).json({ error: "Invalid media type" });
+  }
+
   const [rows] = await db.execute(
-    "SELECT * FROM media WHERE is_hero = TRUE LIMIT 1"
+    "SELECT * FROM media WHERE is_hero = TRUE AND media_type = ? LIMIT 1",
+    [type]
   );
-  return rows[0] || null;
+
+  res.json({ hero: rows[0] || null });
 };
 
 exports.setHero = async (id, type) => {
