@@ -28,6 +28,7 @@ interface FormData {
   service_id: number;
   notes: string;
   location: string;
+  agreed_to_terms: number;
 }
 
 export default function BookingModal({ open, setOpen }: BookingModalProps) {
@@ -47,7 +48,8 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     start_time: "",
     service_id: 0,
     notes: "",
-    location: ""
+    location: "",
+    agreed_to_terms: 0
   });
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 2));
@@ -109,7 +111,6 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
         const lng = position.coords.longitude;
   
         try {
-          // Optional: convert to human-readable address via Google Maps
           const res = await fetch(
             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=YOUR_GOOGLE_API_KEY`
           );
@@ -119,7 +120,6 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
             const address = data.results[0].formatted_address;
             setForm(prev => ({ ...prev, location: address }));
           } else {
-            // fallback to raw coordinates
             setForm(prev => ({ ...prev, location: `${lat},${lng}` }));
           }
         } catch {
@@ -161,6 +161,11 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     const { client_name, client_email, booking_date, start_time, service_id } = form;
     if (!client_name || !client_email || !booking_date || !start_time || !service_id) {
       setError("Please fill in all required fields.");
+      return null;
+    }
+
+    if (form.agreed_to_terms !== 1) {
+      setError("You must agree to the Terms & Conditions.");
       return null;
     }
 
@@ -301,6 +306,20 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                     {messages.map(s => <option key={s.id} value={s.id}>{s.name} - ${s.price}</option>)}
                   </select>
                   <textarea placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none" rows={3}/>
+                  <div className="flex items-center gap-2 mt-2">
+                    <input
+                      type="checkbox"
+                      id="agree"
+                      checked={form.agreed_to_terms === 1}
+                      onChange={(e) =>
+                        setForm({ ...form, agreed_to_terms: e.target.checked ? 1 : 0 })
+                      }
+                      className="accent-[#D4AF37] w-4 h-4"
+                    />
+                    <label htmlFor="agree" className="text-sm text-gray-300">
+                      I agree to the <a href="/faq" className="underline hover:text-[#D4AF37]">Terms & Conditions</a>
+                    </label>
+                  </div>
                   <button type="submit" disabled={loading} className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 mt-4 hover:opacity-90 transition disabled:opacity-50">Next</button>
                 </>
               )}

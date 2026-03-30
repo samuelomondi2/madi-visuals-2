@@ -20,7 +20,8 @@ exports.createBookingController = async (req, res) => {
       client_email,
       client_phone,
       location,
-      notes
+      notes,
+      agreed_to_terms
     } = req.body;
 
     if (!service_id || !booking_date || !start_time || !client_name) {
@@ -54,7 +55,8 @@ exports.createBookingController = async (req, res) => {
       notes,
       total_amount: service.base_price,
       payment_status: "pending",
-      expires_at: expiresAt
+      expires_at: expiresAt,
+      agreed_to_terms
     });
 
     // 💳 Stripe session
