@@ -10,9 +10,11 @@ type HeroContent = {
   hero_image_url?: string | null;
 };
 
-type HeroType = { type: "image" | "video"; url: string };
+type HeroType = {
+  imageUrl: string;
+};
 
-export default function Hero() {
+export default function Hero({ imageUrl }: HeroType) {
   const [content, setContent] = useState<HeroContent | null>(null);
   const [hero, setHero] = useState<HeroType | null>(null);
 
@@ -30,26 +32,6 @@ export default function Hero() {
     }
 
     fetchHeroContent();
-  }, []);
-
-  useEffect(() => {
-    const fetchHero = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero`);
-        const data = await res.json();
-  
-        if (data?.hero) {
-          setHero({
-            type: data.hero.media_type,
-            url: data.hero.media_url,
-          });
-        }
-      } catch (err) {
-        console.error("Failed to fetch hero", err);
-      }
-    };
-  
-    fetchHero();
   }, []);
 
   if (!content) return null;
@@ -85,27 +67,11 @@ export default function Hero() {
 
         {/* Right Hero Media */}
         <div className="relative h-[420px] md:h-[600px] md:-mr-24">
-        {hero ? (
-          hero.type === "image" ? (
             <img
-              src={hero.url}
+              src={imageUrl}
               alt="Hero Image"
               className="w-full h-full object-cover rounded"
             />
-          ) : (
-            <img
-              src={heroImageUrl}
-              alt="Hero Placeholder"
-              className="w-full h-full object-cover rounded"
-            />
-          )
-        ) : (
-          <img
-            src={heroImageUrl}
-            alt="Hero Placeholder"
-            className="w-full h-full object-cover rounded"
-          />
-        )}
         </div>
       </div>
     </section>

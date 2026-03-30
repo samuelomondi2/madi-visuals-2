@@ -40,12 +40,13 @@ exports.getHero = async () => {
   return rows[0] || null;
 };
 
-exports.setHero = async (id) => {
+exports.setHero = async (id, type) => {
   if (!id) throw new Error("Media ID is required");
+  if (!type || !["image", "video"].includes(type)) throw new Error("Valid media type is required");
 
-  await db.execute("UPDATE media SET is_hero = FALSE");
+  await db.execute("UPDATE media SET is_hero = FALSE WHERE media_type = ?", [type]);
 
-  await db.execute("UPDATE media SET is_hero = TRUE WHERE id = ?", [id]);
+  await db.execute("UPDATE media SET is_hero = TRUE WHERE id = ? AND media_type = ?", [id, type]);
 
   return true;
 };
