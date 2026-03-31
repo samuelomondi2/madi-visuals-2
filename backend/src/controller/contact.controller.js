@@ -2,23 +2,6 @@
 const contactService = require("../services/contact.service");
 const mailer = require("../middleware/mailer");
 
-// exports.contact = async (req, res, next) => {
-//     try {
-//         await contactService.contact(req.body);
-
-//         await mailer.sendEmail({
-//           to: email,
-//           subject: "New Contact Message",
-//           text: `Message from ${name} (${phone}): ${message}`,
-//           html: `<p>Message from <strong>${name}</strong> (${phone}):</p><p>${message}</p>`
-//         });
-
-//         res.status(201).json({ message: 'Contact info created successfully' })
-//     } catch (error) {
-//         next(error)
-//     }
-// }
-
 exports.contact = async (req, res, next) => {
   try {
     const { name, email, phone, message } = req.body; 
