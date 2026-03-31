@@ -10,6 +10,11 @@ export default function Uploads() {
   const [mediaFiles, setMediaFiles] = useState<any[]>([]);
   const [mediaError, setMediaError] = useState("");
   const [hero, setHero] = useState<HeroType | null>(null);
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
+
+  const startIndex = (page - 1) * ITEMS_PER_PAGE;
+  const currentFiles = mediaFiles.slice(startIndex, startIndex + ITEMS_PER_PAGE); 
 
   const fetchMedia = async () => {
     setMediaLoading(true);
@@ -129,7 +134,7 @@ export default function Uploads() {
         <p>No media uploaded yet.</p>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {mediaFiles.map((file) => (
+          {currentFiles.map((file) => (
             <div key={file.id} className="bg-[#1a1a1a] p-2 rounded relative border-2">
               {file.media_type === "image" ? (
                 <Image
@@ -171,6 +176,31 @@ export default function Uploads() {
           ))}
         </div>
       )}
+      <div className="flex justify-center gap-4 mt-6">
+        <button
+          onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          disabled={page === 1}
+          className="px-4 py-2 border border-[#D4AF37] text-[#D4AF37] rounded disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        <span className="text-white text-sm">
+          Page {page}
+        </span>
+
+        <button
+          onClick={() =>
+            setPage((p) =>
+              p * ITEMS_PER_PAGE < mediaFiles.length ? p + 1 : p
+            )
+          }
+          disabled={page * ITEMS_PER_PAGE >= mediaFiles.length}
+          className="px-4 py-2 border border-[#D4AF37] text-[#D4AF37] rounded disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }

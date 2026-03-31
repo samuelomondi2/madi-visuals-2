@@ -171,19 +171,6 @@ export default function AdminHero() {
       <div className="flex-1 space-y-6">
         <h1 className="text-2xl font-semibold">Edit Hero Section</h1>
 
-        {/* Upload */}
-        <div>
-          <input
-            type="file"
-            accept="image/*,video/*"
-            onChange={handleFileUpload}
-            className="w-full border p-3 rounded"
-          />
-          {uploading && (
-            <p className="text-sm text-gray-400 mt-2">Uploading...</p>
-          )}
-        </div>
-
         {/* Title */}
         <input
           name="title"
