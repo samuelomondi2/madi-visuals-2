@@ -7,6 +7,6 @@ router.post('/upload', upload.array('file', 10), controller.uploadFiles);
 router.get('/files',controller.getFiles);
 router.post("/media/set-hero", controller.setHero);
 router.get("/media/hero", controller.getHero);
-// router.delete("/:id", uploadController.deleteFile);
+router.delete("/delete/:id", uploadController.deleteFile);
 
 module.exports = router;

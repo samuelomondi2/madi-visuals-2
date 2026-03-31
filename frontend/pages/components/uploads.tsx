@@ -11,7 +11,6 @@ export default function Uploads() {
   const [mediaError, setMediaError] = useState("");
   const [hero, setHero] = useState<HeroType | null>(null);
 
-  // Fetch all media files
   const fetchMedia = async () => {
     setMediaLoading(true);
     try {
@@ -31,7 +30,6 @@ export default function Uploads() {
     fetchMedia();
   }, []);
 
-  // Fetch hero for a specific type (image or video)
   const fetchHero = async (type: "image" | "video") => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero?type=${type}`);
@@ -46,30 +44,42 @@ export default function Uploads() {
   };
 
   useEffect(() => {
-    // Optionally fetch both hero types on load
     fetchHero("image");
     fetchHero("video");
   }, []);
 
-  // Set hero (image or video) for a file
   const handleSetHero = async (file: any) => {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/set-hero`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: file.id, type: file.media_type }), // pass type explicitly
+        body: JSON.stringify({ id: file.id, type: file.media_type }), 
       });
 
-      // Refresh hero for that type only
       fetchHero(file.media_type);
     } catch (err) {
       console.error("Failed to set hero", err);
     }
   };
 
-  // TODO: Implement delete if needed
   const handleDelete = async (id: number) => {
-    console.log("Delete media with id", id);
+    try {
+      console.log("Delete media with id", id);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/delete/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" }
+      })
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to delete media");
+      }
+
+      setMediaFiles((prev) => prev.filter((file) => file.id !== id));
+      
+    } catch (error) {
+      console.error("Failed to set hero", error);
+    }
   };
 
   return (
