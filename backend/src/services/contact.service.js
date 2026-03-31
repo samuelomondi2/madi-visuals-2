@@ -2,7 +2,7 @@ const db = require('../config/db');
 const adminEmail = require("./adminEmailService");
 
 exports.contact = async ({ name, email, phone, message }) => {
-  const emailDetails = await adminEmail.getEmailDetails(); // fetch latest row
+  const emailDetails = await adminEmail.getEmailDetails(); 
   const adminEmailAddress = emailDetails?.[0]?.email;
   const adminPassword = emailDetails?.[0]?.password;
 

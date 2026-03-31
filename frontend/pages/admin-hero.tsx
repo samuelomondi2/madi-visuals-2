@@ -16,10 +16,6 @@ type HeroPreview = {
   url: string;
 } | null;
 
-type AdminHeroProps = {
-  hero?: HeroPreview; 
-};
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function AdminHero() {
@@ -45,37 +41,6 @@ export default function AdminHero() {
     fetchHero();
   }, []);
 
-  // ✅ Upload file (image/video)
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
-
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      setUploading(true);
-
-      const res = await fetch(`${API_URL}/api/media`, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-
-      setPreview({
-        type: data.type,
-        url: data.url,
-      });
-
-    } catch (err) {
-      console.error("Upload failed:", err);
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  // ✅ Handle text changes
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -87,7 +52,6 @@ export default function AdminHero() {
     });
   };
 
-  // ✅ Save hero content + media
   const handleSave = async () => {
     if (!heroContent) return;
 
@@ -133,7 +97,6 @@ export default function AdminHero() {
     }
   };
 
-  // ✅ Decide what to display (preview > saved)
   const displayHero: HeroPreview =
     preview ||
     (heroContent?.media_url && heroContent.media_type
