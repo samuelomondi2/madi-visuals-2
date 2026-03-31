@@ -76,14 +76,50 @@ export default function Uploads() {
       }
 
       setMediaFiles((prev) => prev.filter((file) => file.id !== id));
-      
+
     } catch (error) {
       console.error("Failed to set hero", error);
     }
   };
 
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const formData = new FormData();
+
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files", files[i]); 
+    }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload`, {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Upload failed");
+      }
+
+      await fetchMedia();
+    } catch (error) {
+      console.error("Upload error:", error);
+    }
+  }
+
   return (
     <div>
+      <div>
+        <input
+          type="file"
+          multiple
+          accept="image/*,video/*"
+          onChange={handleUpload}
+          className="mb-4 text-sm text-white"
+        />
+      </div>
       {mediaLoading ? (
         <p>Loading media...</p>
       ) : mediaError ? (
