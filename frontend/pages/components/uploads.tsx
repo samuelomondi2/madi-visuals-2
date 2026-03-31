@@ -111,15 +111,16 @@ export default function Uploads() {
 
   return (
     <div>
-      <div>
+      <label className="mb-4 flex items-center justify-center gap-2 cursor-pointer rounded-lg border border-[#D4AF37] px-4 py-2 text-sm text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition">
+        <span>Upload Media</span>
         <input
           type="file"
           multiple
           accept="image/*,video/*"
           onChange={handleUpload}
-          className="mb-4 text-sm text-white"
+          className="hidden"
         />
-      </div>
+      </label>
       {mediaLoading ? (
         <p>Loading media...</p>
       ) : mediaError ? (
