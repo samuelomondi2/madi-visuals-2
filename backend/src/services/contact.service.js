@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const adminEmail = require("./adminEmailService");
+const nodemailer = require("nodemailer")
 
 exports.contact = async ({ name, email, phone, message }) => {
   const emailDetails = await adminEmail.getEmailDetails(); 
