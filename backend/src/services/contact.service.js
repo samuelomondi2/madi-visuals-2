@@ -22,10 +22,12 @@ exports.contact = async ({ name, email, phone, message }) => {
 
   console.log("Admin Email Side", adminEmailAddress, adminPassword, name, email, phone, message)
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
-      user: adminEmailAddress, 
-      pass: adminPassword, 
+      user: adminEmailAddress,
+      pass: adminPassword,
     },
   });
 
