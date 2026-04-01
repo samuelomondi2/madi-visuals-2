@@ -14,6 +14,7 @@ exports.contact = async ({ name, email, phone, message }) => {
 
   try {
     await emailRender.sendContactMessagesEmails({ name, email, phone, message });
+    console.log("Email sent");
   } catch (error) {
     console.error("Email error:", error);
   }
