@@ -24,6 +24,7 @@ exports.createBooking = async (data) => {
 
   try {
     await emailRender.sendBookingEmails(data);
+    console.log("Email sent");
   } catch (error) {
     console.error("Email error:", error);
   }
