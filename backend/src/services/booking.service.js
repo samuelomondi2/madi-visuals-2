@@ -25,7 +25,7 @@ exports.createBooking = async (data) => {
   try {
     await emailRender.sendBookingEmails(data);
   } catch (error) {
-    console.error("Email error:", error.message);
+    console.error("Email error:", error);
   }
 
   return { id: result.insertId, ...data };

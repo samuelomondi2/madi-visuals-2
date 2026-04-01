@@ -61,12 +61,12 @@ exports.sendContactMessagesEmails = async ({ name, email, phone, message }) => {
         <p><strong>Notes:</strong></p>
         <p>${message || "-"}</p>
       `,
-      reply_to: data.client_email, 
+      reply_to: email, 
     });
   
     await resend.emails.send({
       from: "Contact System <noreply@madivisuals.com>",
-      to: data.client_email,
+      to: email,
       subject: "We received your message",
       html: `
         <p>Hi ${name},</p>
