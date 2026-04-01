@@ -1,6 +1,4 @@
 const db = require('../config/db');
-const adminEmail = require("./adminEmailService");
-const nodemailer = require("nodemailer")
 
 exports.contact = async ({ name, email, phone, message }) => {
   const emailDetails = await adminEmail.getEmailDetails(); 
@@ -19,32 +17,6 @@ exports.contact = async ({ name, email, phone, message }) => {
      VALUES (?, ?, ?, ?, ?, ?)`,
     [name, email, phone, message, status, deleted_at]
   );
-
-  console.log("Admin Email Side", adminEmailAddress, adminPassword, name, email, phone, message)
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-      user: adminEmailAddress,
-      pass: adminPassword,
-    },
-  });
-
-  const mailOptions = {
-    from: `"${name}" <${email}>`,
-    to: adminEmailAddress,
-    subject: `New Contact Message from ${name}`,
-    text: `
-    Name: ${name}
-    Email: ${email}
-    Phone: ${phone || "-"}
-    Message:
-    ${message}
-    `,
-  };
-
-  await transporter.sendMail(mailOptions);
 };
 
 exports.getContacts = async () => {
@@ -91,7 +63,6 @@ exports.deleteContact = async ({ id }) => {
   return result;
 };
 
-// Filtering
 exports.getFilteredContacts = async ({ status, deleted }) => {
   let query = `SELECT * FROM contact WHERE 1=1`;
   const params = [];

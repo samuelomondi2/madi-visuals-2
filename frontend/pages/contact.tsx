@@ -57,7 +57,7 @@ export default function ContactPage() {
         throw new Error(data.message || "Failed to send message");
       }
 
-      setSuccess("Message sent successfully!");
+      toast.success("Message sent successfully!");
 
       // Reset form
       setName("");

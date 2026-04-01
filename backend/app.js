@@ -20,7 +20,7 @@ const errorHandler = require("./src/middleware/errorHandler");
 
 const app = express();
 
-app.set('trust proxy', 1);
+app.set('trust proxy', 'loopback');
 
 app.use(corsMiddleware);
 app.use(bodyParser.json());
