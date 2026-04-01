@@ -37,7 +37,6 @@ app.use('/api', heroVideoRoutes);
 app.use('/api', serviceRoutes);
 app.use('/api', availabilityRoutes);
 app.use('/api', bookingRoutes);
-app.use('/api', adminEmail);
 app.use('/api', paymentRoutes);
 app.use('/api', dashboardStatsRoute);
 app.use('/api', uploadRoutes);
