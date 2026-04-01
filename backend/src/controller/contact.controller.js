@@ -8,12 +8,21 @@ exports.contact = async (req, res, next) => {
 
     await contactService.contact({ name, email, phone, message });
 
-    // Send email notification
+    console.log("Client Email side", name, email, phone, message);
     await mailer.sendEmail({
-      to: email, // Or to admin email if you want notifications sent to yourself
-      subject: "New Contact Message",
-      text: `Message from ${name} (${phone}): ${message}`,
-      html: `<p>Message from <strong>${name}</strong> (${phone}):</p><p>${message}</p>`
+      to: email,
+      subject: "We received your message",
+      html: `
+        <p>Hi ${name},</p>
+    
+        <p>Thanks for reaching out! We've received your message and will get back to you shortly.</p>
+    
+        <p><strong>Your message:</strong></p>
+        <p>${message}</p>
+    
+        <br/>
+        <p>Best regards,<br/>Madi Visuals</p>
+      `
     });
 
     res.status(201).json({ message: "Contact info created successfully" });

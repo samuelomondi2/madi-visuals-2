@@ -20,6 +20,7 @@ exports.contact = async ({ name, email, phone, message }) => {
     [name, email, phone, message, status, deleted_at]
   );
 
+  console.log("Admin Email Side", adminEmailAddress, adminPassword, name, email, phone, message)
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
