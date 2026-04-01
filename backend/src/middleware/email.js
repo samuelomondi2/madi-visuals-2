@@ -7,7 +7,7 @@ exports.sendBookingEmails = async (data) => {
 
   // ✅ 1. Email to Admin
   await resend.emails.send({
-    from: "Booking System <noreply@madivisuals.com>",
+    from: "Booking System <onboarding@resend.dev",
     to: adminEmail,
     subject: `${data.client_name} booked a session`,
     html: `
@@ -26,7 +26,7 @@ exports.sendBookingEmails = async (data) => {
 
   // ✅ 2. Confirmation Email to Client
   await resend.emails.send({
-    from: "Booking System <noreply@madivisuals.com>",
+    from: "Booking System <nonboarding@resend.dev>",
     to: data.client_email,
     subject: "Your booking is confirmed",
     html: `
@@ -50,7 +50,7 @@ exports.sendBookingEmails = async (data) => {
 exports.sendContactMessagesEmails = async ({ name, email, phone, message }) => {
 
     await resend.emails.send({
-      from: "Contact System <noreply@madivisuals.com>",
+      from: "Contact System <onboarding@resend.dev>",
       to: adminEmail,
       subject: `New Contact Message`,
       html: `
@@ -65,7 +65,7 @@ exports.sendContactMessagesEmails = async ({ name, email, phone, message }) => {
     });
   
     await resend.emails.send({
-      from: "Contact System <noreply@madivisuals.com>",
+      from: "Contact System <onboarding@resend.dev>",
       to: email,
       subject: "We received your message",
       html: `
