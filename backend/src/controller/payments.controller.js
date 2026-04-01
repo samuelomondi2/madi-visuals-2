@@ -53,6 +53,7 @@ exports.handleStripeWebhook = async (req, res) => {
     );
     console.log("✅ Event verified:", event.type);
   } catch (err) {
+    console.error("❌ Webhook Error:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -60,7 +61,7 @@ exports.handleStripeWebhook = async (req, res) => {
     const session = event.data.object;
 
     console.log("💰 Payment success for booking:", session.metadata);
-    
+
     const bookingId = session.metadata.booking_id;
 
     await db.execute(
