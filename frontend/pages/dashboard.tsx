@@ -9,7 +9,6 @@ import AdminServices from "./admin-services";
 import Bookings from "./components/bookings";
 import DashboardStats from "./components/dashboard-stats";
 import Uploads from "./components/uploads";
-import EmailNotifier from "./components/email-notifier";
 
 interface ContactMessage {
   id: number;
@@ -291,13 +290,7 @@ export default function Dashboard() {
         {activeTab === "stats" && <DashboardStats/> }
 
         {/* Hero Tab */}
-        {activeTab === "hero" && (
-          <>
-            <AdminHero/>
-
-            <EmailNotifier/>
-          </>
-        )}
+        {activeTab === "hero" && <AdminHero/>}
 
         {/* Messages Tab */}
         {activeTab === "messages" && (
