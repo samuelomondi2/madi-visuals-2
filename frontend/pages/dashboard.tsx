@@ -127,33 +127,6 @@ export default function Dashboard() {
 
   /* -------------------- Actions -------------------- */
 
-  const handleUpload = async (file: File) => {
-    const token = getToken();
-    if (!token) {
-      setUploadMessage("Not authorized");
-      return;
-    }
-  
-    try {
-      setUploadMessage("Uploading file...");
-  
-      const formData = new FormData();
-      formData.append("file", file);
-  
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/files`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-  
-      const data = await res.json();
-      setUploadMessage(data.message || "Upload successful");
-    } catch (err) {
-      console.error(err);
-      setUploadMessage("Failed to upload file");
-    }
-  };
-
   const handleDeleteMessage = async (id: number) => {
     const token = getToken();
   
@@ -173,11 +146,7 @@ export default function Dashboard() {
         throw new Error("Failed to delete message");
       }
   
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === id ? { ...msg, deleted: 1, deletedAt: new Date().toISOString() } : msg
-        )
-      );      
+      setMessages((prev) => prev.filter((msg) => msg.id !== id));
   
       if (viewId === id) {
         setViewId(null);
@@ -187,7 +156,7 @@ export default function Dashboard() {
       console.error(err);
       alert("Failed to delete message");
     }
-  };  
+  };
 
   const toggleStatus = async (id: number, currentStatus: "pending" | "reviewed") => {
     if (currentStatus !== "pending") return; 
