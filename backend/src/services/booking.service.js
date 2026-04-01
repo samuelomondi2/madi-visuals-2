@@ -1,6 +1,8 @@
 const db = require("../config/db");
+const emailRender = require("../middleware/email");
 
 exports.createBooking = async (data) => {
+
   const [result] = await db.query(
     `INSERT INTO bookings 
     (service_id, booking_date, start_time, client_name, client_email, client_phone, location, notes, total_amount, payment_status, agreed_to_terms)
@@ -19,6 +21,12 @@ exports.createBooking = async (data) => {
       data.agreed_to_terms
     ]
   );
+
+  try {
+    await emailRender.sendBookingEmails(data);
+  } catch (error) {
+    console.error("Email error:", error.message);
+  }
 
   return { id: result.insertId, ...data };
 };
