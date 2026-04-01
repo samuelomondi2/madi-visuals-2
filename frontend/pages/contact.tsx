@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import Footer from "./components/footer";
 import Navbar from "./components/navbar";
 import { useState, FormEvent } from "react";
@@ -15,11 +14,9 @@ export default function ContactPage() {
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Email validation regex
   const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // Phone validation (simple US format)
   const isValidPhone = (phone: string) =>
     /^\+?1?\s*\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/.test(phone);
 
@@ -59,7 +56,6 @@ export default function ContactPage() {
 
       toast.success("Message sent successfully!");
 
-      // Reset form
       setName("");
       setPhone("");
       setEmail("");
