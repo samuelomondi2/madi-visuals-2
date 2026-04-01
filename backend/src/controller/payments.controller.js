@@ -41,6 +41,7 @@ exports.createCheckoutSession = async (req, res) => {
 };
 
 exports.handleStripeWebhook = async (req, res) => {
+  console.log("⚡ Webhook hit");
   const sig = req.headers["stripe-signature"];
   let event;
 
@@ -50,6 +51,7 @@ exports.handleStripeWebhook = async (req, res) => {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
+    console.log("✅ Event verified:", event.type);
   } catch (err) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
@@ -57,6 +59,8 @@ exports.handleStripeWebhook = async (req, res) => {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
 
+    console.log("💰 Payment success for booking:", session.metadata);
+    
     const bookingId = session.metadata.booking_id;
 
     await db.execute(

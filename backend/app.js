@@ -22,8 +22,13 @@ const app = express();
 
 app.set('trust proxy', 'loopback');
 
+app.post(
+  "/api/webhook/stripe",
+  express.raw({ type: "application/json" }),
+  require("./controller/payments.controller").handleStripeWebhook
+);
+
 app.use(corsMiddleware);
-app.use(bodyParser.json());
 app.use(express.json());
 
 // Routes
