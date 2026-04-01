@@ -28,7 +28,6 @@ export default function ContactPage() {
     setError("");
     setSuccess("");
 
-    // Validation
     if (!isValidEmail(email)) {
       toast.error("Please enter a valid email address.");
       return;
