@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const emailRender = require("../middleware/email");
 
 exports.contact = async ({ name, email, phone, message }) => {
 
@@ -10,6 +11,12 @@ exports.contact = async ({ name, email, phone, message }) => {
      VALUES (?, ?, ?, ?, ?, ?)`,
     [name, email, phone, message, status, deleted_at]
   );
+
+  try {
+    await emailRender.sendContactMessagesEmails({ name, email, phone, message });
+  } catch (error) {
+    console.error("Email error:", error.message);
+  }
 };
 
 exports.getContacts = async () => {
