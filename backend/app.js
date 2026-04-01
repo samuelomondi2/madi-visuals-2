@@ -1,8 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const corsMiddleware = require('./src/config/cors');
-const bodyParser = require('body-parser');
-const path = require("path");
 
 const authRoutes = require('./src/routes/auth.route');
 const protectedRoutes = require('./src/routes/protected.route');
@@ -13,7 +11,6 @@ const heroVideoRoutes = require("./src/routes/herovideo.route");
 const serviceRoutes = require("./src/routes/services.route");
 const availabilityRoutes = require("./src/routes/availability.route");
 const bookingRoutes = require("./src/routes/booking.route");
-const adminEmail = require("./src/routes/adminEmailRoutes");
 const paymentRoutes = require("./src/routes/payments.route");
 const dashboardStatsRoute = require("./src/routes/dashboardStats.route");
 const errorHandler = require("./src/middleware/errorHandler");
