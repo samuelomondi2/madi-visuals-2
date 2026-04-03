@@ -1,6 +1,7 @@
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const emailRender = require("../middleware/email");
 
 exports.register = async ({ name, email, password, role }) => {
   const hash = await bcrypt.hash(password, 10);
@@ -44,6 +45,8 @@ exports.forgotPassword = async (email) => {
     'UPDATE users SET reset_token = ?, reset_token_expire = ? WHERE id = ?',
     [hashedToken, expire, user.id]
   );
+
+  await emailRender.forgotPasswordTokenEmail({email, token});
 
   return token; 
 };
