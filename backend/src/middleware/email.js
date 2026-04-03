@@ -3,6 +3,31 @@ const { Resend } = require("resend");
 const resend = new Resend(process.env.RESEND_API_KEY);
 const adminEmail = process.env.ADMIN_EMAIL;
 
+exports.forgotPasswordTokenEmail = async ({email, token}) => {
+  const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+  await resend.emails.send({
+    from: "Password Reset <nonboarding@resend.dev>",
+    to: email,
+    subject: "Password Reset Requested",
+    html: `
+      <p><strong>MADI VISUALS</strong></p>
+
+      <h3><strong>Hi, you have requested a password reset</strong></h3>
+      <p>A password reset has been requested for ${email}. 
+      Click the "Reset Password" link below to reset your password. The link will expire in 1 hour.</p>
+      <br/>
+      <a href="${resetLink}" 
+        style="display:inline-block;padding:10px 20px;background:#000;color:#fff;text-decoration:none;border-radius:5px;">
+        Reset Password
+      </a>
+      <br/>
+      <p>If you did not submit this password reset, please ignore this email.</p>
+
+      <p>Thanks,<br/>Madi Visual</p>
+    `,
+  });
+}
+
 exports.sendBookingEmails = async (data) => {
 
   // ✅ 1. Email to Admin
@@ -83,4 +108,4 @@ exports.sendContactMessagesEmails = async ({ name, email, phone, message }) => {
         <p>Best regards,<br/>Madi Visuals</p>
       `,
     });
-  };
+};
