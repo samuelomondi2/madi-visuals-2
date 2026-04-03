@@ -19,16 +19,16 @@ const app = express();
 
 app.set('trust proxy', 'loopback');
 
+app.use(corsMiddleware);
+
 app.post(
   "/api/webhook",
   express.raw({ type: "application/json" }),
   require("./src/controller/payments.controller").handleStripeWebhook
 );
 
-app.use(corsMiddleware);
 app.use(express.json());
 
-// Routes
 app.use('/auth', authRoutes);
 app.use('/api', conctactRoute)
 app.use('/api', protectedRoutes);
@@ -43,8 +43,6 @@ app.use('/api', uploadRoutes);
 
 app.use(errorHandler);
 
-
-// Global error handler
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).json({ message: err.message || 'Server error' });

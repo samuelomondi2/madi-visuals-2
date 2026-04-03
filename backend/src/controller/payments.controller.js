@@ -42,6 +42,7 @@ exports.createCheckoutSession = async (req, res) => {
 
 exports.handleStripeWebhook = async (req, res) => {
   console.log("⚡ Webhook hit");
+
   const sig = req.headers["stripe-signature"];
   let event;
 
@@ -51,6 +52,7 @@ exports.handleStripeWebhook = async (req, res) => {
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
+
     console.log("✅ Event verified:", event.type);
   } catch (err) {
     console.error("❌ Webhook Error:", err.message);
@@ -66,8 +68,8 @@ exports.handleStripeWebhook = async (req, res) => {
 
     await db.execute(
       `UPDATE bookings 
-      SET payment_status='paid', expires_at=NULL 
-      WHERE id=?`,
+       SET payment_status='paid', expires_at=NULL 
+       WHERE id=?`,
       [bookingId]
     );
   }
