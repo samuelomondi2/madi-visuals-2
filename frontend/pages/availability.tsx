@@ -25,28 +25,28 @@ export default function AvailabilityPage () {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    const fetchAvailability = async () => {
-      try {
-        const res = await axios.get("/api/admin/availability");
-        if (res.data && Array.isArray(res.data)) {
-          setSchedule(prev =>
-            prev.map(day => {
-              const serverDay = res.data.find((d: any) => d.day_of_week === day.id);
-              return serverDay
-                ? { ...day, enabled: true, start_time: serverDay.start_time.slice(0, 5), end_time: serverDay.end_time.slice(0, 5) }
-                : day;
-            })
-          );
-        }
-        console.log(res)
-      } catch (err) {
-        console.error(err);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchAvailability = async () => {
+  //     try {
+  //       const res = await await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/availability`);
+  //       if (res.data && Array.isArray(res.data)) {
+  //         setSchedule(prev =>
+  //           prev.map(day => {
+  //             const serverDay = res.data.find((d: any) => d.day_of_week === day.id);
+  //             return serverDay
+  //               ? { ...day, enabled: true, start_time: serverDay.start_time.slice(0, 5), end_time: serverDay.end_time.slice(0, 5) }
+  //               : day;
+  //           })
+  //         );
+  //       }
+  //       console.log(res)
+  //     } catch (err) {
+  //       console.error(err);
+  //     }
+  //   };
 
-    fetchAvailability();
-  }, []);
+  //   fetchAvailability();
+  // }, []);
 
   const handleToggle = (id: number) => {
     setSchedule(prev => prev.map(d => (d.id === id ? { ...d, enabled: !d.enabled } : d)));
