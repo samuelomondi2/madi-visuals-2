@@ -14,11 +14,11 @@ exports.getAvailability = async (req, res) => {
 
 exports.getAdminAvailability = async (req, res) => {
   try {
-    const times = availabilityService.getAdminAvailability();
+    const times = await availabilityService.getAdminAvailability(); 
     res.status(200).json({ times });
   } catch (error) {
     console.error("GET availability error:", error); 
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: error.message }); 
   }
 }
 
