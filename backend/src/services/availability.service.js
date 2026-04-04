@@ -201,6 +201,8 @@ exports.getAvailability = async (date) => {
         .slice(0, 8)
     }));
 
+    const nowMs = new Date().getTime();
+
     const freeSlots = slots
       .map(slot => ({
         ...slot,
@@ -208,7 +210,6 @@ exports.getAvailability = async (date) => {
       }))
       .filter(slot => slot.slotMs > nowMs)
       .filter(slot => slot.end <= end_time)
-      .filter(slot => slot.dateTime > now)
       .filter(slot =>
         !blocked.some(b =>
           isOverlap(slot.start, slot.end, b.start_time, b.end_time)
