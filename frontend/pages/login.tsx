@@ -87,7 +87,7 @@ export default function LoginPage() {
 
           {/* Remember + Forgot Row */}
           <div style={styles.optionsRow}>
-            <label style={styles.rememberLabel}>
+            {/* <label style={styles.rememberLabel}>
               <input
                 type="checkbox"
                 checked={remember}
@@ -95,7 +95,7 @@ export default function LoginPage() {
                 style={styles.checkbox}
               />
               Remember me
-            </label>
+            </label> */}
 
             <span
               style={styles.forgot}
