@@ -19,9 +19,9 @@ const DAYS_OF_WEEK: DaySchedule[] = [
 ];
 
 export default function AvailabilityPage () {
-  const [schedule, setSchedule] = useState<DaySchedule[]>(DAYS_OF_WEEK);
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  // const [schedule, setSchedule] = useState<DaySchedule[]>(DAYS_OF_WEEK);
+  // const [loading, setLoading] = useState(false);
+  // const [message, setMessage] = useState("");
 
   // useEffect(() => {
   //   const fetchAvailability = async () => {
@@ -46,56 +46,56 @@ export default function AvailabilityPage () {
   //   fetchAvailability();
   // }, []);
 
-  const handleToggle = (id: number) => {
-    setSchedule(prev => prev.map(d => (d.id === id ? { ...d, enabled: !d.enabled } : d)));
-  };
+  // const handleToggle = (id: number) => {
+  //   setSchedule(prev => prev.map(d => (d.id === id ? { ...d, enabled: !d.enabled } : d)));
+  // };
 
-  const handleTimeChange = (id: number, field: "start_time" | "end_time", value: string) => {
-    setSchedule(prev => prev.map(d => (d.id === id ? { ...d, [field]: value } : d)));
-  };
+  // const handleTimeChange = (id: number, field: "start_time" | "end_time", value: string) => {
+  //   setSchedule(prev => prev.map(d => (d.id === id ? { ...d, [field]: value } : d)));
+  // };
 
-  const handleSave = async () => {
-    setLoading(true);
-    setMessage("");
-    try {
-      await axios.post("/api/admin/availability", { schedule });
-      setMessage("Availability updated successfully!");
-    } catch (err: any) {
-      console.error(err);
-      setMessage(err?.response?.data?.message || "Failed to update availability");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const handleSave = async () => {
+  //   setLoading(true);
+  //   setMessage("");
+  //   try {
+  //     await axios.post("/api/admin/availability", { schedule });
+  //     setMessage("Availability updated successfully!");
+  //   } catch (err: any) {
+  //     console.error(err);
+  //     setMessage(err?.response?.data?.message || "Failed to update availability");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
-    <div className="admin-availability">
-      <h2>Admin Availability</h2>
-      {schedule.map(day => (
-        <div key={day.id} className="day-row">
-          <label>
-            <input type="checkbox" checked={day.enabled} onChange={() => handleToggle(day.id)} />
-            {day.name}
-          </label>
-          <input
-            type="time"
-            value={day.start_time}
-            disabled={!day.enabled}
-            onChange={(e) => handleTimeChange(day.id, "start_time", e.target.value)}
-          />
-          <span>to</span>
-          <input
-            type="time"
-            value={day.end_time}
-            disabled={!day.enabled}
-            onChange={(e) => handleTimeChange(day.id, "end_time", e.target.value)}
-          />
-        </div>
-      ))}
-      <button onClick={handleSave} disabled={loading}>
-        {loading ? "Saving..." : "Save Availability"}
-      </button>
-      {message && <p>{message}</p>}
-    </div>
-  );
+  //   <div className="admin-availability">
+  //     <h2>Admin Availability</h2>
+  //     {schedule.map(day => (
+  //       <div key={day.id} className="day-row">
+  //         <label>
+  //           <input type="checkbox" checked={day.enabled} onChange={() => handleToggle(day.id)} />
+  //           {day.name}
+  //         </label>
+  //         <input
+  //           type="time"
+  //           value={day.start_time}
+  //           disabled={!day.enabled}
+  //           onChange={(e) => handleTimeChange(day.id, "start_time", e.target.value)}
+  //         />
+  //         <span>to</span>
+  //         <input
+  //           type="time"
+  //           value={day.end_time}
+  //           disabled={!day.enabled}
+  //           onChange={(e) => handleTimeChange(day.id, "end_time", e.target.value)}
+  //         />
+  //       </div>
+  //     ))}
+  //     <button onClick={handleSave} disabled={loading}>
+  //       {loading ? "Saving..." : "Save Availability"}
+  //     </button>
+  //     {message && <p>{message}</p>}
+  //   </div>
+  // );
 };
