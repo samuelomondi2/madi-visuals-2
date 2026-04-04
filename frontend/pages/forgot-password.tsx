@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
       if (!res.ok) throw new Error();
 
       setStatus("success");
-      setEmail(""); // optional clear input
+      setEmail(""); 
     } catch (err) {
       setStatus("error");
     }
