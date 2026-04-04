@@ -26,7 +26,7 @@ export default function AdminAvailability() {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/availability?date=${today}`)
       .then((res) => res.json())
       .then((data) => {
-        const formatted: DayAvailability[] = data.services?.map((s: any) => ({
+        const formatted: DayAvailability[] = data.services.available_slots?.map((s: any) => ({
           id: s.id,
           start_time: s.start_time || "09:00",
           end_time: s.end_time || "17:00",
