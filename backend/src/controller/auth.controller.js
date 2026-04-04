@@ -31,7 +31,7 @@ exports.forgotPassword = async (req, res, next) => {
     const { email } = req.body;
     const token = await authService.forgotPassword(email);
     if (token) {
-      console.log(`Reset link: ${process.env.FRONTEND_URL}/reset-password/${token}`);
+      console.log(`Reset link: ${process.env.FRONTEND_URL}/reset-password?token=${token}`);
     }
     res.status(201).json({ message: 'If email exists, reset link sent' });
   } catch (error) {
