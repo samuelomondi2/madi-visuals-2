@@ -1,6 +1,5 @@
 const availabilityService = require("../services/availability.service");
 
-// --- Availability --- //
 exports.getAvailability = async (req, res) => { 
   try { 
     const { date } = req.query; 

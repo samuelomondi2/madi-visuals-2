@@ -85,6 +85,10 @@ exports.getAvailability = async (date) => {
 
   const services = await servicesService.getAllServices();
   const day = new Date(date).getDay();
+  const now = new Date();
+  const today = new Date();
+  const isToday = new Date(date).toDateString() === today.toDateString();
+  const nowMs = today.getTime();
 
   // 1️⃣ Admin hours
   const [hours] = await db.execute(
@@ -183,8 +187,6 @@ exports.getAvailability = async (date) => {
     return time.length === 5 ? `${time}:00` : time;
   };
 
-  const now = new Date();
-
   const blocked = [...allBookings, ...breaks, ...blockedTimes].map(b => ({
     start_time: normalizeTime(b.start_time),
     end_time: normalizeTime(b.end_time)
@@ -208,7 +210,7 @@ exports.getAvailability = async (date) => {
         ...slot,
         slotMs: new Date(`${date}T${slot.start}:00`).getTime()
       }))
-      .filter(slot => slot.slotMs > nowMs)
+      .filter(slot => !isToday || slot.slotMs > nowMs) 
       .filter(slot => slot.end <= end_time)
       .filter(slot =>
         !blocked.some(b =>
