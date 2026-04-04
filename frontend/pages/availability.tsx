@@ -1,62 +1,103 @@
-type ServiceAvailability = {
+
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
+interface DaySchedule {
   id: number;
   name: string;
-  available_slots: string[];
-};
+  enabled: boolean;
+  start_time: string;
+  end_time: string;
+}
 
-type AvailabilityResponse = {
-  date: string;
-  services: ServiceAvailability[];
-};
+const DAYS_OF_WEEK: DaySchedule[] = [
+  { id: 0, name: "Sunday", enabled: false, start_time: "09:00", end_time: "17:00" },
+  { id: 1, name: "Monday", enabled: false, start_time: "09:00", end_time: "17:00" },
+  { id: 2, name: "Tuesday", enabled: false, start_time: "09:00", end_time: "17:00" },
+  { id: 3, name: "Wednesday", enabled: false, start_time: "09:00", end_time: "17:00" },
+  { id: 4, name: "Thursday", enabled: false, start_time: "09:00", end_time: "17:00" },
+  { id: 5, name: "Friday", enabled: false, start_time: "09:00", end_time: "17:00" },
+  { id: 6, name: "Saturday", enabled: false, start_time: "09:00", end_time: "17:00" },
+];
 
-import { useEffect, useState } from "react";
-
-export default function AdminAvailabilityByDate() {
-  const [data, setData] = useState<AvailabilityResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+export default function AvailabilityPage () {
+  const [schedule, setSchedule] = useState<DaySchedule[]>(DAYS_OF_WEEK);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchAvailability = async () => {
       try {
-        const today = new Date().toISOString().slice(0, 10); 
-        const res = await fetch(`${baseUrl}/api/availability?date=${today}`);
-        if (!res.ok) throw new Error(`API error: ${res.status}`);
-
-        const json: AvailabilityResponse = await res.json();
-        setData(json);
+        const res = await axios.get("/api/admin/availability");
+        if (res.data && Array.isArray(res.data)) {
+          setSchedule(prev =>
+            prev.map(day => {
+              const serverDay = res.data.find((d: any) => d.day_of_week === day.id);
+              return serverDay
+                ? { ...day, enabled: true, start_time: serverDay.start_time.slice(0, 5), end_time: serverDay.end_time.slice(0, 5) }
+                : day;
+            })
+          );
+        }
+        console.log(res)
       } catch (err) {
-        console.error("Failed to fetch availability", err);
-      } finally {
-        setLoading(false);
+        console.error(err);
       }
     };
+
     fetchAvailability();
   }, []);
 
-  if (loading) return <p>Loading availability...</p>;
-  if (!data) return <p>No availability data</p>;
+  const handleToggle = (id: number) => {
+    setSchedule(prev => prev.map(d => (d.id === id ? { ...d, enabled: !d.enabled } : d)));
+  };
+
+  const handleTimeChange = (id: number, field: "start_time" | "end_time", value: string) => {
+    setSchedule(prev => prev.map(d => (d.id === id ? { ...d, [field]: value } : d)));
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    setMessage("");
+    try {
+      await axios.post("/api/admin/availability", { schedule });
+      setMessage("Availability updated successfully!");
+    } catch (err: any) {
+      console.error(err);
+      setMessage(err?.response?.data?.message || "Failed to update availability");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <main className="p-6 bg-black min-h-screen text-white max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">Availability for {data.date}</h1>
-
-      {data.services.map((service) => (
-        <section key={service.id} className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">{service.name}</h2>
-          <div className="grid grid-cols-4 gap-3">
-            {service.available_slots.map((slot) => (
-              <div
-                key={slot}
-                className="bg-gray-800 rounded px-3 py-1 text-center"
-              >
-                {slot}
-              </div>
-            ))}
-          </div>
-        </section>
+    <div className="admin-availability">
+      <h2>Admin Availability</h2>
+      {schedule.map(day => (
+        <div key={day.id} className="day-row">
+          <label>
+            <input type="checkbox" checked={day.enabled} onChange={() => handleToggle(day.id)} />
+            {day.name}
+          </label>
+          <input
+            type="time"
+            value={day.start_time}
+            disabled={!day.enabled}
+            onChange={(e) => handleTimeChange(day.id, "start_time", e.target.value)}
+          />
+          <span>to</span>
+          <input
+            type="time"
+            value={day.end_time}
+            disabled={!day.enabled}
+            onChange={(e) => handleTimeChange(day.id, "end_time", e.target.value)}
+          />
+        </div>
       ))}
-    </main>
+      <button onClick={handleSave} disabled={loading}>
+        {loading ? "Saving..." : "Save Availability"}
+      </button>
+      {message && <p>{message}</p>}
+    </div>
   );
-}
+};
