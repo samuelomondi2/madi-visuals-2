@@ -20,18 +20,16 @@ export default function AdminAvailability() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const today = new Date().toISOString().slice(0, 10);
-
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/availability?date=${today}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/availability`)
       .then((res) => res.json())
       .then((data) => {
-        const formatted: DayAvailability[] = data.services.available_slots?.map((s: any) => ({
-          id: s.id,
-          start_time: s.start_time || "09:00",
-          end_time: s.end_time || "17:00",
-          enabled: true,
-        })) || [];
+        const formatted: DayAvailability[] = data.times.map((t: any) => ({
+          id: t.day_of_week,
+          start_time: t.start_time.slice(0,5),
+          end_time: t.end_time.slice(0,5),
+          enabled: true, 
+        }));
         setSchedule(formatted);
         setLoading(false);
       })
@@ -40,7 +38,6 @@ export default function AdminAvailability() {
         setError("Failed to fetch availability");
         setLoading(false);
       });
-      console.log("Schedule", schedule)
   }, []);
 
   const handleToggleDay = (id: number) => {
@@ -55,29 +52,29 @@ export default function AdminAvailability() {
     );
   };
 
-  const saveSchedule = async () => {
-    try {
-      const res = await fetch("/api/availability", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ schedule }),
-      });
+  // const saveSchedule = async () => {
+  //   try {
+  //     const res = await fetch("/api/availability", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ schedule }),
+  //     });
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Failed to save schedule");
-      }
+  //     if (!res.ok) {
+  //       const data = await res.json();
+  //       throw new Error(data.message || "Failed to save schedule");
+  //     }
 
-      alert("Schedule saved successfully!");
-    } catch (err: any) {
-      console.error(err);
-      alert(err.message);
-    }
-  };
+  //     alert("Schedule saved successfully!");
+  //   } catch (err: any) {
+  //     console.error(err);
+  //     alert(err.message);
+  //   }
+  // };
 
   const updateDay = async (day: DayAvailability) => {
     try {
-      const res = await fetch(`/api/availability/${day.id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/availability/${day.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -105,6 +102,7 @@ export default function AdminAvailability() {
   return (
     <div>
       <h1>Admin Availability</h1>
+      
       <table>
         <thead>
           <tr>
@@ -115,10 +113,12 @@ export default function AdminAvailability() {
             <th>Actions</th>
           </tr>
         </thead>
+        
         <tbody>
           {schedule.map((day) => (
             <tr key={day.id}>
               <td>{daysOfWeek[day.id]}</td>
+
               <td>
                 <input
                   type="checkbox"
@@ -126,24 +126,35 @@ export default function AdminAvailability() {
                   onChange={() => handleToggleDay(day.id)}
                 />
               </td>
+
               <td>
                 <input
                   type="time"
                   value={day.start_time}
-                  onChange={(e) => handleTimeChange(day.id, "start_time", e.target.value)}
+                  onChange={(e) =>
+                    handleTimeChange(day.id, "start_time", e.target.value)
+                  }
                   disabled={!day.enabled}
                 />
               </td>
+
               <td>
                 <input
                   type="time"
                   value={day.end_time}
-                  onChange={(e) => handleTimeChange(day.id, "end_time", e.target.value)}
+                  onChange={(e) =>
+                    handleTimeChange(day.id, "end_time", e.target.value)
+                  }
                   disabled={!day.enabled}
                 />
               </td>
+
               <td>
-                <button onClick={() => updateDay(day)} disabled={!day.enabled}>
+                <button
+                  onClick={() => updateDay(day)}
+                  disabled={!day.enabled}
+                  className="bg-blue-600 px-3 py-1 rounded w-full sm:w-auto"
+                >
                   Update
                 </button>
               </td>
@@ -151,7 +162,8 @@ export default function AdminAvailability() {
           ))}
         </tbody>
       </table>
-      <button onClick={saveSchedule}>Save Weekly Schedule</button>
+
+      {/* <button onClick={saveSchedule} className="bg-green-600 px-3 py-1 rounded w-full sm:w-auto">Save Weekly Schedule</button> */}
     </div>
   );
 }
