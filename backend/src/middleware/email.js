@@ -4,7 +4,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const adminEmail = process.env.ADMIN_EMAIL;
 
 exports.forgotPasswordTokenEmail = async ({ email, token }) => {
-  const resetLink = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+  const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
   await resend.emails.send({
     from: "MADI VISUALS <nonboarding@resend.dev>",
