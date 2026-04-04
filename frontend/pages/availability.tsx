@@ -1,7 +1,4 @@
 
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-
 interface DaySchedule {
   id: number;
   name: string;
