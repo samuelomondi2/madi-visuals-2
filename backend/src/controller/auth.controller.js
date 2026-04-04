@@ -42,8 +42,10 @@ exports.forgotPassword = async (req, res, next) => {
 exports.resetPassword = async (req, res, next) => {
   try {
     const { password } = req.body;
-    const { token } = req.params;
-
+    const { token } = req.query;
+    if (!token) {
+      throw new Error("Token is required");
+    }
     await authService.resetPassword(token, password);
 
     res.status(200).json({ message: 'Password reset successful' });
