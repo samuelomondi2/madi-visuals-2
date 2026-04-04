@@ -12,6 +12,16 @@ exports.getAvailability = async (req, res) => {
   }
 }
 
+exports.getAdminAvailability = async (req, res) => {
+  try {
+    const times = availabilityService.getAdminAvailability();
+    res.status(200).json({ times });
+  } catch (error) {
+    console.error("GET availability error:", error); 
+    res.status(500).json({ message: err.message });
+  }
+}
+
 exports.setAdminAvailability = async (req, res) => {
   try {
     const { schedule } = req.body;
