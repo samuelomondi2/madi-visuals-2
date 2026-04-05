@@ -3,87 +3,11 @@ const { Resend } = require("resend");
 const resend = new Resend(process.env.RESEND_API_KEY);
 const adminEmail = process.env.ADMIN_EMAIL;
 
-const nodemailer = require("nodemailer");
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: Number(process.env.SMTP_PORT) === 465, 
-  family: 4,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  pool: true,             
-  maxConnections: 5,
-  maxMessages: 100,
-  connectionTimeout: 10000,
-});
-
-transporter.verify((err, success) => {
-  if (err) {
-    console.error("SMTP connection error:", err);
-  } else {
-    console.log("SMTP server is ready");
-  }
-});
-
-exports.sendContactMessagesEmails = async ({ name, email, phone, message }) => {
-  try {
-    const adminMail = await transporter.sendMail({
-      from: `"No Reply" <${process.env.SMTP_USER}>`,
-      to: process.env.CONTACT_RECEIVER_EMAIL,
-      replyTo: email,
-      subject: `📩 New Contact Message from ${name}`,
-      html: `
-        <h2>New Contact Form Submission</h2>
-        <p><b>Name:</b> ${name}</p>
-        <p><b>Email:</b> ${email}</p>
-        <p><b>Phone:</b> ${phone || "N/A"}</p>
-        <p><b>Message:</b></p>
-        <p>${message}</p>
-      `,
-    });
-
-    const userMail = await transporter.sendMail({
-      from: `"Support Team" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: "We received your message ✔",
-      html: `
-        <h2>Hi ${name},</h2>
-        <p>Thanks for reaching out! We've received your message and will get back to you shortly.</p>
-        
-        <hr/>
-        <p><b>Your message:</b></p>
-        <p>${message}</p>
-
-        <br/>
-        <p>Best regards,<br/>Support Team</p>
-      `,
-    });
-
-    return {
-      adminMessageId: adminMail.messageId,
-      userMessageId: userMail.messageId,
-    };
-
-  } catch (error) {
-    console.error("Email sending failed:", {
-      message: error.message,
-      stack: error.stack,
-      code: error.code,
-      response: error.response,
-    });
-
-    throw error;
-  }
-};
-
 exports.forgotPasswordTokenEmail = async ({ email, token }) => {
   const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
   await resend.emails.send({
-    from: "MADI VISUALS <nonboarding@resend.dev>",
+    from: "MADI VISUALS <noreply@madivisuals.com>",
     to: email,
     subject: "Password Reset Requested",
     html: `
@@ -143,7 +67,7 @@ exports.sendBookingEmails = async (data) => {
 
   // ✅ 1. Email to Admin
   await resend.emails.send({
-    from: "MADI VISUALS <onboarding@resend.dev>",
+    from: "MADI VISUALS <noreply@madivisuals.com>",
     to: adminEmail,
     subject: `${data.client_name} booked a session`,
     html: `
@@ -170,7 +94,7 @@ exports.sendBookingEmails = async (data) => {
 
   // ✅ 2. Confirmation Email to Client
   await resend.emails.send({
-    from: "MADI VISUALS <nonboarding@resend.dev>",
+    from: "MADI VISUALS <noreply@madivisuals.com>",
     to: data.client_email,
     subject: "Your booking is confirmed",
     html: `
@@ -213,83 +137,83 @@ exports.sendBookingEmails = async (data) => {
   });
 };
 
-// exports.sendContactMessagesEmails = async ({ name, email, phone, message }) => {
+exports.sendContactMessagesEmails = async ({ name, email, phone, message }) => {
 
-//   const container = `
-//     style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px 0;"
-//   `;
+  const container = `
+    style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px 0;"
+  `;
 
-//   const card = `
-//     style="max-width: 600px; margin: auto; background: #ffffff; padding: 25px; border-radius: 8px;"
-//   `;
+  const card = `
+    style="max-width: 600px; margin: auto; background: #ffffff; padding: 25px; border-radius: 8px;"
+  `;
 
-//   const heading = `
-//     style="text-align:center; color:#333; margin-bottom:20px;"
-//   `;
+  const heading = `
+    style="text-align:center; color:#333; margin-bottom:20px;"
+  `;
 
-//   const label = `style="color:#555; font-weight:bold;"`;
-//   const text = `style="color:#333;"`;
+  const label = `style="color:#555; font-weight:bold;"`;
+  const text = `style="color:#333;"`;
 
-//   // ✅ 1. Admin Email
-//   await resend.emails.send({
-//     from: "MADI VISUALS <onboarding@resend.dev>",
-//     to: adminEmail,
-//     subject: "New Contact Message",
-//     html: `
-//       <div ${container}>
-//         <div ${card}>
-//           <h2 ${heading}>📩 New Contact Message</h2>
+  // ✅ 1. Admin Email
+  await resend.emails.send({
+    from: "MADI VISUALS <noreply@madivisuals.com>",
+    to: adminEmail,
+    subject: "New Contact Message",
+    html: `
+      <div ${container}>
+        <div ${card}>
+          <h2 ${heading}>📩 New Contact Message</h2>
 
-//           <p><span ${label}>Name:</span> <span ${text}>${name}</span></p>
-//           <p><span ${label}>Email:</span> <span ${text}>${email}</span></p>
-//           <p><span ${label}>Phone:</span> <span ${text}>${phone || "-"}</span></p>
+          <p><span ${label}>Name:</span> <span ${text}>${name}</span></p>
+          <p><span ${label}>Email:</span> <span ${text}>${email}</span></p>
+          <p><span ${label}>Phone:</span> <span ${text}>${phone || "-"}</span></p>
 
-//           <hr style="margin:20px 0;" />
+          <hr style="margin:20px 0;" />
 
-//           <p ${label}>Message:</p>
-//           <p ${text}>${message || "-"}</p>
-//         </div>
-//       </div>
-//     `,
-//     reply_to: email,
-//   });
+          <p ${label}>Message:</p>
+          <p ${text}>${message || "-"}</p>
+        </div>
+      </div>
+    `,
+    reply_to: email,
+  });
 
-//   // ✅ 2. Auto-response to Client
-//   await resend.emails.send({
-//     from: "MADI VISUALS <onboarding@resend.dev>",
-//     to: email,
-//     subject: "We received your message",
-//     html: `
-//       <div ${container}>
-//         <div ${card} style="text-align:center;">
+  // ✅ 2. Auto-response to Client
+  await resend.emails.send({
+    from: "MADI VISUALS <noreply@madivisuals.com>",
+    to: email,
+    subject: "We received your message",
+    html: `
+      <div ${container}>
+        <div ${card} style="text-align:center;">
           
-//           <h2 style="color:#333;">MADI VISUALS</h2>
+          <h2 style="color:#333;">MADI VISUALS</h2>
 
-//           <div style="font-size:40px; margin:15px 0;">💬</div>
+          <div style="font-size:40px; margin:15px 0;">💬</div>
 
-//           <h3 style="color:#333;">Message Received</h3>
+          <h3 style="color:#333;">Message Received</h3>
 
-//           <p style="color:#555;">
-//             Hi <strong>${name}</strong>,<br/>
-//             Thanks for reaching out! We've received your message and will get back to you shortly.
-//           </p>
+          <p style="color:#555;">
+            Hi <strong>${name}</strong>,<br/>
+            Thanks for reaching out! We've received your message and will get back to you shortly.
+          </p>
 
-//           <div style="margin:20px 0; text-align:left;">
-//             <p><strong>Your message:</strong></p>
-//             <p style="color:#333;">${message}</p>
-//           </div>
+          <div style="margin:20px 0; text-align:left;">
+            <p><strong>Your message:</strong></p>
+            <p style="color:#333;">${message}</p>
+          </div>
 
-//           <div style="margin:25px 0;">
-//             <a href="${process.env.FRONTEND_URL}" 
-//                style="background:#000;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;">
-//                Visit Website
-//             </a>
-//           </div>
+          <div style="margin:25px 0;">
+            <a href="${process.env.FRONTEND_URL}" 
+               style="background:#000;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;">
+               Visit Website
+            </a>
+          </div>
 
-//           <p style="color:#777;">Best regards,<br/>Madi Visuals</p>
+          <p style="color:#777;">Best regards,<br/>Madi Visuals</p>
 
-//         </div>
-//       </div>
-//     `,
-//   });
-// };
+        </div>
+      </div>
+    `,
+  });
+};
