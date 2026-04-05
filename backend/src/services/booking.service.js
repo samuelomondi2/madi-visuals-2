@@ -28,13 +28,12 @@ exports.createBooking = async (data) => {
   } catch (error) {
     console.error("Email error:", error);
   }
-
   return { id: result.insertId, ...data };
 };
 
 exports.getAllBookings = async () => {
   const [rows] = await db.query(
-    "SELECT b.id, s.name, b.booking_date, b.start_time, b.client_name, b.client_email, b.client_phone, b.location, b.notes, b.created_at FROM bookings b JOIN services s ON b.service_id = s.service_id ORDER BY created_at DESC"
+    "SELECT * FROM bookings ORDER BY created_at DESC"
   );
   return rows;
 };
