@@ -2,21 +2,32 @@ const db = require('../config/db');
 const emailRender = require("../middleware/email");
 
 exports.contact = async ({ name, email, phone, message }) => {
-
-  const status = 'pending';      
-  const deleted_at = null;        
-
-  await db.query(
-    `INSERT INTO contact (name, email, phone, message, status, deleted_at) 
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [name, email, phone, message, status, deleted_at]
-  );
+  const status = "pending";
+  const deleted_at = null;
 
   try {
-    await emailRender.sendContactMessagesEmails({ name, email, phone, message });
-    console.log("Email sent");
+    await db.query(
+      `INSERT INTO contact (name, email, phone, message, status, deleted_at) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [name, email, phone, message, status, deleted_at]
+    );
+
+    const result = await emailRender.sendContactMessagesEmails({
+      name,
+      email,
+      phone,
+      message,
+    });
+
+    console.log("Emails sent:", result);
+
   } catch (error) {
-    console.error("Email error:", error);
+    console.error("Contact flow error:", error);
+
+    await db.query(
+      `UPDATE contact SET status = 'failed' WHERE email = ? ORDER BY id DESC LIMIT 1`,
+      [email]
+    );
   }
 };
 
