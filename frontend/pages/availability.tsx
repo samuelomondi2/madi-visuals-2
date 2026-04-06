@@ -46,7 +46,7 @@ export default function AdminAvailability() {
         id: t.day_of_week,
         start_time: t.start_time.slice(0, 5),
         end_time: t.end_time.slice(0, 5),
-        enabled: true,
+        enabled: t.enabled ?? true,
       }));
       setSchedule(formatted);
       setLoading(false);
