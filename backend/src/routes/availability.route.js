@@ -8,4 +8,9 @@ router.post("/availability", controller.setAdminAvailability);
 router.put("/availability/:day_of_week", controller.updateAvailability); 
 router.delete("/availability/:day_of_week", controller.deleteAvailability); 
 
+router.get("/special-days", controller.getSpecialDays);
+router.post("/special-days", controller.createSpecialDay);
+router.put("/special-days/:id", controller.updateSpecialDay);
+router.delete("/special-days/:id", controller.deleteSpecialDay);
+
 module.exports = router;
