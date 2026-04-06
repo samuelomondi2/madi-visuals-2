@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 interface Bookings {
     id: number;
-    service_id: number;
+    name: string;
     booking_date: string,
     start_time: string;
     client_name: string,
@@ -43,7 +43,7 @@ export default function Bookings() {
           const data = await res.json();
           const mapped = data.map((book: any) => ({
             id: book.id,
-            service_id: book.service_id,
+            name: book.name,
             booking_date: book.booking_date,
             start_time: book.start_time,
             client_name: book.client_name,
@@ -129,8 +129,8 @@ export default function Bookings() {
                     <p className="text-sm text-neutral-400">Booking ID</p>
                     <p className="mb-2">{book.id}</p>
 
-                    <p className="text-sm text-neutral-400">Service ID</p>
-                    <p className="mb-2">{book.service_id}</p>
+                    <p className="text-sm text-neutral-400">Service</p>
+                    <p className="mb-2">{book.name}</p>
   
                     <p className="text-sm text-neutral-400">Booking Date</p>
                     <p className="mb-2">{formatDate(book.booking_date)}</p>
@@ -153,8 +153,8 @@ export default function Bookings() {
                     <p className="text-sm text-neutral-400">Booking Notes</p>
                     <p className="mb-3 capitalize">{book.notes}</p>
 
-                    <p className="text-sm text-neutral-400">Payment status</p>
-                    <p className="mb-3 capitalize">{book.payment_status}</p>
+                    {/* <p className="text-sm text-neutral-400">Payment status</p>
+                    <p className="mb-3 capitalize">{book.payment_status}</p> */}
   
                     <p className="text-sm text-neutral-400">Created At</p>
                     <p className="mb-3">{new Date(book.created_at).toLocaleString()}</p>
@@ -177,7 +177,7 @@ export default function Bookings() {
                 <thead className="bg-[#2c2c2c] text-white">
                   <tr>
                     <th className="py-3 px-4 w-[70px]">ID</th>
-                    <th className="py-3 px-4 w-[90px]">Service_ID</th>
+                    <th className="py-3 px-4 w-[90px]">Service</th>
                     <th className="py-3 px-4 w-[110px]">Date</th>
                     <th className="py-3 px-4 w-[90px]">Time</th>
                     <th className="py-3 px-4 w-[140px]">Name</th>
@@ -185,7 +185,7 @@ export default function Bookings() {
                     <th className="py-3 px-4 w-[120px]">Phone</th>
                     <th className="py-3 px-4 w-[180px]">Location</th>
                     <th className="py-3 px-4 w-[200px]">Notes</th>
-                    <th className="py-3 px-4 w-[100px]">Status</th>
+                    {/* <th className="py-3 px-4 w-[100px]">Status</th> */}
                     <th className="py-3 px-4 w-[150px]">Created</th>
                     <th className="py-3 px-4 w-[130px] text-center">Actions</th>
                   </tr>
@@ -196,7 +196,7 @@ export default function Bookings() {
                     {/* Main Row */}
                     <tr className={`${idx % 2 === 0 ? "bg-black" : "bg-[#1a1a1a]"} hover:bg-[#2a2a2a]`}>
                       <td className="py-2 px-4 truncate max-w-[70px]">{book.id}</td>
-                      <td className="py-2 px-4 truncate max-w-[90px]">{book.service_id}</td>
+                      <td className="py-2 px-4 truncate max-w-[90px]">{book.name}</td>
                       <td className="py-2 px-4 truncate max-w-[110px]">{formatDate(book.booking_date)}</td>
                       <td className="py-2 px-4 truncate max-w-[120px]">{formatTime(book.start_time)}</td>
                       <td className="py-2 px-4 truncate max-w-[120px]">{book.client_name}</td>
@@ -204,13 +204,13 @@ export default function Bookings() {
                       <td className="py-2 px-4 truncate max-w-[120px]">{book.client_phone}</td>
                       <td className="py-2 px-4 truncate max-w-[120px]">{book.location}</td>
                       <td className="py-2 px-4 truncate max-w-[120px]">{book.notes}</td>
-                      <td className={`capitalize ${
+                      {/* <td className={`capitalize ${
                         book.payment_status === "paid"
                             ? "text-green-400"
                             : "text-yellow-400"
                         }`}>
                         {book.payment_status}
-                      </td>
+                      </td> */}
                       <td className="py-2 px-4 whitespace-nowrap">
                         {new Date(book.created_at).toLocaleString()}
                       </td>
@@ -259,9 +259,14 @@ export default function Bookings() {
                                 </div>
 
                                 <div>
+                                    <p className="text-neutral-400">Service</p>
+                                    <p className="capitalize">{book.name}</p>
+                                </div>
+
+                                {/* <div>
                                     <p className="text-neutral-400">Status</p>
                                     <p className="capitalize">{book.payment_status}</p>
-                                </div>
+                                </div> */}
                                 </div>
 
                                 <div className="mt-4">
