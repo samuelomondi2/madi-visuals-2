@@ -100,7 +100,7 @@ exports.getAvailability = async (date) => {
     [dayOfWeek]
   );
 
-  const BUFFER_MINUTES = 15;
+  const BUFFER_MINUTES = 60;
   const addBuffer = (time, minutes) => {
     const d = new Date(`1970-01-01T${time}`);
     d.setMinutes(d.getMinutes() + minutes);

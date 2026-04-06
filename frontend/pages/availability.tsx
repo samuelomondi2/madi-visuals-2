@@ -33,9 +33,6 @@ export default function AdminAvailability() {
     reason: "",
   });
 
-  
-
-  // Fetch weekly schedule and special days
   useEffect(() => {
     fetchSchedule();
     fetchSpecialDays();
@@ -140,171 +137,191 @@ export default function AdminAvailability() {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>{error}</p>;
+  if (loading) return <p className="text-center mt-4">Loading...</p>;
+  if (error) return <p className="text-center text-red-600 mt-4">{error}</p>;
 
   return (
-    <div className="space-y-6">
-      <h2>Weekly Availability</h2>
-      <table className="border-collapse border">
-        <thead>
-          <tr>
-            <th>Day</th>
-            <th>Enabled</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {schedule.map((day) => (
-            <tr key={day.id}>
-              <td>{daysOfWeek[day.id]}</td>
-              <td>
-                <input type="checkbox" checked={day.enabled} onChange={() => handleToggleDay(day.id)} />
-              </td>
-              <td>
-                <input
-                  type="time"
-                  value={day.start_time}
-                  onChange={(e) => handleTimeChange(day.id, "start_time", e.target.value)}
-                  disabled={!day.enabled}
-                />
-              </td>
-              <td>
-                <input
-                  type="time"
-                  value={day.end_time}
-                  onChange={(e) => handleTimeChange(day.id, "end_time", e.target.value)}
-                  disabled={!day.enabled}
-                />
-              </td>
-              <td>
-                <button onClick={() => updateDay(day)}>Update</button>
-              </td>
+    <div className="min-h-screen bg-gray-100 text-gray-800 p-6 space-y-10 max-w-5xl mx-auto">
+      {/* Weekly Availability */}
+      <section className="bg-gray-50 shadow-md rounded p-6">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-900">Weekly Availability</h2>
+        <table className="min-w-full border border-gray-300 rounded overflow-hidden bg-white">
+          <thead className="bg-gray-200 text-gray-800">
+            <tr>
+              <th className="px-4 py-2 border-b">Day</th>
+              <th className="px-4 py-2 border-b">Enabled</th>
+              <th className="px-4 py-2 border-b">Start</th>
+              <th className="px-4 py-2 border-b">End</th>
+              <th className="px-4 py-2 border-b">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h2>Set Special Days</h2>
-      <div className="flex flex-col max-w-md gap-2">
-        <label>
-          Date:
-          <input
-            type="date"
-            value={newSpecialDay.date ?? ""}
-            onChange={(e) => handleNewSpecialChange("date", e.target.value)}
-          />
-        </label>
-
-        <label>
-          Day of Week:
-          <select
-            value={newSpecialDay.day_of_week ?? ""}
-            onChange={(e) =>
-              handleNewSpecialChange("day_of_week", e.target.value === "" ? null : Number(e.target.value))
-            }
-          >
-            <option value="">--Select--</option>
-            {daysOfWeek.map((day, idx) => (
-              <option key={idx} value={idx}>
-                {day}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          Recurring:
-          <input
-            type="checkbox"
-            checked={newSpecialDay.is_recurring}
-            onChange={(e) => handleNewSpecialChange("is_recurring", e.target.checked)}
-          />
-        </label>
-
-        <label>
-          Closed:
-          <input
-            type="checkbox"
-            checked={newSpecialDay.is_closed}
-            onChange={(e) => handleNewSpecialChange("is_closed", e.target.checked)}
-          />
-        </label>
-
-        <label>
-          Reason:
-          <input
-            type="text"
-            value={newSpecialDay.reason}
-            onChange={(e) => handleNewSpecialChange("reason", e.target.value)}
-          />
-        </label>
-
-        <button onClick={createSpecialDay}>Save Special Day</button>
-      </div>
-
-      <h2>Existing Special Days</h2>
-      <div className="mb-4">
-        <label>
-          Show special days for date:{" "}
-          <input
-            type="date"
-            value={filterDate ?? ""}
-            onChange={(e) => {
-              setFilterDate(e.target.value);
-              fetchSpecialDays(e.target.value);
-            }}
-          />
-        </label>
-        <button
-          onClick={() => fetchSpecialDays(filterDate)}
-          className="ml-2 bg-blue-600 text-white px-2 py-1 rounded"
-        >
-          Refresh
-        </button>
-      </div>
-
-      <table className="border-collapse border mt-2">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Day of Week</th>
-            <th>Recurring</th>
-            <th>Closed</th>
-            <th>Reason</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.isArray(specialDays) && specialDays.length > 0 ? (
-            specialDays.map((sd) => (
-              <tr key={sd.id}>
-                <td>{sd.date ? new Date(sd.date).toLocaleDateString() : "-"}</td>
-                <td>{sd.day_of_week !== null ? daysOfWeek[sd.day_of_week] : "-"}</td>
-                <td>{sd.is_recurring ? "Yes" : "No"}</td>
-                <td>{sd.is_closed ? "Yes" : "No"}</td>
-                <td>{sd.reason ?? "-"}</td>
-                <td>
+          </thead>
+          <tbody>
+            {schedule.map((day) => (
+              <tr key={day.id} className="hover:bg-gray-100">
+                <td className="px-4 py-2 border-b">{daysOfWeek[day.id]}</td>
+                <td className="px-4 py-2 border-b text-center">
+                  <input type="checkbox" checked={day.enabled} onChange={() => handleToggleDay(day.id)} />
+                </td>
+                <td className="px-4 py-2 border-b">
+                  <input
+                    type="time"
+                    value={day.start_time}
+                    onChange={(e) => handleTimeChange(day.id, "start_time", e.target.value)}
+                    disabled={!day.enabled}
+                    className="border rounded px-2 py-1 w-full text-gray-800"
+                  />
+                </td>
+                <td className="px-4 py-2 border-b">
+                  <input
+                    type="time"
+                    value={day.end_time}
+                    onChange={(e) => handleTimeChange(day.id, "end_time", e.target.value)}
+                    disabled={!day.enabled}
+                    className="border rounded px-2 py-1 w-full text-gray-800"
+                  />
+                </td>
+                <td className="px-4 py-2 border-b text-center">
                   <button
-                    onClick={() => deleteSpecialDay(sd.id)}
-                    className="bg-red-600 text-white px-2 py-1 rounded"
+                    onClick={() => updateDay(day)}
+                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
                   >
-                    Delete
+                    Update
                   </button>
                 </td>
               </tr>
-            ))
-          ) : (
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      {/* Special Days */}
+      <section className="bg-gray-50 shadow-md rounded p-6">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-900">Set Special Days</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <label className="flex flex-col text-gray-800">
+            Date:
+            <input
+              type="date"
+              value={newSpecialDay.date ?? ""}
+              onChange={(e) => handleNewSpecialChange("date", e.target.value)}
+              className="border rounded px-2 py-1 mt-1 text-gray-800"
+            />
+          </label>
+          {/* <label className="flex flex-col text-gray-800">
+            Day of Week:
+            <select
+              value={newSpecialDay.day_of_week ?? ""}
+              onChange={(e) =>
+                handleNewSpecialChange("day_of_week", e.target.value === "" ? null : Number(e.target.value))
+              }
+              className="border rounded px-2 py-1 mt-1 text-gray-800"
+            >
+              <option value="">--Select--</option>
+              {daysOfWeek.map((day, idx) => (
+                <option key={idx} value={idx}>
+                  {day}
+                </option>
+              ))}
+            </select>
+          </label> */}
+          {/* <label className="flex items-center gap-2 text-gray-800">
+            <input
+              type="checkbox"
+              checked={newSpecialDay.is_recurring}
+              onChange={(e) => handleNewSpecialChange("is_recurring", e.target.checked)}
+            />
+            Recurring
+          </label> */}
+          <label className="flex items-center gap-2 text-gray-800">
+            <input
+              type="checkbox"
+              checked={newSpecialDay.is_closed}
+              onChange={(e) => handleNewSpecialChange("is_closed", e.target.checked)}
+            />
+            Closed
+          </label>
+          <label className="flex flex-col md:col-span-2 text-gray-800">
+            Reason:
+            <input
+              type="text"
+              value={newSpecialDay.reason}
+              onChange={(e) => handleNewSpecialChange("reason", e.target.value)}
+              className="border rounded px-2 py-1 mt-1 text-gray-800 w-full"
+            />
+          </label>
+          <button
+            onClick={createSpecialDay}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 md:col-span-2"
+          >
+            Save Special Day
+          </button>
+        </div>
+      </section>
+
+      {/* Existing Special Days */}
+      <section className="bg-gray-50 shadow-md rounded p-6">
+        <h2 className="text-2xl font-semibold mb-4 text-gray-900">Existing Special Days</h2>
+        <div className="flex items-center gap-2 mb-4">
+          <label className="flex items-center gap-2 text-gray-800">
+            Show special days for date:
+            <input
+              type="date"
+              value={filterDate ?? ""}
+              onChange={(e) => {
+                setFilterDate(e.target.value);
+                fetchSpecialDays(e.target.value);
+              }}
+              className="border rounded px-2 py-1 text-gray-800"
+            />
+          </label>
+          <button
+            onClick={() => fetchSpecialDays(filterDate)}
+            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+          >
+            Refresh
+          </button>
+        </div>
+
+        <table className="min-w-full border border-gray-300 rounded overflow-hidden bg-white">
+          <thead className="bg-gray-200 text-gray-800">
             <tr>
-              <td colSpan={6} className="text-center">
-                No special days found.
-              </td>
+              <th className="px-4 py-2 border-b">Date</th>
+              <th className="px-4 py-2 border-b">Day of Week</th>
+              <th className="px-4 py-2 border-b">Recurring</th>
+              <th className="px-4 py-2 border-b">Closed</th>
+              <th className="px-4 py-2 border-b">Reason</th>
+              <th className="px-4 py-2 border-b">Actions</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {Array.isArray(specialDays) && specialDays.length > 0 ? (
+              specialDays.map((sd) => (
+                <tr key={sd.id} className="hover:bg-gray-100">
+                  <td className="px-4 py-2 border-b">{sd.date ? new Date(sd.date).toLocaleDateString() : "-"}</td>
+                  <td className="px-4 py-2 border-b">{sd.day_of_week !== null ? daysOfWeek[sd.day_of_week] : "-"}</td>
+                  <td className="px-4 py-2 border-b">{sd.is_recurring ? "Yes" : "No"}</td>
+                  <td className="px-4 py-2 border-b">{sd.is_closed ? "Yes" : "No"}</td>
+                  <td className="px-4 py-2 border-b">{sd.reason ?? "-"}</td>
+                  <td className="px-4 py-2 border-b text-center">
+                    <button
+                      onClick={() => deleteSpecialDay(sd.id)}
+                      className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={6} className="text-center py-4 text-gray-500">
+                  No special days found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </section>
     </div>
   );
 }
