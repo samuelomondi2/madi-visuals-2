@@ -52,26 +52,6 @@ export default function AdminAvailability() {
     );
   };
 
-  // const saveSchedule = async () => {
-  //   try {
-  //     const res = await fetch("/api/availability", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ schedule }),
-  //     });
-
-  //     if (!res.ok) {
-  //       const data = await res.json();
-  //       throw new Error(data.message || "Failed to save schedule");
-  //     }
-
-  //     alert("Schedule saved successfully!");
-  //   } catch (err: any) {
-  //     console.error(err);
-  //     alert(err.message);
-  //   }
-  // };
-
   const updateDay = async (day: DayAvailability) => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/availability/${day.id}`, {
@@ -101,8 +81,6 @@ export default function AdminAvailability() {
 
   return (
     <div>
-      <h1>Admin Availability</h1>
-      
       <table>
         <thead>
           <tr>
@@ -162,8 +140,6 @@ export default function AdminAvailability() {
           ))}
         </tbody>
       </table>
-
-      {/* <button onClick={saveSchedule} className="bg-green-600 px-3 py-1 rounded w-full sm:w-auto">Save Weekly Schedule</button> */}
     </div>
   );
 }

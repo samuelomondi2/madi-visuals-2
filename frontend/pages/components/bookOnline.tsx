@@ -39,7 +39,6 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
   const [pendingBookingId, setPendingBookingId] = useState<number | null>(null);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
-
   const [form, setForm] = useState<FormData>({
     client_name: "",
     client_email: "",
@@ -54,6 +53,8 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 2));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+
+  const today = new Date().toISOString().split("T")[0];
 
   const fetchServices = async () => {
     setLoading(true);
@@ -274,7 +275,7 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                   <input type="email" placeholder="Email" value={form.client_email} onChange={(e) => setForm({ ...form, client_email: e.target.value })} required className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"/>
                   <input type="tel" placeholder="Phone" value={form.client_phone} onChange={(e) => setForm({ ...form, client_phone: e.target.value })} className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none"/>
                   <div className="flex gap-2">
-                    <input type="date" value={form.booking_date} onChange={(e) => setForm({ ...form, booking_date: e.target.value })} required className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none flex-1"/>
+                    <input type="date" value={form.booking_date} onChange={(e) => setForm({ ...form, booking_date: e.target.value })} required min={today} className="rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none flex-1"/>
                     <select
                       disabled={!form.booking_date || !form.service_id || loadingSlots}
                       value={form.start_time}

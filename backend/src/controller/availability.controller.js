@@ -102,3 +102,79 @@ exports.checkSlotAvailability = async (service_id, booking_date, start_time) => 
 
   return serviceAvailability.available_slots.includes(start_time);
 };
+
+exports.getSpecialDays = async (req, res) => {
+  try {
+    const { date } = req.query;
+    if (!date) return res.status(400).json({ error: "Date is required" });
+
+    const specialDays = await availabilityService.getSpecialDays(date);
+    return res.json(specialDays);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.createSpecialDay = async (req, res) => {
+  try {
+    const { date, day_of_week, is_recurring, is_closed, reason } = req.body;
+
+    if (!date && !day_of_week) {
+      return res.status(400).json({ error: "Either date or day_of_week must be provided" });
+    }
+
+    const result = await availabilityService.createSpecialDays({
+      date,
+      day_of_week,
+      is_recurring,
+      is_closed,
+      reason
+    });
+
+    return res.status(201).json(result);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.updateSpecialDay = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { date, day_of_week, is_recurring, is_closed, reason } = req.body;
+
+    const result = await availabilityService.updateSpecialDays(id, {
+      date,
+      day_of_week,
+      is_recurring,
+      is_closed,
+      reason
+    });
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Special day not found" });
+    }
+
+    return res.json({ message: "Special day updated successfully" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.deleteSpecialDay = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await availabilityService.deleteSpecialDays(id);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Special day not found" });
+    }
+
+    return res.json({ message: "Special day deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
