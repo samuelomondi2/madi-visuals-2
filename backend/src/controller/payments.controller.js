@@ -17,6 +17,7 @@ exports.createCheckoutSession = async (req, res) => {
   
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
+        customer_email: booking.client_email,
         line_items: [
           {
             price_data: {
@@ -47,6 +48,8 @@ exports.handleStripeWebhook = async (req, res) => {
   let event;
 
   try {
+    console.log("Buffer:", Buffer.isBuffer(req.body));
+    console.log("Type:", typeof req.body);
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
@@ -61,6 +64,11 @@ exports.handleStripeWebhook = async (req, res) => {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
+
+    if (!session.metadata?.booking_id) {
+      console.warn("⚠️ Missing booking_id in metadata");
+      return;
+    }
 
     console.log("💰 Payment success for booking:", session.metadata);
 
