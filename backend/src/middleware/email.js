@@ -115,15 +115,17 @@ exports.sendBookingEmails = async ({data, service}) => {
           </p>
 
           <div style="margin:20px 0; text-align:left;">
+            <p><strong>Service Name:</strong> ${service.name}</p>
+            <p><strong>Service Price:</strong> ${service.base_price}</p>
+            <p><strong>Service Duration:</strong> ${service.duration}</p>
             <p><strong>Date:</strong> ${data.booking_date}</p>
             <p><strong>Time:</strong> ${data.start_time}</p>
-            <p><strong>Location:</strong> ${data.location || "-"}</p>
           </div>
 
           <div style="margin:25px 0;">
-            <a href="${process.env.FRONTEND_URL}" 
+            <a href="${process.env.FRONTEND_URL}/contact" 
                style="background:#000;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;">
-               View Booking
+               Contact Us
             </a>
           </div>
 
