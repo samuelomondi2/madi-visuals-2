@@ -24,8 +24,9 @@ exports.createBooking = async (data) => {
   );
 
   try {
-    const getService = await services.getASingleService(data.service_id);
-    await emailRender.sendBookingEmails({data, service: getService.service});
+    const getService = await services.getASingleService({ id: data.service_id });
+    console.log("getService", getService);
+    await emailRender.sendBookingEmails({data, service: getService});
     console.log("Email sent");
   } catch (error) {
     console.error("Email error:", error);

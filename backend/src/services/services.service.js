@@ -10,6 +10,7 @@ exports.getAllServices = async () => {
 };
 
 exports.getASingleService = async ({ id }) => {
+  console.log("getASingleService ID:", id);
     const [rows] = await db.execute(
         "SELECT * FROM services WHERE id = ?",
         [id]
