@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const emailRender = require("../middleware/email");
+const services = require("./services.service");
 
 exports.createBooking = async (data) => {
 
@@ -23,7 +24,8 @@ exports.createBooking = async (data) => {
   );
 
   try {
-    await emailRender.sendBookingEmails(data);
+    const getService = await services.getASingleService(data.service_id);
+    await emailRender.sendBookingEmails({data, service: getService.service});
     console.log("Email sent");
   } catch (error) {
     console.error("Email error:", error);
