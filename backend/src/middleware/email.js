@@ -48,7 +48,7 @@ exports.forgotPasswordTokenEmail = async ({ email, token }) => {
   });
 };
 
-exports.sendBookingEmails = async (data) => {
+exports.sendBookingEmails = async ({data, service}) => {
 
   const container = `
     style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px 0;"
@@ -78,7 +78,9 @@ exports.sendBookingEmails = async (data) => {
           <p><span ${label}>Name:</span> <span ${text}>${data.client_name}</span></p>
           <p><span ${label}>Email:</span> <span ${text}>${data.client_email}</span></p>
           <p><span ${label}>Phone:</span> <span ${text}>${data.client_phone || "-"}</span></p>
-          <p><span ${label}>Location:</span> <span ${text}>${data.location || "-"}</span></p>
+          <p><span ${label}>Service:</span> <span ${text}>${service.name}</span></p>
+          <p><span ${label}>Duration:</span> <span ${text}>${service.duration} mins</span></p>
+          <p><span ${label}>Price:</span> <span ${text}>$${service.base_price}</span></p>
           <p><span ${label}>Date:</span> <span ${text}>${data.booking_date}</span></p>
           <p><span ${label}>Time:</span> <span ${text}>${data.start_time}</span></p>
 
