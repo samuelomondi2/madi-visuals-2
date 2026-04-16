@@ -55,7 +55,7 @@ exports.updateAvailability = async ({ id, start_time, end_time, enabled }) => {
 
 exports.getAdminAvailability = async () => {
   const [rows] = await db.execute(
-    "SELECT * FROM admin_availability"
+    "SELECT * FROM admin_availability ORDER BY day_of_week ASC"
   );
   return rows;
 };

@@ -9,7 +9,7 @@ type DayAvailability = {
 
 type SpecialDay = {
   id: number;
-  date: string | null;
+  date: string;
   day_of_week: number | null;
   is_recurring: boolean;
   is_closed: boolean;
@@ -159,9 +159,9 @@ export default function AdminAvailability() {
             {schedule.map((day) => (
               <tr key={day.id} className="hover:bg-gray-100">
                 <td className="px-4 py-2 border-b">{daysOfWeek[day.id]}</td>
-                <td className="px-4 py-2 border-b text-center">
+                {/* <td className="px-4 py-2 border-b text-center">
                   <input type="checkbox" checked={day.enabled} onChange={() => handleToggleDay(day.id)} />
-                </td>
+                </td> */}
                 <td className="px-4 py-2 border-b">
                   <input
                     type="time"
@@ -244,7 +244,7 @@ export default function AdminAvailability() {
             Reason:
             <input
               type="text"
-              value={newSpecialDay.reason}
+              value={newSpecialDay.reason ?? ""}
               onChange={(e) => handleNewSpecialChange("reason", e.target.value)}
               className="border rounded px-2 py-1 mt-1 text-gray-800 w-full"
             />
