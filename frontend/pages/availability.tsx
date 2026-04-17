@@ -4,7 +4,7 @@ type DayAvailability = {
   id: number;
   start_time: string;
   end_time: string;
-  enabled: boolean;
+  // enabled: boolean;
 };
 
 type SpecialDay = {
@@ -42,14 +42,17 @@ export default function AdminAvailability() {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/availability`);
       const data = await res.json();
+      console.log("Schedule", data)
       const formatted: DayAvailability[] = data.times.map((t: any) => ({
         id: t.day_of_week,
         start_time: t.start_time.slice(0, 5),
         end_time: t.end_time.slice(0, 5),
-        enabled: t.enabled,
+        // enabled: t.enabled,
       }));
       setSchedule(formatted);
       setLoading(false);
+      console.log("Schedule", schedule)
+      console.log(schedule.map(d => d.id));
     } catch (err) {
       console.error(err);
       setError("Failed to fetch availability");
@@ -71,9 +74,9 @@ export default function AdminAvailability() {
     }
   };
 
-  const handleToggleDay = (id: number) => {
-    setSchedule((prev) => prev.map((d) => (d.id === id ? { ...d, enabled: !d.enabled } : d)));
-  };
+  // const handleToggleDay = (id: number) => {
+  //   setSchedule((prev) => prev.map((d) => (d.id === id ? { ...d, enabled: !d.enabled } : d)));
+  // };
 
   const handleTimeChange = (id: number, field: "start_time" | "end_time", value: string) => {
     setSchedule((prev) => prev.map((d) => (d.id === id ? { ...d, [field]: value } : d)));
@@ -167,7 +170,7 @@ export default function AdminAvailability() {
                     type="time"
                     value={day.start_time}
                     onChange={(e) => handleTimeChange(day.id, "start_time", e.target.value)}
-                    disabled={!day.enabled}
+                    // disabled={!day.enabled}
                     className="border rounded px-2 py-1 w-full text-gray-800"
                   />
                 </td>
@@ -176,7 +179,7 @@ export default function AdminAvailability() {
                     type="time"
                     value={day.end_time}
                     onChange={(e) => handleTimeChange(day.id, "end_time", e.target.value)}
-                    disabled={!day.enabled}
+                    // disabled={!day.enabled}
                     className="border rounded px-2 py-1 w-full text-gray-800"
                   />
                 </td>

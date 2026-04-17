@@ -62,10 +62,11 @@ exports.getAdminAvailability = async () => {
 
 exports.getAvailability = async (date) => {
   if (!date) throw new Error("Date is required");
-  const requestedDate = new Date(date);
+  const requestedDate = new Date(y, m - 1, d);
   if (isNaN(requestedDate)) throw new Error("Invalid date format");
 
-  const dayOfWeek = requestedDate.getDay() || 7; // 1 = Monday ... 7 = Sunday
+  const [y, m, d] = date.split("-");
+  const dayOfWeek = requestedDate.getDay();
   const today = new Date();
   const isToday = requestedDate.toDateString() === today.toDateString();
   const nowMs = today.getTime();
