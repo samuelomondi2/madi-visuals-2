@@ -51,8 +51,6 @@ export default function AdminAvailability() {
       }));
       setSchedule(formatted);
       setLoading(false);
-      console.log("Schedule", schedule)
-      console.log(schedule.map(d => d.id));
     } catch (err) {
       console.error(err);
       setError("Failed to fetch availability");
