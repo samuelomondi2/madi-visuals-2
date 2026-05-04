@@ -34,8 +34,14 @@ export default function AdminAvailability() {
   });
 
   useEffect(() => {
-    fetchSchedule();
-    fetchSpecialDays();
+    const loadData = async () => {
+      try {
+        await Promise.all([fetchSchedule(), fetchSpecialDays()]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
   const fetchSchedule = async () => {
@@ -43,18 +49,17 @@ export default function AdminAvailability() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/availability`);
       const data = await res.json();
       console.log("Schedule", data)
-      const formatted: DayAvailability[] = data.times.map((t: any) => ({
-        id: t.day_of_week,
-        start_time: t.start_time.slice(0, 5),
-        end_time: t.end_time.slice(0, 5),
-        // enabled: t.enabled,
-      }));
+      const formatted: DayAvailability[] = Array.isArray(data.times)
+        ? data.times.map((t: any) => ({
+            id: t.day_of_week,
+            start_time: t.start_time?.slice(0, 5) ?? "",
+            end_time: t.end_time?.slice(0, 5) ?? "",
+          }))
+        : [];
       setSchedule(formatted);
-      setLoading(false);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch availability");
-      setLoading(false);
     }
   };
 
@@ -63,8 +68,13 @@ export default function AdminAvailability() {
       const url = date
         ? `${process.env.NEXT_PUBLIC_API_URL}/api/special-days?date=${date}`
         : `${process.env.NEXT_PUBLIC_API_URL}/api/special-days`;
-      const res = await fetch(url);
-      const data = await res.json();
+        const res = await fetch(url);
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch special days");
+        }
+        
+        const data = await res.json();
       setSpecialDays(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
@@ -72,15 +82,20 @@ export default function AdminAvailability() {
     }
   };
 
-  // const handleToggleDay = (id: number) => {
-  //   setSchedule((prev) => prev.map((d) => (d.id === id ? { ...d, enabled: !d.enabled } : d)));
-  // };
-
   const handleTimeChange = (id: number, field: "start_time" | "end_time", value: string) => {
     setSchedule((prev) => prev.map((d) => (d.id === id ? { ...d, [field]: value } : d)));
   };
 
   const updateDay = async (day: DayAvailability) => {
+    const toMinutes = (t: string) => {
+      const [h, m] = t.split(":").map(Number);
+      return h * 60 + m;
+    };
+    
+    if (toMinutes(day.start_time) >= toMinutes(day.end_time)) {
+      alert("Start time must be before end time");
+      return;
+    }
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/availability/${day.id}`, {
         method: "PUT",
@@ -150,7 +165,7 @@ export default function AdminAvailability() {
           <thead className="bg-gray-200 text-gray-800">
             <tr>
               <th className="px-4 py-2 border-b">Day</th>
-              <th className="px-4 py-2 border-b">Enabled</th>
+              {/* <th className="px-4 py-2 border-b">Enabled</th> */}
               <th className="px-4 py-2 border-b">Start</th>
               <th className="px-4 py-2 border-b">End</th>
               <th className="px-4 py-2 border-b">Actions</th>

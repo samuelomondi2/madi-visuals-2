@@ -67,7 +67,7 @@ exports.handleStripeWebhook = async (req, res) => {
 
     if (!session.metadata?.booking_id) {
       console.warn("⚠️ Missing booking_id in metadata");
-      return;
+      return res.sendStatus(200);
     }
 
     console.log("💰 Payment success for booking:", session.metadata);
