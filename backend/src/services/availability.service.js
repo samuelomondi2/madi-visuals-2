@@ -35,13 +35,13 @@ exports.updateAvailability = async ({ id, start_time, end_time, enabled }) => {
     throw new Error("Invalid time range");
   }
 
-  if (!enabled) {
-    await db.execute(
-      "DELETE FROM admin_availability WHERE day_of_week=?",
-      [id]
-    );
-    return true;
-  }
+  // if (!enabled) {
+  //   await db.execute(
+  //     "DELETE FROM admin_availability WHERE day_of_week=?",
+  //     [id]
+  //   );
+  //   return true;
+  // }
 
   await db.execute(
     `INSERT INTO admin_availability (day_of_week, start_time, end_time)
