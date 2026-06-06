@@ -45,7 +45,7 @@ export default function ContactPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ name, phone, email, message }),
+          body: JSON.stringify({ name, email, phone, message }),
         }
       );
 
