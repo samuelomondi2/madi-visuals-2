@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
 
-// Types
 interface Service {
   id: string;
   name: string;
