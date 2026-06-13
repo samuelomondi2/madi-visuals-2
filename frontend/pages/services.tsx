@@ -75,7 +75,9 @@ export default function Services() {
 
       const data: any[] = await res.json();
 
-      const mapped: Service[] = data.map((s) => ({
+      const mapped: Service[] = data
+      .filter((s: any) => s.is_active) 
+      .map((s: any) => ({
         id:         s._id,
         name:       s.name,
         duration:   s.duration,
@@ -99,10 +101,13 @@ export default function Services() {
     fetchServices();
   }, []);
 
-  const lifestyleServices = useMemo(() => services.filter(s => s.category === "Lifestyle Photography"),  [services]);
-  const sportsVideo       = useMemo(() => services.filter(s => s.category === "Sports Videography"),     [services]);
-  const sportsPhoto       = useMemo(() => services.filter(s => s.category === "Sports Photography"),     [services]);
-  const comboServices     = useMemo(() => services.filter(s => s.category === "Photo & Video Combo"),    [services]);
+const servicesByCategory = useMemo(() => {
+  return services.reduce((acc, s) => {
+    if (!acc[s.category]) acc[s.category] = [];
+    acc[s.category].push(s);
+    return acc;
+  }, {} as Record<string, Service[]>);
+}, [services]);
 
   if (loading) {
     return (
@@ -129,7 +134,7 @@ export default function Services() {
   return (
     <main className="pt-24 bg-black text-white min-h-screen">
       <section className="mx-auto max-w-7xl px-6 py-12">
-
+  
         {/* Header */}
         <div id="services" className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Services & Pricing</h1>
@@ -138,70 +143,24 @@ export default function Services() {
             sports, and special events.
           </p>
         </div>
-
-        {/* Lifestyle Photography */}
-        <Section title="Lifestyle Photography">
-          <p className="text-gray-300 mb-6 text-center">
-            Most booked for personal branding, couples & everyday moments.
-          </p>
-          <div className="grid gap-6 md:grid-cols-3">
-            {lifestyleServices.map((s) => (
-              <ServiceCard
-                key={s.id}
-                title={s.name}
-                duration={s.duration ? `${s.duration} mins` : undefined}
-                price={`$${s.base_price}`}
-                delivery={s.delivery}
-              />
-            ))}
-          </div>
-        </Section>
-
-        {/* Sports Videography */}
-        <Section title="Sports Videography">
-          <div className="grid gap-6 md:grid-cols-2">
-            {sportsVideo.map((s) => (
-              <ServiceCard
-                key={s.id}
-                title={s.name}
-                duration={s.duration ? `${s.duration} mins` : undefined}
-                price={`$${s.base_price}`}
-                delivery={s.delivery}
-              />
-            ))}
-          </div>
-        </Section>
-
-        {/* Sports Photography */}
-        <Section title="Sports Photography">
-          <div className="grid gap-6 md:grid-cols-3">
-            {sportsPhoto.map((s) => (
-              <ServiceCard
-                key={s.id}
-                title={s.name}
-                duration={s.duration ? `${s.duration} mins` : undefined}
-                price={`$${s.base_price}`}
-                delivery={s.delivery}
-              />
-            ))}
-          </div>
-        </Section>
-
-        {/* Photo & Video Combo */}
-        <Section title="Photo & Video Combo">
-          <div className="grid gap-6 md:grid-cols-2">
-            {comboServices.map((s) => (
-              <ServiceCard
-                key={s.id}
-                title={s.name}
-                price={`$${s.base_price}`}
-                delivery={s.delivery}
-              />
-            ))}
-          </div>
-        </Section>
-
-        {/* Special Events */}
+  
+        {Object.entries(servicesByCategory).map(([category, items]) => (
+          <Section key={category} title={category}>
+            <div className={`grid gap-6 ${items.length === 1 ? "max-w-md mx-auto" : items.length === 2 ? "md:grid-cols-2" : "md:grid-cols-3"}`}>
+              {items.map((s) => (
+                <ServiceCard
+                  key={s.id}
+                  title={s.name}
+                  duration={s.duration ? `${s.duration} mins` : undefined}
+                  price={`$${s.base_price}`}
+                  delivery={s.delivery}
+                />
+              ))}
+            </div>
+          </Section>
+        ))}
+  
+        {/* Special Events — always shown */}
         <Section title="Weddings, Baby Showers & Special Events">
           <div className="text-center">
             <p className="text-gray-300 mb-6">
@@ -216,8 +175,8 @@ export default function Services() {
             </Link>
           </div>
         </Section>
-
-        {/* Add-Ons */}
+  
+        {/* Add-Ons — always shown */}
         <Section title="Add-Ons">
           <div className="grid gap-6 md:grid-cols-2">
             {addons.map((addon, i) => (
@@ -225,7 +184,7 @@ export default function Services() {
             ))}
           </div>
         </Section>
-
+  
       </section>
     </main>
   );
