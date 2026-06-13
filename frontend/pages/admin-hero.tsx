@@ -1,176 +1,197 @@
-"use client";
+'use client';
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-type HeroContent = {
-  id: number;
+interface Hero {
+  _id: string;
   title: string;
   name: string;
   description: string;
-  media_url?: string;
-  media_type?: "image" | "video";
+  updatedAt: string;
+}
+
+interface HeroForm {
+  title: string;
+  name: string;
+  description: string;
+}
+
+const defaultForm: HeroForm = {
+  title: "",
+  name: "",
+  description: "",
 };
 
-type HeroPreview = {
-  type: "image" | "video";
-  url: string;
-} | null;
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
 export default function AdminHero() {
-  const [heroContent, setHeroContent] = useState<HeroContent | null>(null);
+  const [hero, setHero]       = useState<Hero | null>(null);
+  const [form, setForm]       = useState<HeroForm>(defaultForm);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [preview, setPreview] = useState<HeroPreview>(null);
+  const [saving, setSaving]   = useState(false);
+  const [error, setError]     = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    async function fetchHero() {
-      try {
-        const res = await fetch(`${API_URL}/api/hero`);
-        const data = await res.json();
-        setHeroContent(data.hero_section);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const getToken = () =>
+    localStorage.getItem("token") || sessionStorage.getItem("token");
 
-    fetchHero();
-  }, []);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    if (!heroContent) return;
-
-    setHeroContent({
-      ...heroContent,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSave = async () => {
-    if (!heroContent) return;
+  const fetchHero = async () => {
+    setLoading(true);
+    setError(null);
+    const token = getToken();
+    if (!token) return router.push("/login");
 
     try {
-      setSaving(true);
-
-      const mediaUrl =
-        preview?.url || heroContent.media_url || null;
-      const mediaType =
-        preview?.type || heroContent.media_type || null;
-
-      await fetch(`${API_URL}/api/hero/${heroContent.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: heroContent.title,
-          name: heroContent.name,
-          description: heroContent.description,
-          media_url: mediaUrl,
-          media_type: mediaType,
-        }),
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hero`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      alert("Updated successfully!");
+      if (res.status === 404) {
+        // No hero yet — form stays empty
+        setHero(null);
+        return;
+      }
 
-      setHeroContent((prev) =>
-        prev
-          ? {
-              ...prev,
-              media_url: mediaUrl || undefined,
-              media_type: mediaType || undefined,
-            }
-          : prev
-      );
+      if (!res.ok) throw new Error("Failed to fetch hero");
 
-      setPreview(null);
-
+      const data = await res.json();
+      setHero(data);
+      setForm({
+        title:       data.title       || "",
+        name:        data.name        || "",
+        description: data.description || "",
+      });
     } catch (err) {
       console.error(err);
-      alert("Update failed.");
+      setError("Failed to load hero");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchHero(); }, []);
+
+  const handleSave = async () => {
+    setError(null);
+    setSuccess(null);
+
+    if (!form.title || !form.name || !form.description) {
+      setError("All fields are required.");
+      return;
+    }
+
+    const token = getToken();
+    setSaving(true);
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/hero`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) throw new Error("Failed to save hero");
+
+      const { hero: updated } = await res.json();
+      setHero(updated);
+      setSuccess("Hero updated successfully.");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to save hero");
     } finally {
       setSaving(false);
     }
   };
 
-  const displayHero: HeroPreview =
-    preview ||
-    (heroContent?.media_url && heroContent.media_type
-      ? {
-          url: heroContent.media_url,
-          type: heroContent.media_type,
-        }
-      : null);
+  const inputClass = "w-full rounded bg-neutral-800 border border-neutral-700 text-white text-sm p-2 focus:border-[#D4AF37] outline-none";
 
-  if (loading) return <p className="p-10">Loading...</p>;
-  if (!heroContent) return <p className="p-10">No hero content found.</p>;
+  if (loading) return <p className="text-white">Loading hero...</p>;
 
   return (
-    <div className="max-w-5xl mx-auto p-10 flex flex-col md:flex-row gap-8">
+    <>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">Manage Hero</h1>
+        {hero && (
+          <p className="text-neutral-400 text-sm">
+            Last updated: {new Date(hero.updatedAt).toLocaleString()}
+          </p>
+        )}
+      </div>
 
-      {displayHero && (
-        <div className="flex-1 bg-black rounded overflow-hidden shadow-md">
-          {displayHero.type === "image" ? (
-            <img
-              src={displayHero.url}
-              alt="Hero Preview"
-              className="w-full h-80 object-cover"
-            />
-          ) : (
-            <video
-              src={displayHero.url}
-              controls
-              className="w-full h-80 object-cover"
-            />
-          )}
+      {/* Preview */}
+      {hero && (
+        <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 mb-6">
+          <p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">Current Hero</p>
+          <p className="text-[#D4AF37] text-sm font-medium mb-1">{hero.title}</p>
+          <p className="text-white text-2xl font-bold mb-2">{hero.name}</p>
+          <p className="text-gray-400 text-sm leading-relaxed">{hero.description}</p>
         </div>
       )}
 
-      {/* 🔥 RIGHT: FORM */}
-      <div className="flex-1 space-y-6">
-        <h1 className="text-2xl font-semibold">Edit Hero Section</h1>
+      {/* Form */}
+      <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-6">
+        <p className="text-xs text-neutral-500 uppercase tracking-widest mb-4">
+          {hero ? "Update Hero" : "Create Hero"}
+        </p>
 
-        {/* Title */}
-        <input
-          name="title"
-          value={heroContent.title}
-          onChange={handleChange}
-          className="w-full border p-3 rounded"
-          placeholder="Hero Title"
-        />
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="text-xs text-neutral-400 mb-1 block">Title</label>
+            <input
+              type="text"
+              placeholder="e.g. Welcome to"
+              className={inputClass}
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-neutral-400 mb-1 block">Name</label>
+            <input
+              type="text"
+              placeholder="e.g. Madi Visuals"
+              className={inputClass}
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-neutral-400 mb-1 block">Description</label>
+            <textarea
+              placeholder="e.g. Capturing moments that last a lifetime."
+              className={inputClass}
+              rows={4}
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
+          </div>
+        </div>
 
-        {/* Name */}
-        <input
-          name="name"
-          value={heroContent.name}
-          onChange={handleChange}
-          className="w-full border p-3 rounded"
-          placeholder="Hero Name"
-        />
+        {error   && <p className="text-red-500 text-sm mt-3">{error}</p>}
+        {success && <p className="text-green-400 text-sm mt-3">{success}</p>}
 
-        {/* Description */}
-        <textarea
-          name="description"
-          value={heroContent.description}
-          onChange={handleChange}
-          rows={5}
-          className="w-full border p-3 rounded"
-          placeholder="Hero Description"
-        />
-
-        {/* Save */}
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="bg-[#D4AF37] text-black px-5 py-2 rounded hover:opacity-90 transition disabled:opacity-50"
-        >
-          {saving ? "Saving..." : "Save Changes"}
-        </button>
+        <div className="flex gap-2 mt-5">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-[#D4AF37] text-black px-6 py-2 rounded font-semibold hover:opacity-90 transition disabled:opacity-50"
+          >
+            {saving ? "Saving..." : hero ? "Update" : "Create"}
+          </button>
+          {hero && (
+            <button
+              onClick={() => setForm({ title: hero.title, name: hero.name, description: hero.description })}
+              className="bg-neutral-700 text-white px-4 py-2 rounded hover:bg-neutral-600 transition"
+            >
+              Reset
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

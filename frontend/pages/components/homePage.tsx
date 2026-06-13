@@ -8,24 +8,33 @@ import Footer from "./footer";
 import Services from "../services";
 import FloatingServices from "./floatingServices";
 
-type HeroType = { type: "image" | "video"; url: string };
+interface HeroData {
+  image: string | null;
+  video: string | null;
+}
 
 export default function HomePage() {
-  const [heroImage, setHeroImage] = useState<HeroType | null>(null);
-  const [heroVideo, setHeroVideo] = useState<HeroType | null>(null);
+  const [heroes, setHeroes] = useState<HeroData>({ image: null, video: null });
 
   useEffect(() => {
     const fetchHeroes = async () => {
       try {
-        const resImage = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero?type=image`);
-        const dataImage = await resImage.json();
-        if (dataImage.hero) setHeroImage({ type: "image", url: dataImage.hero.media_url });
+        const [resImage, resVideo] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero?type=image`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero?type=video`),
+        ]);
 
-        const resVideo = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/media/hero?type=video`);
-        const dataVideo = await resVideo.json();
-        if (dataVideo.hero) setHeroVideo({ type: "video", url: dataVideo.hero.media_url });
+        const [dataImage, dataVideo] = await Promise.all([
+          resImage.json(),
+          resVideo.json(),
+        ]);
+
+        setHeroes({
+          image: dataImage?.hero?.media_url  || null,
+          video: dataVideo?.hero?.media_url  || null,
+        });
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch heroes:", err);
       }
     };
 
@@ -38,9 +47,11 @@ export default function HomePage() {
       <FloatingServices />
 
       <main className="w-full mt-12">
-        {heroImage && <Hero imageUrl={heroImage.url} />}
-        
-        {heroVideo && <HeroVideo videoUrl={heroVideo.url} posterUrl="/hero.webp" />}
+        <Hero imageUrl={heroes.image ?? "/hero.webp"} />
+
+        {heroes.video && (
+          <HeroVideo videoUrl={heroes.video} posterUrl="/hero.webp" />
+        )}
 
         <Services />
         <Footer />

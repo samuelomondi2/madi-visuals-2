@@ -4,8 +4,8 @@ import PageUnderConstruction from "./under-construction";
 export default function Home() {
   return (
     <>
-      {/* <HomePage/>  */}
-      <PageUnderConstruction/>
+      <HomePage/> 
+      {/* <PageUnderConstruction/> */}
     </>
   );
 }

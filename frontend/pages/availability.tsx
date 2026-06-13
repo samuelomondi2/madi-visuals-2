@@ -1,343 +1,366 @@
-import { useEffect, useState } from "react";
+'use client';
 
-type DayAvailability = {
-  id: number;
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+interface AvailabilityEntry {
+  id: string;
+  day_of_week: number;
   start_time: string;
   end_time: string;
-  // enabled: boolean;
-};
+  is_available: boolean;
+  slot_duration_mins: number;
+  buffer_mins: number;
+}
 
-type SpecialDay = {
-  id: number;
-  date: string;
-  day_of_week: number | null;
-  is_recurring: boolean;
-  is_closed: boolean;
-  reason?: string;
-};
+interface AvailabilityForm {
+  start_time: string;
+  end_time: string;
+  slot_duration_mins: string;
+  buffer_mins: string;
+}
 
-const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const ALL_DAYS  = [0, 1, 2, 3, 4, 5, 6];
 
 export default function AdminAvailability() {
-  const [schedule, setSchedule] = useState<DayAvailability[]>([]);
-  const [specialDays, setSpecialDays] = useState<SpecialDay[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [filterDate, setFilterDate] = useState<string>("");
-
-  const [newSpecialDay, setNewSpecialDay] = useState<Omit<SpecialDay, "id">>({
-    date: "",
-    day_of_week: null,
-    is_recurring: false,
-    is_closed: true,
-    reason: "",
+  const [availability, setAvailability] = useState<AvailabilityEntry[]>([]);
+  const [loading, setLoading]           = useState(true);
+  const [error, setError]               = useState<string | null>(null);
+  const [editId, setEditId]             = useState<string | null>(null);
+  const [editForm, setEditForm]         = useState<AvailabilityForm>({
+    start_time: "", end_time: "", slot_duration_mins: "", buffer_mins: "0",
   });
+  const [saving, setSaving]             = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm]           = useState({
+    day_of_week: "", start_time: "", end_time: "", slot_duration_mins: "60", buffer_mins: "0",
+  });
+  const [adding, setAdding]   = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        await Promise.all([fetchSchedule(), fetchSpecialDays()]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadData();
-  }, []);
+  const getToken = () =>
+    localStorage.getItem("token") || sessionStorage.getItem("token");
 
-  const fetchSchedule = async () => {
+  const configuredDays = availability.map((a) => a.day_of_week);
+  const availableDays  = ALL_DAYS.filter((d) => !configuredDays.includes(d));
+
+  const fetchAvailability = async () => {
+    setLoading(true);
+    setError(null);
+    const token = getToken();
+    if (!token) return router.push("/login");
+
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/availability`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/availability/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch availability");
       const data = await res.json();
-      console.log("Schedule", data)
-      const formatted: DayAvailability[] = Array.isArray(data.times)
-        ? data.times.map((t: any) => ({
-            id: t.day_of_week,
-            start_time: t.start_time?.slice(0, 5) ?? "",
-            end_time: t.end_time?.slice(0, 5) ?? "",
-          }))
-        : [];
-      setSchedule(formatted);
+
+      setAvailability(data.map((a: any) => ({
+        id:                 a._id,
+        day_of_week:        a.day_of_week,
+        start_time:         a.start_time,
+        end_time:           a.end_time,
+        is_available:       a.is_available,
+        slot_duration_mins: a.slot_duration_mins,
+        buffer_mins:        a.buffer_mins ?? 0,
+      })));
     } catch (err) {
       console.error(err);
-      setError("Failed to fetch availability");
+      setError("Failed to load availability");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchSpecialDays = async (date?: string) => {
+  useEffect(() => { fetchAvailability(); }, []);
+
+  const handleEdit = (entry: AvailabilityEntry) => {
+    setEditId(entry.id);
+    setEditForm({
+      start_time:         entry.start_time,
+      end_time:           entry.end_time,
+      slot_duration_mins: entry.slot_duration_mins.toString(),
+      buffer_mins:        entry.buffer_mins.toString(),
+    });
+  };
+
+  const handleSave = async (id: string) => {
+    const token = getToken();
+    setSaving(true);
     try {
-      const url = date
-        ? `${process.env.NEXT_PUBLIC_API_URL}/api/special-days?date=${date}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/api/special-days`;
-        const res = await fetch(url);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/availability/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          start_time:         editForm.start_time,
+          end_time:           editForm.end_time,
+          slot_duration_mins: Number(editForm.slot_duration_mins),
+          buffer_mins:        Number(editForm.buffer_mins),
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to update");
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch special days");
-        }
-        
-        const data = await res.json();
-      setSpecialDays(Array.isArray(data) ? data : []);
+      // ✅ buffer_mins now included in state update
+      setAvailability((prev) =>
+        prev.map((a) =>
+          a.id === id ? {
+            ...a,
+            start_time:         editForm.start_time,
+            end_time:           editForm.end_time,
+            slot_duration_mins: Number(editForm.slot_duration_mins),
+            buffer_mins:        Number(editForm.buffer_mins),
+          } : a
+        )
+      );
+      setEditId(null);
     } catch (err) {
       console.error(err);
-      setSpecialDays([]);
+      alert("Failed to save");
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleTimeChange = (id: number, field: "start_time" | "end_time", value: string) => {
-    setSchedule((prev) => prev.map((d) => (d.id === id ? { ...d, [field]: value } : d)));
+  const handleToggle = async (id: string, current: boolean) => {
+    const token = getToken();
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/availability/${id}/toggle`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to toggle");
+      setAvailability((prev) =>
+        prev.map((a) => a.id === id ? { ...a, is_available: !current } : a)
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to toggle availability");
+    }
   };
 
-  const updateDay = async (day: DayAvailability) => {
-    const toMinutes = (t: string) => {
-      const [h, m] = t.split(":").map(Number);
-      return h * 60 + m;
-    };
-    
-    if (toMinutes(day.start_time) >= toMinutes(day.end_time)) {
-      alert("Start time must be before end time");
+  const handleDelete = async (id: string) => {
+    if (!confirm("Remove this day's availability?")) return;
+    const token = getToken();
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/availability/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to delete");
+      setAvailability((prev) => prev.filter((a) => a.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete");
+    }
+  };
+
+  const handleAdd = async () => {
+    setAddError(null);
+    if (!addForm.day_of_week || !addForm.start_time || !addForm.end_time) {
+      setAddError("Day, start time and end time are required.");
       return;
     }
+    const token = getToken();
+    setAdding(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/availability/${day.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(day),
-      });
-      if (!res.ok) throw new Error("Failed to update day");
-      alert(`${daysOfWeek[day.id]} updated successfully`);
-    } catch (err: any) {
-      console.error(err);
-      alert(err.message);
-    }
-  };
-
-  const handleNewSpecialChange = (field: keyof Omit<SpecialDay, "id">, value: any) => {
-    setNewSpecialDay((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const createSpecialDay = async () => {
-    try {
-      if (!newSpecialDay.date && newSpecialDay.day_of_week === null) {
-        alert("Please provide a date or day of week");
-        return;
-      }
-
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/special-days`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/availability`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newSpecialDay),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          day_of_week:        Number(addForm.day_of_week),
+          start_time:         addForm.start_time,
+          end_time:           addForm.end_time,
+          slot_duration_mins: Number(addForm.slot_duration_mins) || 60,
+          buffer_mins:        Number(addForm.buffer_mins) || 0,
+        }),
       });
+      if (!res.ok) throw new Error("Failed to add availability");
 
-      if (!res.ok) throw new Error("Failed to create special day");
+      const { availability: newEntry } = await res.json();
 
-      alert("Special day created successfully!");
-      setNewSpecialDay({ date: "", day_of_week: null, is_recurring: false, is_closed: true, reason: "" });
-      fetchSpecialDays();
-    } catch (err: any) {
+      // ✅ buffer_mins included in new entry
+      setAvailability((prev) =>
+        [...prev, {
+          id:                 newEntry._id,
+          day_of_week:        newEntry.day_of_week,
+          start_time:         newEntry.start_time,
+          end_time:           newEntry.end_time,
+          is_available:       newEntry.is_available,
+          slot_duration_mins: newEntry.slot_duration_mins,
+          buffer_mins:        newEntry.buffer_mins ?? 0,
+        }].sort((a, b) => a.day_of_week - b.day_of_week)
+      );
+
+      // ✅ reset includes buffer_mins
+      setAddForm({ day_of_week: "", start_time: "", end_time: "", slot_duration_mins: "60", buffer_mins: "0" });
+      setShowAddModal(false);
+    } catch (err) {
       console.error(err);
-      alert(err.message);
+      setAddError("Failed to add availability");
+    } finally {
+      setAdding(false);
     }
   };
 
-  const deleteSpecialDay = async (id: number) => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/special-days/${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error("Failed to delete special day");
+  const inputClass = "w-full rounded bg-neutral-800 border border-neutral-700 text-white text-sm p-2 focus:border-[#D4AF37] outline-none";
 
-      alert("Special day deleted successfully!");
-      fetchSpecialDays();
-    } catch (err: any) {
-      console.error(err);
-      alert(err.message);
-    }
-  };
-
-  if (loading) return <p className="text-center mt-4">Loading...</p>;
-  if (error) return <p className="text-center text-red-600 mt-4">{error}</p>;
+  if (loading) return <p className="text-white">Loading availability...</p>;
+  if (error)   return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-800 p-6 space-y-10 max-w-5xl mx-auto">
-      {/* Weekly Availability */}
-      <section className="bg-gray-50 shadow-md rounded p-6">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-900">Weekly Availability</h2>
-        <table className="min-w-full border border-gray-300 rounded overflow-hidden bg-white">
-          <thead className="bg-gray-200 text-gray-800">
-            <tr>
-              <th className="px-4 py-2 border-b">Day</th>
-              {/* <th className="px-4 py-2 border-b">Enabled</th> */}
-              <th className="px-4 py-2 border-b">Start</th>
-              <th className="px-4 py-2 border-b">End</th>
-              <th className="px-4 py-2 border-b">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {schedule.map((day) => (
-              <tr key={day.id} className="hover:bg-gray-100">
-                <td className="px-4 py-2 border-b">{daysOfWeek[day.id]}</td>
-                {/* <td className="px-4 py-2 border-b text-center">
-                  <input type="checkbox" checked={day.enabled} onChange={() => handleToggleDay(day.id)} />
-                </td> */}
-                <td className="px-4 py-2 border-b">
-                  <input
-                    type="time"
-                    value={day.start_time}
-                    onChange={(e) => handleTimeChange(day.id, "start_time", e.target.value)}
-                    // disabled={!day.enabled}
-                    className="border rounded px-2 py-1 w-full text-gray-800"
-                  />
-                </td>
-                <td className="px-4 py-2 border-b">
-                  <input
-                    type="time"
-                    value={day.end_time}
-                    onChange={(e) => handleTimeChange(day.id, "end_time", e.target.value)}
-                    // disabled={!day.enabled}
-                    className="border rounded px-2 py-1 w-full text-gray-800"
-                  />
-                </td>
-                <td className="px-4 py-2 border-b text-center">
-                  <button
-                    onClick={() => updateDay(day)}
-                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                  >
-                    Update
-                  </button>
-                </td>
-              </tr>
+    <>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">Manage Availability</h1>
+        <button
+          onClick={() => { setShowAddModal(true); setAddError(null); }}
+          disabled={availableDays.length === 0}
+          className="bg-[#D4AF37] text-black px-4 py-2 rounded font-semibold w-full sm:w-auto hover:opacity-90 transition disabled:opacity-40"
+        >
+          + Add Day
+        </button>
+      </div>
+
+      {/* Add Modal */}
+      {showAddModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAddModal(false); }}
+        >
+          <div className="bg-neutral-900 rounded-xl p-6 w-full max-w-md relative">
+            <button onClick={() => setShowAddModal(false)} className="absolute top-3 right-4 text-gray-400 hover:text-white text-lg font-bold">×</button>
+            <h2 className="text-xl font-bold text-[#D4AF37] mb-4">Add Availability</h2>
+
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="text-xs text-neutral-400 mb-1 block">Day *</label>
+                <select className={inputClass} value={addForm.day_of_week} onChange={(e) => setAddForm({ ...addForm, day_of_week: e.target.value })}>
+                  <option value="">Select Day</option>
+                  {availableDays.map((d) => (
+                    <option key={d} value={d}>{DAY_NAMES[d]}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="text-xs text-neutral-400 mb-1 block">Start Time *</label>
+                  <input type="time" className={inputClass} value={addForm.start_time} onChange={(e) => setAddForm({ ...addForm, start_time: e.target.value })} />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs text-neutral-400 mb-1 block">End Time *</label>
+                  <input type="time" className={inputClass} value={addForm.end_time} onChange={(e) => setAddForm({ ...addForm, end_time: e.target.value })} />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-neutral-400 mb-1 block">Default Slot Duration (mins)</label>
+                <input type="number" className={inputClass} value={addForm.slot_duration_mins} onChange={(e) => setAddForm({ ...addForm, slot_duration_mins: e.target.value })} />
+                <p className="text-xs text-neutral-500 mt-1">Used when a service has no duration set</p>
+              </div>
+
+              {/* ✅ Buffer input in add modal */}
+              <div>
+                <label className="text-xs text-neutral-400 mb-1 block">Buffer Time (mins)</label>
+                <input type="number" className={inputClass} value={addForm.buffer_mins} onChange={(e) => setAddForm({ ...addForm, buffer_mins: e.target.value })} />
+                <p className="text-xs text-neutral-500 mt-1">Gap between bookings e.g. 15 = travel/prep time</p>
+              </div>
+            </div>
+
+            {addError && <p className="text-red-500 text-sm mt-3">{addError}</p>}
+
+            <div className="flex gap-2 mt-4">
+              <button onClick={handleAdd} disabled={adding} className="bg-[#D4AF37] text-black px-4 py-2 rounded font-semibold hover:opacity-90 disabled:opacity-50">
+                {adding ? "Adding..." : "Add Day"}
+              </button>
+              <button onClick={() => setShowAddModal(false)} className="bg-neutral-700 text-white px-4 py-2 rounded hover:bg-neutral-600">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Availability List */}
+      {availability.length === 0 ? (
+        <p className="text-neutral-400">No availability set up yet.</p>
+      ) : (
+        <div className="space-y-4">
+          {[...availability]
+            .sort((a, b) => a.day_of_week - b.day_of_week)
+            .map((entry) => (
+              <div
+                key={entry.id}
+                className={`bg-neutral-900 p-4 rounded-lg border ${
+                  entry.is_available ? "border-neutral-800" : "border-red-900 opacity-60"
+                }`}
+              >
+                {editId === entry.id ? (
+                  /* Edit Mode */
+                  <div className="flex flex-col gap-3">
+                    <p className="font-semibold text-[#D4AF37]">{DAY_NAMES[entry.day_of_week]}</p>
+                    <div className="flex gap-3">
+                      <div className="flex-1">
+                        <label className="text-xs text-neutral-400 mb-1 block">Start Time</label>
+                        <input type="time" className={inputClass} value={editForm.start_time} onChange={(e) => setEditForm({ ...editForm, start_time: e.target.value })} />
+                      </div>
+                      <div className="flex-1">
+                        <label className="text-xs text-neutral-400 mb-1 block">End Time</label>
+                        <input type="time" className={inputClass} value={editForm.end_time} onChange={(e) => setEditForm({ ...editForm, end_time: e.target.value })} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Default Slot Duration (mins)</label>
+                      <input type="number" className={inputClass} value={editForm.slot_duration_mins} onChange={(e) => setEditForm({ ...editForm, slot_duration_mins: e.target.value })} />
+                    </div>
+
+                    {/* ✅ Buffer input in edit mode */}
+                    <div>
+                      <label className="text-xs text-neutral-400 mb-1 block">Buffer Time (mins)</label>
+                      <input type="number" className={inputClass} value={editForm.buffer_mins} onChange={(e) => setEditForm({ ...editForm, buffer_mins: e.target.value })} />
+                      <p className="text-xs text-neutral-500 mt-1">Gap between bookings e.g. 15 = travel/prep time</p>
+                    </div>
+
+                    <div className="flex gap-2 mt-1">
+                      <button onClick={() => handleSave(entry.id)} disabled={saving} className="bg-[#D4AF37] text-black px-4 py-1.5 rounded text-sm font-semibold hover:opacity-90 disabled:opacity-50">
+                        {saving ? "Saving..." : "Save"}
+                      </button>
+                      <button onClick={() => setEditId(null)} className="bg-neutral-700 text-white px-4 py-1.5 rounded text-sm hover:bg-neutral-600">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* View Mode */
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                    <div>
+                      <p className="font-semibold text-lg text-white">{DAY_NAMES[entry.day_of_week]}</p>
+                      <p className="text-gray-400 text-sm">{entry.start_time} – {entry.end_time}</p>
+                      <p className="text-gray-400 text-sm">
+                        Slot: {entry.slot_duration_mins} mins
+                        {entry.buffer_mins > 0 && ` · ${entry.buffer_mins} min buffer`} {/* ✅ */}
+                      </p>
+                      <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${
+                        entry.is_available ? "bg-green-900 text-green-300" : "bg-red-900 text-red-300"
+                      }`}>
+                        {entry.is_available ? "Available" : "Unavailable"}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button onClick={() => handleEdit(entry)} className="bg-[#D4AF37] text-black px-3 py-1.5 rounded text-sm font-semibold hover:opacity-90">Edit</button>
+                      <button onClick={() => handleToggle(entry.id, entry.is_available)} className="bg-neutral-700 text-white px-3 py-1.5 rounded text-sm hover:bg-neutral-600">
+                        {entry.is_available ? "Mark Unavailable" : "Mark Available"}
+                      </button>
+                      <button onClick={() => handleDelete(entry.id)} className="bg-red-700 text-white px-3 py-1.5 rounded text-sm hover:bg-red-600">Remove</button>
+                    </div>
+                  </div>
+                )}
+              </div>
             ))}
-          </tbody>
-        </table>
-      </section>
-
-      {/* Special Days */}
-      <section className="bg-gray-50 shadow-md rounded p-6">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-900">Set Special Days</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label className="flex flex-col text-gray-800">
-            Date:
-            <input
-              type="date"
-              value={newSpecialDay.date ?? ""}
-              onChange={(e) => handleNewSpecialChange("date", e.target.value)}
-              className="border rounded px-2 py-1 mt-1 text-gray-800"
-            />
-          </label>
-          {/* <label className="flex flex-col text-gray-800">
-            Day of Week:
-            <select
-              value={newSpecialDay.day_of_week ?? ""}
-              onChange={(e) =>
-                handleNewSpecialChange("day_of_week", e.target.value === "" ? null : Number(e.target.value))
-              }
-              className="border rounded px-2 py-1 mt-1 text-gray-800"
-            >
-              <option value="">--Select--</option>
-              {daysOfWeek.map((day, idx) => (
-                <option key={idx} value={idx}>
-                  {day}
-                </option>
-              ))}
-            </select>
-          </label> */}
-          {/* <label className="flex items-center gap-2 text-gray-800">
-            <input
-              type="checkbox"
-              checked={newSpecialDay.is_recurring}
-              onChange={(e) => handleNewSpecialChange("is_recurring", e.target.checked)}
-            />
-            Recurring
-          </label> */}
-          <label className="flex items-center gap-2 text-gray-800">
-            <input
-              type="checkbox"
-              checked={newSpecialDay.is_closed}
-              onChange={(e) => handleNewSpecialChange("is_closed", e.target.checked)}
-            />
-            Closed
-          </label>
-          <label className="flex flex-col md:col-span-2 text-gray-800">
-            Reason:
-            <input
-              type="text"
-              value={newSpecialDay.reason ?? ""}
-              onChange={(e) => handleNewSpecialChange("reason", e.target.value)}
-              className="border rounded px-2 py-1 mt-1 text-gray-800 w-full"
-            />
-          </label>
-          <button
-            onClick={createSpecialDay}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 md:col-span-2"
-          >
-            Save Special Day
-          </button>
         </div>
-      </section>
-
-      {/* Existing Special Days */}
-      <section className="bg-gray-50 shadow-md rounded p-6">
-        <h2 className="text-2xl font-semibold mb-4 text-gray-900">Existing Special Days</h2>
-        <div className="flex items-center gap-2 mb-4">
-          <label className="flex items-center gap-2 text-gray-800">
-            Show special days for date:
-            <input
-              type="date"
-              value={filterDate ?? ""}
-              onChange={(e) => {
-                setFilterDate(e.target.value);
-                fetchSpecialDays(e.target.value);
-              }}
-              className="border rounded px-2 py-1 text-gray-800"
-            />
-          </label>
-          <button
-            onClick={() => fetchSpecialDays(filterDate)}
-            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-          >
-            Refresh
-          </button>
-        </div>
-
-        <table className="min-w-full border border-gray-300 rounded overflow-hidden bg-white">
-          <thead className="bg-gray-200 text-gray-800">
-            <tr>
-              <th className="px-4 py-2 border-b">Date</th>
-              <th className="px-4 py-2 border-b">Day of Week</th>
-              <th className="px-4 py-2 border-b">Recurring</th>
-              <th className="px-4 py-2 border-b">Closed</th>
-              <th className="px-4 py-2 border-b">Reason</th>
-              <th className="px-4 py-2 border-b">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Array.isArray(specialDays) && specialDays.length > 0 ? (
-              specialDays.map((sd) => (
-                <tr key={sd.id} className="hover:bg-gray-100">
-                  <td className="px-4 py-2 border-b">{sd.date ? new Date(sd.date).toLocaleDateString() : "-"}</td>
-                  <td className="px-4 py-2 border-b">{sd.day_of_week !== null ? daysOfWeek[sd.day_of_week] : "-"}</td>
-                  <td className="px-4 py-2 border-b">{sd.is_recurring ? "Yes" : "No"}</td>
-                  <td className="px-4 py-2 border-b">{sd.is_closed ? "Yes" : "No"}</td>
-                  <td className="px-4 py-2 border-b">{sd.reason ?? "-"}</td>
-                  <td className="px-4 py-2 border-b text-center">
-                    <button
-                      onClick={() => deleteSpecialDay(sd.id)}
-                      className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={6} className="text-center py-4 text-gray-500">
-                  No special days found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </section>
-    </div>
+      )}
+    </>
   );
 }

@@ -1,312 +1,299 @@
 'use client';
 
-import React from "react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import React from "react";
 
-
-interface Bookings {
-    id: number;
-    name: string;
-    booking_date: string,
-    start_time: string;
-    client_name: string,
-    client_email: string,
-    client_phone: string,
-    location: string,
-    notes: string,
-    total_amount: string,
-    payment_status: string,
-    created_at: string,
+interface ServiceInfo {
+  id: string;
+  name: string;
+  duration?: number;
+  base_price: number;
+  category: string;
 }
 
-  
+interface Booking {
+  id: string;
+  service: ServiceInfo;
+  booking_date: string;
+  start_time: string;
+  client_name: string;
+  client_email: string;
+  client_phone: string;
+  location: string;
+  notes?: string;
+  total_amount: number;
+  payment_status: "pending" | "paid" | "cancelled" | "refunded";
+  booking_status: "pending" | "confirmed" | "completed" | "cancelled";
+  agreed_to_terms: boolean;
+  createdAt: string;
+}
+
+const PAYMENT_COLORS: Record<string, string> = {
+  pending:   "bg-yellow-900 text-yellow-300",
+  paid:      "bg-green-900 text-green-300",
+  cancelled: "bg-red-900 text-red-300",
+  refunded:  "bg-blue-900 text-blue-300",
+};
+
+const BOOKING_COLORS: Record<string, string> = {
+  pending:   "bg-yellow-900 text-yellow-300",
+  confirmed: "bg-green-900 text-green-300",
+  completed: "bg-blue-900 text-blue-300",
+  cancelled: "bg-red-900 text-red-300",
+};
+
 export default function Bookings() {
-    const [booking, setBookings] = useState<Bookings[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-    const [viewId, setViewId] = useState<number | null>(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const rowsPerPage = 10;
+  const [bookings, setBookings]   = useState<Booking[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState<string | null>(null);
+  const [viewId, setViewId]       = useState<string | null>(null);
+  const [filter, setFilter]       = useState<string>("all");
+  const router = useRouter();
 
-    const indexOfLastRow = currentPage * rowsPerPage;
-    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const getToken = () =>
+    localStorage.getItem("token") || sessionStorage.getItem("token");
 
-    const currentBookings = booking.slice(indexOfFirstRow, indexOfLastRow);
-    const totalPages = Math.max(1, Math.ceil(booking.length / rowsPerPage));
+  const fetchBookings = async () => {
+    setLoading(true);
+    setError(null);
+    const token = getToken();
+    if (!token) return router.push("/login");
 
-    const fetchBookings = async () => {
-        setLoading(true);
-    
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`);
-          if (!res.ok) throw new Error("Failed to fetch bookings");
-          const data = await res.json();
-          const mapped = data.map((book: any) => ({
-            id: book.id,
-            name: book.name,
-            booking_date: book.booking_date,
-            start_time: book.start_time,
-            client_name: book.client_name,
-            client_email: book.client_email,
-            client_phone: book.client_phone,
-            location: book.location,
-            notes: book.notes,
-            total_amount: book.total_amount,
-            payment_status: book.payment_status,
-            created_at: book.created_at,   
-          }));      
-          setBookings(mapped);
-        } catch (err) {
-          console.error(err);
-          setError("Failed to load bookings");
-        } finally {
-          setLoading(false);
-        }
-    };
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/booking`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch bookings");
+      const data = await res.json();
 
-    const handleDeleteBooking = async (id: number) => {
-        try {
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/bookings/${id}`,
-            { method: "DELETE" }
-          );
-      
-          if (!res.ok) throw new Error("Failed to delete");
-      
-          setBookings(prev => {
-            const updated = prev.filter(b => b.id !== id);
-      
-            const newTotalPages = Math.ceil(updated.length / rowsPerPage);
-            if (currentPage > newTotalPages) {
-              setCurrentPage(newTotalPages || 1);
-            }
-      
-            return updated;
-          });
-      
-        } catch (err) {
-          console.error(err);
-        }
-      };
-    
-    const handleViewToggle = (id: number) => {
-    setViewId(prev => (prev === id ? null : id));
-    };
+      setBookings(data.map((b: any) => ({
+        id:             b._id,
+        service: {
+          id:        b.service_id?._id,
+          name:      b.service_id?.name,
+          duration:  b.service_id?.duration,
+          base_price: b.service_id?.base_price,
+          category:  b.service_id?.category,
+        },
+        booking_date:    b.booking_date,
+        start_time:      b.start_time,
+        client_name:     b.client_name,
+        client_email:    b.client_email,
+        client_phone:    b.client_phone,
+        location:        b.location,
+        notes:           b.notes,
+        total_amount:    b.total_amount,
+        payment_status:  b.payment_status,
+        booking_status:  b.booking_status,
+        agreed_to_terms: b.agreed_to_terms,
+        createdAt:       b.createdAt,
+      })));
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load bookings");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const formatDate = (date: string) =>
-        new Date(date).toLocaleDateString();
-      
-    const formatTime = (time: string) => {
-        const [h, m] = time.split(":");
-        const hour = Number(h);
-        const ampm = hour >= 12 ? "PM" : "AM";
-        return `${hour % 12 || 12}:${m} ${ampm}`;
-    };
+  useEffect(() => { fetchBookings(); }, []);
 
-    useEffect(() => {
-    fetchBookings();
-    }, []);
+  const updateBookingStatus = async (id: string, booking_status: string) => {
+    const token = getToken();
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ booking_status }),
+      });
+      if (!res.ok) throw new Error("Failed to update status");
+      setBookings((prev) =>
+        prev.map((b) => b.id === id ? { ...b, booking_status: booking_status as Booking["booking_status"] } : b)
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update booking status");
+    }
+  };
 
-    useEffect(() => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }, [currentPage]);
+  const updatePaymentStatus = async (id: string, payment_status: string) => {
+    const token = getToken();
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/${id}/payment`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ payment_status }),
+      });
+      if (!res.ok) throw new Error("Failed to update payment");
+      setBookings((prev) =>
+        prev.map((b) => b.id === id ? { ...b, payment_status: payment_status as Booking["payment_status"] } : b)
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update payment status");
+    }
+  };
 
-    return (
-        <>
-        {loading ? (
-          <p>Loading Bookings...</p>
-        ) : error ? (
-          <p className="text-red-500">{error}</p>
-        ) : booking.length === 0 ? (
-          <p>No bookings yet.</p>
-        ) : (
-          <>
-            {/* Mobile Messages */}
-            <div className="sm:hidden space-y-4 mb-6">
-                {currentBookings.map((book) => (
-                  <div key={book.id} className="bg-[#1a1a1a] p-4 rounded border border-neutral-800">
-                    
-                    <p className="text-sm text-neutral-400">Booking ID</p>
-                    <p className="mb-2">{book.id}</p>
+  const deleteBooking = async (id: string) => {
+    if (!confirm("Delete this booking?")) return;
+    const token = getToken();
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to delete");
+      setBookings((prev) => prev.filter((b) => b.id !== id));
+      if (viewId === id) setViewId(null);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete booking");
+    }
+  };
 
-                    <p className="text-sm text-neutral-400">Service</p>
-                    <p className="mb-2">{book.name}</p>
-  
-                    <p className="text-sm text-neutral-400">Booking Date</p>
-                    <p className="mb-2">{formatDate(book.booking_date)}</p>
-  
-                    <p className="text-sm text-neutral-400">Booking Time</p>
-                    <p className="mb-2 break-all">{formatTime(book.start_time)}</p>
-  
-                    <p className="text-sm text-neutral-400">Client Name</p>
-                    <p className="mb-2">{book.client_name}</p>
-  
-                    <p className="text-sm text-neutral-400">Client Email</p>
-                    <p className="mb-2">{book.client_email}</p>
-  
-                    <p className="text-sm text-neutral-400">Client Phone</p>
-                    <p className="mb-3 capitalize">{book.client_phone}</p>
+  const formatTime = (time: string) => {
+    const [h, m] = time.split(":");
+    const hour = Number(h);
+    return `${hour % 12 || 12}:${m} ${hour >= 12 ? "PM" : "AM"}`;
+  };
 
-                    <p className="text-sm text-neutral-400">Booking location</p>
-                    <p className="mb-3 capitalize">{book.location}</p>
+  const filtered = filter === "all"
+    ? bookings
+    : bookings.filter((b) => b.booking_status === filter);
 
-                    <p className="text-sm text-neutral-400">Booking Notes</p>
-                    <p className="mb-3 capitalize">{book.notes}</p>
+  if (loading) return <p className="text-white">Loading bookings...</p>;
+  if (error)   return <p className="text-red-500">{error}</p>;
 
-                    {/* <p className="text-sm text-neutral-400">Payment status</p>
-                    <p className="mb-3 capitalize">{book.payment_status}</p> */}
-  
-                    <p className="text-sm text-neutral-400">Created At</p>
-                    <p className="mb-3">{new Date(book.created_at).toLocaleString()}</p>
+  return (
+    <>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">Manage Bookings</h1>
+        <span className="text-neutral-400 text-sm">{bookings.length} total</span>
+      </div>
 
-                    <div className="flex flex-wrap gap-2">  
-                        <button
-                            onClick={() => handleDeleteBooking(book.id)}
-                            className="bg-red-600 px-3 py-1 rounded"
-                        >
-                            Delete
-                        </button>
-  
+      {/* Filter tabs */}
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {["all", "pending", "confirmed", "completed", "cancelled"].map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-3 py-1.5 rounded text-sm capitalize transition ${
+              filter === f
+                ? "bg-[#D4AF37] text-black font-semibold"
+                : "bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+            }`}
+          >
+            {f}
+          </button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
+        <p className="text-neutral-400">No bookings found.</p>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map((booking) => (
+            <React.Fragment key={booking.id}>
+              <div className="bg-neutral-900 p-4 rounded-lg border border-neutral-800">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+
+                  {/* Info */}
+                  <div className="space-y-1">
+                    <p className="font-semibold text-white text-lg">{booking.client_name}</p>
+                    <p className="text-gray-400 text-sm">{booking.client_email} · {booking.client_phone}</p>
+                    <p className="text-gray-400 text-sm">
+                      {booking.service?.name}
+                      {booking.service?.duration ? ` (${booking.service.duration} mins)` : ""}
+                      {" · "}{booking.service?.category}
+                    </p>
+                    <p className="text-[#D4AF37] font-medium">${booking.total_amount}</p>
+                    <p className="text-gray-400 text-sm">
+                      {booking.booking_date} at {formatTime(booking.start_time)}
+                    </p>
+
+                    {/* Status badges */}
+                    <div className="flex gap-2 flex-wrap mt-1">
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${BOOKING_COLORS[booking.booking_status]}`}>
+                        {booking.booking_status}
+                      </span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${PAYMENT_COLORS[booking.payment_status]}`}>
+                        {booking.payment_status}
+                      </span>
                     </div>
                   </div>
-                ))}
-            </div>
-            {/* Desktop Table */}
-            <div className="hidden sm:block overflow-x-auto rounded-lg border border-neutral-800 mb-6">
-              <table className="w-full text-sm border-collapse">
-                <thead className="bg-[#2c2c2c] text-white">
-                  <tr>
-                    <th className="py-3 px-4 w-[70px]">ID</th>
-                    <th className="py-3 px-4 w-[90px]">Service</th>
-                    <th className="py-3 px-4 w-[110px]">Date</th>
-                    <th className="py-3 px-4 w-[90px]">Time</th>
-                    <th className="py-3 px-4 w-[140px]">Name</th>
-                    <th className="py-3 px-4 w-[180px]">Email</th>
-                    <th className="py-3 px-4 w-[120px]">Phone</th>
-                    <th className="py-3 px-4 w-[180px]">Location</th>
-                    <th className="py-3 px-4 w-[200px]">Notes</th>
-                    {/* <th className="py-3 px-4 w-[100px]">Status</th> */}
-                    <th className="py-3 px-4 w-[150px]">Created</th>
-                    <th className="py-3 px-4 w-[130px] text-center">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                {currentBookings.map((book, idx) => (
-                  <React.Fragment key={book.id}>
-                    {/* Main Row */}
-                    <tr className={`${idx % 2 === 0 ? "bg-black" : "bg-[#1a1a1a]"} hover:bg-[#2a2a2a]`}>
-                      <td className="py-2 px-4 truncate max-w-[70px]">{book.id}</td>
-                      <td className="py-2 px-4 truncate max-w-[90px]">{book.name}</td>
-                      <td className="py-2 px-4 truncate max-w-[110px]">{formatDate(book.booking_date)}</td>
-                      <td className="py-2 px-4 truncate max-w-[120px]">{formatTime(book.start_time)}</td>
-                      <td className="py-2 px-4 truncate max-w-[120px]">{book.client_name}</td>
-                      <td className="py-2 px-4 truncate max-w-[120px]">{book.client_email}</td>
-                      <td className="py-2 px-4 truncate max-w-[120px]">{book.client_phone}</td>
-                      <td className="py-2 px-4 truncate max-w-[120px]">{book.location}</td>
-                      <td className="py-2 px-4 truncate max-w-[120px]">{book.notes}</td>
-                      {/* <td className={`capitalize ${
-                        book.payment_status === "paid"
-                            ? "text-green-400"
-                            : "text-yellow-400"
-                        }`}>
-                        {book.payment_status}
-                      </td> */}
-                      <td className="py-2 px-4 whitespace-nowrap">
-                        {new Date(book.created_at).toLocaleString()}
-                      </td>
-  
-                      <td className="py-2 px-4 text-center space-x-2">
-  
-                        <button
-                            onClick={() => handleDeleteBooking(book.id)}
-                            className="bg-red-600 px-3 py-1 rounded"
-                        >
-                            Delete
-                        </button>
-  
-                        <button
-                          onClick={() => handleViewToggle(book.id)}
-                          className="bg-gray-700 px-3 py-1 rounded"
-                        >
-                          {viewId === book.id ? "Hide" : "View"}
-                        </button>
-                      </td>
-                    </tr>
-  
-                    {/* Expanded View Row */}
-                    {viewId === book.id && (
-                        <tr className="bg-[#111]">
-                            <td colSpan={12} className="p-6">
-                            <div className="bg-[#1a1a1a] p-6 rounded-lg border border-neutral-800">
-                                <h3 className="text-lg font-semibold text-[#D4AF37] mb-4">
-                                Booking Details
-                                </h3>
 
-                                <div className="grid md:grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <p className="text-neutral-400">Client Name</p>
-                                    <p>{book.client_name}</p>
-                                </div>
-
-                                <div>
-                                    <p className="text-neutral-400">Email</p>
-                                    <p>{book.client_email || "-"}</p>
-                                </div>
-
-                                <div>
-                                    <p className="text-neutral-400">Phone</p>
-                                    <p>{book.client_phone || "-"}</p>
-                                </div>
-
-                                <div>
-                                    <p className="text-neutral-400">Service</p>
-                                    <p className="capitalize">{book.name}</p>
-                                </div>
-
-                                {/* <div>
-                                    <p className="text-neutral-400">Status</p>
-                                    <p className="capitalize">{book.payment_status}</p>
-                                </div> */}
-                                </div>
-
-                                <div className="mt-4">
-                                <p className="text-neutral-400 mb-1">Notes</p>
-                                <p>{book.notes || "-"}</p>
-                                </div>
-                            </div>
-                            </td>
-                        </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-  
-                </tbody>
-              </table>
-            </div>
-            <div className="flex justify-between items-center mt-4">
-                <button
-                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 bg-gray-700 rounded disabled:opacity-50"
-                >
-                    Prev
-                </button>
-
-                <span className="text-sm text-neutral-400">
-                    Showing {indexOfFirstRow + 1}–
-                    {Math.min(indexOfLastRow, booking.length)} of {booking.length}
-                </span>
-
-                <button
-                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 bg-gray-700 rounded disabled:opacity-50"
-                >
-                    Next
-                </button>
+                  {/* Actions */}
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setViewId(viewId === booking.id ? null : booking.id)}
+                      className="bg-neutral-700 text-white px-3 py-1.5 rounded text-sm hover:bg-neutral-600"
+                    >
+                      {viewId === booking.id ? "Hide" : "View"}
+                    </button>
+                    <button
+                      onClick={() => deleteBooking(booking.id)}
+                      className="bg-red-700 text-white px-3 py-1.5 rounded text-sm hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-          </>
-        )}
-      </>
-    )
+              </div>
+
+              {/* Expanded detail */}
+              {viewId === booking.id && (
+                <div className="bg-[#111] border border-neutral-800 rounded-lg p-6 -mt-2">
+                  <h3 className="text-[#D4AF37] font-semibold text-lg mb-4">Booking Details</h3>
+
+                  <div className="grid sm:grid-cols-2 gap-4 text-sm mb-4">
+                    <div><p className="text-neutral-400">Client</p><p>{booking.client_name}</p></div>
+                    <div><p className="text-neutral-400">Email</p><p>{booking.client_email}</p></div>
+                    <div><p className="text-neutral-400">Phone</p><p>{booking.client_phone}</p></div>
+                    <div><p className="text-neutral-400">Location</p><p>{booking.location}</p></div>
+                    <div><p className="text-neutral-400">Date & Time</p><p>{booking.booking_date} at {formatTime(booking.start_time)}</p></div>
+                    <div><p className="text-neutral-400">Service</p><p>{booking.service?.name}</p></div>
+                    <div><p className="text-neutral-400">Amount</p><p>${booking.total_amount}</p></div>
+                    <div><p className="text-neutral-400">Agreed to Terms</p><p>{booking.agreed_to_terms ? "Yes" : "No"}</p></div>
+                    {booking.notes && <div className="sm:col-span-2"><p className="text-neutral-400">Notes</p><p>{booking.notes}</p></div>}
+                  </div>
+
+                  {/* Status controls */}
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-neutral-400 text-xs mb-1">Booking Status</p>
+                      <select
+                        value={booking.booking_status}
+                        onChange={(e) => updateBookingStatus(booking.id, e.target.value)}
+                        className="w-full rounded bg-neutral-800 border border-neutral-700 text-white text-sm p-2 focus:border-[#D4AF37] outline-none"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                    <div>
+                      <p className="text-neutral-400 text-xs mb-1">Payment Status</p>
+                      <select
+                        value={booking.payment_status}
+                        onChange={(e) => updatePaymentStatus(booking.id, e.target.value)}
+                        className="w-full rounded bg-neutral-800 border border-neutral-700 text-white text-sm p-2 focus:border-[#D4AF37] outline-none"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="paid">Paid</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="refunded">Refunded</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      )}
+    </>
+  );
 }

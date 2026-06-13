@@ -11,6 +11,7 @@ interface ServiceOption {
   id: string;
   name: string;
   price: number;
+  duration?: number; 
 }
 
 interface FormData {
@@ -70,16 +71,16 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     return `${hour % 12 || 12}:${m} ${ampm}`;
   };
 
-  // Fetch services
   const fetchServices = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/services`);
       if (!res.ok) throw new Error("Failed to fetch services");
       const data: any[] = await res.json();
       setServices(data.map((s) => ({
-        id:    s._id,
-        name:  s.name,
-        price: s.base_price ?? 0,
+        id:       s._id,
+        name:     s.name,
+        price:    s.base_price ?? 0,
+        duration: s.duration, 
       })));
     } catch (err) {
       console.error(err);
@@ -87,13 +88,15 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     }
   };
 
-  // Fetch available slots for a date
-  const fetchAvailability = async (date: string) => {
+  const fetchAvailability = async (date: string, duration?: number) => {
     if (!date) return;
     try {
       setLoadingSlots(true);
+      const params = new URLSearchParams({ date });
+      if (duration) params.append("duration", duration.toString());
+
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/availability?date=${date}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/availability?${params}`
       );
       const data = await res.json();
 
@@ -102,7 +105,7 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
         return;
       }
 
-      setAvailableSlots(data.available_slots || []); // ✅ directly from response
+      setAvailableSlots(data.available_slots || []);
     } catch (err) {
       console.error(err);
       setAvailableSlots([]);
@@ -111,7 +114,6 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     }
   };
 
-  // Fetch location via geolocation
   const fetchLocation = async () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
@@ -139,16 +141,15 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     fetchLocation();
   }, []);
 
-  // Reset slots and refetch when date changes
   useEffect(() => {
     updateForm("start_time", "");
     setAvailableSlots([]);
     if (form.booking_date) {
-      fetchAvailability(form.booking_date); // ✅ only needs date
+      const selected = services.find((s) => s.id === form.service_id);
+      fetchAvailability(form.booking_date, selected?.duration); 
     }
-  }, [form.booking_date]);
+  }, [form.booking_date, form.service_id]);
 
-  // Create pending booking
   const handlePendingBooking = async (): Promise<string | null> => {
     setError(null);
     const { client_name, client_email, booking_date, start_time, service_id, agreed_to_terms } = form;
@@ -166,7 +167,7 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
 
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/booking`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -190,7 +191,6 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     }
   };
 
-  // Stripe checkout
   const handleStripeCheckout = async (bookingId: string) => {
     try {
       setLoading(true);
@@ -259,12 +259,14 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                   <input type="text"  placeholder="Full Name *"  value={form.client_name}  onChange={(e) => updateForm("client_name",  e.target.value)} required className={inputClass} />
                   <input type="email" placeholder="Email *"      value={form.client_email} onChange={(e) => updateForm("client_email", e.target.value)} required className={inputClass} />
                   <input type="tel"   placeholder="Phone"        value={form.client_phone} onChange={(e) => updateForm("client_phone", e.target.value)}         className={inputClass} />
-                  <input type="text"  placeholder="Location *"   value={form.location}     onChange={(e) => updateForm("location",     e.target.value)} required className={inputClass} />
+                  {/* <input type="text"  placeholder="Location *"   value={form.location}     onChange={(e) => updateForm("location",     e.target.value)} required className={inputClass} /> */}
 
                   <select value={form.service_id} onChange={(e) => updateForm("service_id", e.target.value)} required className={inputClass}>
                     <option value="">Select Service *</option>
                     {services.map((s) => (
-                      <option key={s.id} value={s.id}>{s.name} — ${s.price}</option>
+                      <option key={s.id} value={s.id}>
+                        {s.name} — ${s.price}{s.duration ? ` (${s.duration} mins)` : ""}
+                      </option>
                     ))}
                   </select>
 
@@ -285,9 +287,9 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                       className={inputClass}
                     >
                       <option value="">
-                        {loadingSlots            ? "Loading..." :
-                         !form.booking_date      ? "Select a date first" :
-                         availableSlots.length === 0 ? "No times available" :
+                        {loadingSlots                 ? "Loading..."             :
+                         !form.booking_date           ? "Select a date first"    :
+                         availableSlots.length === 0  ? "No times available"     :
                          "Select Time *"}
                       </option>
                       {availableSlots.map((slot) => (
@@ -324,9 +326,9 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                     <p><strong>Name:</strong> {form.client_name}</p>
                     <p><strong>Email:</strong> {form.client_email}</p>
                     {form.client_phone && <p><strong>Phone:</strong> {form.client_phone}</p>}
-                    <p><strong>Location:</strong> {form.location}</p>
+                    {/* <p><strong>Location:</strong> {form.location}</p> */}
                     <p><strong>Date & Time:</strong> {form.booking_date} at {formatTime(form.start_time)}</p>
-                    <p><strong>Service:</strong> {selectedService?.name}</p>
+                    <p><strong>Service:</strong> {selectedService?.name}{selectedService?.duration ? ` (${selectedService.duration} mins)` : ""}</p>
                     <p><strong>Price:</strong> ${selectedService?.price}</p>
                     {form.notes && <p><strong>Notes:</strong> {form.notes}</p>}
                   </div>
@@ -335,8 +337,11 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                     <button type="button" onClick={prevStep} className="rounded-lg border border-[#D4AF37] text-[#D4AF37] font-semibold py-2 px-4 hover:bg-[#D4AF37] hover:text-black transition">
                       ← Back
                     </button>
-                    <button type="submit" disabled={loading || !pendingBookingId} className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 px-4 hover:opacity-90 transition disabled:opacity-50">
+                    {/* <button type="submit" disabled={loading || !pendingBookingId} className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 px-4 hover:opacity-90 transition disabled:opacity-50">
                       {loading ? "Redirecting..." : "Pay with Stripe"}
+                    </button> */}
+                    <button type="submit" disabled={loading || !pendingBookingId} className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 px-4 hover:opacity-90 transition disabled:opacity-50">
+                      {loading ? "Redirecting..." : "Pay Later"}
                     </button>
                   </div>
                 </>
