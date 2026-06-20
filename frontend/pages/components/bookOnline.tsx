@@ -2,6 +2,10 @@
 
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
+interface Props {
+  onClose: () => void;
+}
+
 interface BookingModalProps {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
@@ -215,12 +219,21 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     }
   };
 
+  // const handleNext = async () => {
+  //   if (step === 1) {
+  //     const bookingId = await handlePendingBooking();
+  //     if (bookingId) { setPendingBookingId(bookingId); nextStep(); }
+  //   } else if (step === 2 && pendingBookingId) {
+  //     await handleStripeCheckout(pendingBookingId);
+  //   }
+  // };
+
   const handleNext = async () => {
     if (step === 1) {
       const bookingId = await handlePendingBooking();
       if (bookingId) { setPendingBookingId(bookingId); nextStep(); }
-    } else if (step === 2 && pendingBookingId) {
-      await handleStripeCheckout(pendingBookingId);
+    } else if (step === 2) {
+      closeModal();
     }
   };
 
@@ -340,8 +353,12 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                     {/* <button type="submit" disabled={loading || !pendingBookingId} className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 px-4 hover:opacity-90 transition disabled:opacity-50">
                       {loading ? "Redirecting..." : "Pay with Stripe"}
                     </button> */}
-                    <button type="submit" disabled={loading || !pendingBookingId} className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 px-4 hover:opacity-90 transition disabled:opacity-50">
-                      {loading ? "Redirecting..." : "Pay Later"}
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 px-4 hover:opacity-90 transition"
+                    >
+                      Exit
                     </button>
                   </div>
                 </>
