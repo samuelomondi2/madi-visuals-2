@@ -219,23 +219,23 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
     }
   };
 
-  // const handleNext = async () => {
-  //   if (step === 1) {
-  //     const bookingId = await handlePendingBooking();
-  //     if (bookingId) { setPendingBookingId(bookingId); nextStep(); }
-  //   } else if (step === 2 && pendingBookingId) {
-  //     await handleStripeCheckout(pendingBookingId);
-  //   }
-  // };
-
   const handleNext = async () => {
     if (step === 1) {
       const bookingId = await handlePendingBooking();
       if (bookingId) { setPendingBookingId(bookingId); nextStep(); }
-    } else if (step === 2) {
-      closeModal();
+    } else if (step === 2 && pendingBookingId) {
+      await handleStripeCheckout(pendingBookingId);
     }
   };
+
+  // const handleNext = async () => {
+  //   if (step === 1) {
+  //     const bookingId = await handlePendingBooking();
+  //     if (bookingId) { setPendingBookingId(bookingId); nextStep(); }
+  //   } else if (step === 2) {
+  //     closeModal();
+  //   }
+  // };
 
   const selectedService = services.find((s) => s.id === form.service_id);
   const inputClass = "rounded-lg bg-neutral-900 p-2 text-white text-sm border border-neutral-700 focus:border-[#D4AF37] outline-none";
@@ -350,16 +350,16 @@ export default function BookingModal({ open, setOpen }: BookingModalProps) {
                     <button type="button" onClick={prevStep} className="rounded-lg border border-[#D4AF37] text-[#D4AF37] font-semibold py-2 px-4 hover:bg-[#D4AF37] hover:text-black transition">
                       ← Back
                     </button>
-                    {/* <button type="submit" disabled={loading || !pendingBookingId} className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 px-4 hover:opacity-90 transition disabled:opacity-50">
+                    <button type="submit" disabled={loading || !pendingBookingId} className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 px-4 hover:opacity-90 transition disabled:opacity-50">
                       {loading ? "Redirecting..." : "Pay with Stripe"}
-                    </button> */}
-                    <button
+                    </button>
+                    {/* <button
                       type="button"
                       onClick={handleNext}
                       className="rounded-lg bg-[#D4AF37] text-black font-semibold py-2 px-4 hover:opacity-90 transition"
                     >
                       Exit
-                    </button>
+                    </button> */}
                   </div>
                 </>
               )}
