@@ -32,7 +32,7 @@ export default function ResetPasswordPage() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/reset-password?token=${token}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/reset-password?token=${token}`,
         {
           method: "POST",
           headers: {
