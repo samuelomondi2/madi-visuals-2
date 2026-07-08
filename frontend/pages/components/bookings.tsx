@@ -139,7 +139,7 @@ export default function Bookings() {
     if (!confirm("Delete this booking?")) return;
     const token = getToken();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/booking/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
