@@ -1,30 +1,34 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/router";
+import { useState, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation"; // ✅ App Router
 import { Eye, EyeOff } from "lucide-react";
 
-export default function ResetPasswordPage() {
-  const router = useRouter();
-  const { token } = router.query;
+function ResetPasswordForm() {
+  const searchParams = useSearchParams();
+  const router       = useRouter();
+  const token        = searchParams.get("token"); // ✅ App Router way to get query params
 
   const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [visible, setVisible] = useState(false);
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [error, setError] = useState("");
+  const [confirm, setConfirm]   = useState("");
+  const [visible, setVisible]   = useState(false);
+  const [status, setStatus]     = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [error, setError]       = useState("");
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!token || typeof token !== "string") {
+    if (!token) {
       setError("Invalid reset link");
       return;
     }
-
     if (password !== confirm) {
       setError("Passwords do not match");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
       return;
     }
 
@@ -32,12 +36,10 @@ export default function ResetPasswordPage() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/reset-password?token=${token}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/reset-password?token=${token}`, // ✅ correct route
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ password }),
         }
       );
@@ -51,11 +53,7 @@ export default function ResetPasswordPage() {
       }
 
       setStatus("success");
-
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
-
+      setTimeout(() => router.push("/login"), 2000);
     } catch (err) {
       setError("Something went wrong");
       setStatus("error");
@@ -66,13 +64,9 @@ export default function ResetPasswordPage() {
     <div style={styles.page}>
       <div style={styles.card}>
         <h1 style={styles.title}>Reset Password</h1>
-
-        <p style={styles.subtitle}>
-          Enter your new password below.
-        </p>
+        <p style={styles.subtitle}>Enter your new password below.</p>
 
         <form onSubmit={handleReset} style={styles.form}>
-          
           {/* Password */}
           <div style={styles.inputWrapper}>
             <input
@@ -83,11 +77,7 @@ export default function ResetPasswordPage() {
               required
               style={styles.input}
             />
-            <button
-              type="button"
-              onClick={() => setVisible(!visible)}
-              style={styles.iconButton}
-            >
+            <button type="button" onClick={() => setVisible(!visible)} style={styles.iconButton}>
               {visible ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
@@ -105,9 +95,7 @@ export default function ResetPasswordPage() {
           {error && <p style={styles.error}>{error}</p>}
 
           {status === "success" && (
-            <p style={styles.success}>
-              Password reset successful! Redirecting...
-            </p>
+            <p style={styles.success}>Password reset successful! Redirecting...</p>
           )}
 
           <button
@@ -123,7 +111,7 @@ export default function ResetPasswordPage() {
               gap: "10px",
             }}
           >
-            {status === "loading" && <span style={styles.spinner}></span>}
+            {status === "loading" && <span style={styles.spinner} />}
             {status === "loading" ? "Resetting..." : "Reset Password"}
           </button>
         </form>
@@ -132,82 +120,72 @@ export default function ResetPasswordPage() {
   );
 }
 
+// ✅ Suspense required for useSearchParams in App Router
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordForm />
+    </Suspense>
+  );
+}
+
 const styles: { [key: string]: React.CSSProperties } = {
-    page: {
-      minHeight: "100vh",
-      background: "radial-gradient(circle at center, #111 0%, #000 70%)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      fontFamily: "sans-serif",
-    },
-    card: {
-      width: "400px",
-      background: "#0c0c0c",
-      padding: "40px",
-      borderRadius: "18px",
-      border: "1px solid rgba(212,175,55,0.3)",
-      boxShadow: "0 0 40px rgba(212,175,55,0.15)",
-      color: "#fff",
-      textAlign: "center",
-    },
-    title: {
-      fontSize: "26px",
-      marginBottom: "10px",
-    },
-    subtitle: {
-      fontSize: "14px",
-      color: "#aaa",
-      marginBottom: "20px",
-    },
-    form: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "15px",
-    },
-    input: {
-      width: "100%",
-      padding: "14px",
-      borderRadius: "10px",
-      border: "1px solid rgba(212,175,55,0.2)",
-      background: "#111",
-      color: "#fff",
-    },
-    inputWrapper: {
-      position: "relative",
-    },
-    iconButton: {
-      position: "absolute",
-      right: "10px",
-      top: "50%",
-      transform: "translateY(-50%)",
-      background: "transparent",
-      border: "none",
-      color: "#D4AF37",
-      cursor: "pointer",
-    },
-    button: {
-      background: "linear-gradient(90deg, #C9A227, #FFD700)",
-      border: "none",
-      padding: "14px",
-      borderRadius: "10px",
-      color: "#000",
-      fontWeight: 700,
-    },
-    error: {
-      color: "#ff4d4f",
-      fontSize: "13px",
-    },
-    success: {
-      color: "#4CAF50",
-      fontSize: "13px",
-    },
-    spinner: {
-      width: "16px",
-      height: "16px",
-      border: "2px solid rgba(0,0,0,0.2)",
-      borderTop: "2px solid #000",
-      borderRadius: "50%",
-      animation: "spin 0.6s linear infinite",
-    },
-  };
+  page: {
+    minHeight: "100vh",
+    background: "radial-gradient(circle at center, #111 0%, #000 70%)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    fontFamily: "sans-serif",
+  },
+  card: {
+    width: "400px",
+    background: "#0c0c0c",
+    padding: "40px",
+    borderRadius: "18px",
+    border: "1px solid rgba(212,175,55,0.3)",
+    boxShadow: "0 0 40px rgba(212,175,55,0.15)",
+    color: "#fff",
+    textAlign: "center",
+  },
+  title:    { fontSize: "26px", marginBottom: "10px" },
+  subtitle: { fontSize: "14px", color: "#aaa", marginBottom: "20px" },
+  form:     { display: "flex", flexDirection: "column", gap: "15px" },
+  input: {
+    width: "100%",
+    padding: "14px",
+    borderRadius: "10px",
+    border: "1px solid rgba(212,175,55,0.2)",
+    background: "#111",
+    color: "#fff",
+  },
+  inputWrapper: { position: "relative" },
+  iconButton: {
+    position: "absolute",
+    right: "10px",
+    top: "50%",
+    transform: "translateY(-50%)",
+    background: "transparent",
+    border: "none",
+    color: "#D4AF37",
+    cursor: "pointer",
+  },
+  button: {
+    background: "linear-gradient(90deg, #C9A227, #FFD700)",
+    border: "none",
+    padding: "14px",
+    borderRadius: "10px",
+    color: "#000",
+    fontWeight: 700,
+  },
+  error:   { color: "#ff4d4f", fontSize: "13px" },
+  success: { color: "#4CAF50", fontSize: "13px" },
+  spinner: {
+    width: "16px",
+    height: "16px",
+    border: "2px solid rgba(0,0,0,0.2)",
+    borderTop: "2px solid #000",
+    borderRadius: "50%",
+    animation: "spin 0.6s linear infinite",
+  },
+};
