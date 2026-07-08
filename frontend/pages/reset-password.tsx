@@ -36,7 +36,7 @@ function ResetPasswordForm() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/reset-password?token=${token}`, // ✅ correct route
+        `${process.env.NEXT_PUBLIC_API_URL}/api/reset-password?token=${token}`, 
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -119,8 +119,6 @@ function ResetPasswordForm() {
     </div>
   );
 }
-
-// ✅ Suspense required for useSearchParams in App Router
 export default function ResetPasswordPage() {
   return (
     <Suspense>
