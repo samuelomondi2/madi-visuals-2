@@ -11,6 +11,7 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
 
+    console.log("Login URL:", `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`);
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
         method: "POST",
